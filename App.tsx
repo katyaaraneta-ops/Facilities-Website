@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Section, SectionTitle } from './components/Section';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 
 // --- Data Definitions ---
@@ -32,6 +32,8 @@ const faqs: FAQItem[] = [
   { question: "What are the requirements for vendor accreditation?", answer: "—" },
   { question: "How are emergency repairs handled?", answer: "—" },
   { question: "Is there an escalation matrix for tenants?", answer: "—" },
+  { question: "What is the protocol for lease renewals?", answer: "—" },
+  { question: "How are utility sub-meter readings verified?", answer: "—" },
 ];
 
 // --- Components ---
@@ -71,6 +73,8 @@ const Hero: React.FC = () => (
           <p className="text-xl md:text-2xl text-corporate-600 font-normal">
             Commercial property operations and asset management
           </p>
+          {/* Structural Anchor Line - Blue element to anchor the hero visually */}
+          <div className="w-14 h-px bg-corporate-600" aria-hidden="true"></div>
         </div>
 
         <div className="space-y-8 text-corporate-800 leading-relaxed text-lg md:text-xl font-normal max-w-3xl">
@@ -83,7 +87,7 @@ const Hero: React.FC = () => (
         </div>
 
         <div className="pt-8 space-y-10">
-          <p className="text-base md:text-lg italic text-corporate-600 font-serif opacity-90">
+          <p className="text-lg md:text-xl italic text-corporate-600 font-serif opacity-90">
             Quality has no substitute.
           </p>
           
@@ -119,15 +123,17 @@ const WhyUs: React.FC = () => (
 const Operations: React.FC = () => (
   <Section id="operations" className="bg-corporate-50" narrow>
     <SectionTitle>How We Operate</SectionTitle>
-    <div className="border-t border-corporate-200">
+    <div className="border-l border-corporate-200 pl-6 md:pl-10">
       {operations.map((op, idx) => (
-        <div key={idx} className="flex flex-col sm:flex-row py-8 border-b border-corporate-200 items-baseline">
-          <div className="w-28 mb-3 sm:mb-0 flex-shrink-0">
-            {/* Step number is "structural blue" */}
-            <span className="text-sm font-mono text-corporate-600 tracking-wider font-semibold">{op.step}</span>
+        <div key={idx} className="flex flex-col sm:flex-row py-10 border-b border-corporate-200 last:border-b-0 items-baseline">
+          <div className="w-24 sm:w-32 mb-2 sm:mb-0 flex-shrink-0 select-none">
+            {/* Structural Watermark Numeral */}
+            <span className="text-5xl md:text-6xl font-serif text-corporate-200 font-normal leading-none block -mt-1">
+              {op.step}
+            </span>
           </div>
           <div className="flex-1">
-            <h3 className="text-lg md:text-xl text-corporate-900 font-normal">
+            <h3 className="text-xl md:text-2xl text-corporate-900 font-medium">
               {op.title}
             </h3>
             {/* Empty description area */}
@@ -142,36 +148,39 @@ const Operations: React.FC = () => (
 const Assets: React.FC = () => (
   <Section id="assets" className="bg-white" narrow>
     <SectionTitle>Assets Under Operation</SectionTitle>
-    <div className="space-y-32">
+    <div className="space-y-24 md:space-y-32">
       
       {/* Asset 1: Summit One Tower (Portrait/Vertical) */}
-      <div className="flex flex-col gap-8">
-        <div className="w-full max-w-[480px] border border-corporate-200 bg-corporate-100 self-start">
-          {/* Portrait Aspect Ratio */}
-          <div className="aspect-[3/4] overflow-hidden">
+      <div className="w-full flex flex-col gap-8">
+        <div className="w-full border border-corporate-200 bg-corporate-100">
+          {/* Vertical crop: aspect-[3/4] ensures height is emphasized without fixed pixel constraints */}
+          <div className="aspect-[3/4] w-full overflow-hidden">
              <img 
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop" 
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop" 
               alt="Summit One Tower Exterior"
               className="w-full h-full object-cover grayscale-[15%] contrast-[0.95]"
             />
           </div>
         </div>
-        <div className="space-y-3 max-w-xl">
-          <h3 className="text-2xl md:text-3xl font-serif text-corporate-900">Summit One Tower</h3>
-          <div className="flex flex-col sm:flex-row sm:items-baseline text-base gap-y-2 gap-x-5">
-             {/* Subheading/Metadata in Blue Ink */}
-             <span className="text-corporate-600">Mandaluyong City</span>
+        <div className="space-y-4 max-w-3xl">
+          <div className="space-y-1">
+            <h3 className="text-2xl md:text-3xl font-serif text-corporate-900">Summit One Tower</h3>
+            <p className="text-base text-corporate-500 font-medium">High-rise commercial tower</p>
+          </div>
+          
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-baseline text-base md:text-lg gap-y-1 gap-x-4">
+             <span className="text-corporate-700">Mandaluyong City</span>
              <span className="hidden sm:inline text-corporate-300">/</span>
-             <span className="text-corporate-600 font-medium">Operational scope: unit-level</span>
+             <span className="text-corporate-700">Operational scope: unit-level</span>
           </div>
         </div>
       </div>
 
       {/* Asset 2: Facilities Centre (Landscape/Horizontal) */}
-      <div className="flex flex-col gap-8">
+      <div className="w-full flex flex-col gap-8">
         <div className="w-full border border-corporate-200 bg-corporate-100">
-           {/* Landscape Aspect Ratio */}
-           <div className="aspect-[16/9] overflow-hidden">
+           {/* Horizontal crop: aspect-[16/9] emphasizes frontage */}
+           <div className="aspect-[16/9] w-full overflow-hidden">
              <img 
               src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=1200&auto=format&fit=crop" 
               alt="Facilities Centre Exterior"
@@ -179,12 +188,16 @@ const Assets: React.FC = () => (
             />
            </div>
         </div>
-        <div className="space-y-3 max-w-xl">
-          <h3 className="text-2xl md:text-3xl font-serif text-corporate-900">Facilities Centre</h3>
-          <div className="flex flex-col sm:flex-row sm:items-baseline text-base gap-y-2 gap-x-5">
-             <span className="text-corporate-600">Mandaluyong City</span>
+        <div className="space-y-4 max-w-3xl">
+          <div className="space-y-1">
+            <h3 className="text-2xl md:text-3xl font-serif text-corporate-900">Facilities Centre</h3>
+            <p className="text-base text-corporate-500 font-medium">Low-rise commercial arcade</p>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-baseline text-base md:text-lg gap-y-1 gap-x-4">
+             <span className="text-corporate-700">Mandaluyong City</span>
              <span className="hidden sm:inline text-corporate-300">/</span>
-             <span className="text-corporate-600 font-medium">Operational scope: unit-level</span>
+             <span className="text-corporate-700">Operational scope: unit-level</span>
           </div>
         </div>
       </div>
@@ -203,19 +216,23 @@ const FAQ: React.FC = () => {
   return (
     <Section id="faq" className="bg-corporate-50" narrow>
       <SectionTitle>Frequently Asked Questions</SectionTitle>
-      <div className="border-t border-corporate-200">
+      {/* Darker structural border: border-corporate-300 */}
+      <div className="border-t border-corporate-300">
         {faqs.map((faq, idx) => (
-          <div key={idx} className="border-b border-corporate-200">
+          /* Darker item border: border-corporate-300 */
+          <div key={idx} className="border-b border-corporate-300">
             <button 
               onClick={() => toggle(idx)}
               className="w-full py-6 flex items-start justify-between text-left focus:outline-none group"
               aria-expanded={openIndex === idx}
             >
-              <span className="text-lg text-corporate-800 font-normal pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors">
+              {/* Increased size to text-xl */}
+              <span className="text-xl text-corporate-800 font-normal pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors">
                 {faq.question}
               </span>
-              <span className="text-corporate-600 mt-1 flex-shrink-0">
-                {openIndex === idx ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              {/* Institutional Navy Plus Icon */}
+              <span className="text-corporate-900 mt-1 flex-shrink-0">
+                {openIndex === idx ? <Minus size={20} /> : <Plus size={20} />}
               </span>
             </button>
             {openIndex === idx && (
