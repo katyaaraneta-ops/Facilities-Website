@@ -18,16 +18,18 @@
             },
             colors: {
               corporate: {
-                50: '#f8fafc',
-                100: '#f1f5f9',
-                200: '#e2e8f0',
-                300: '#cbd5e1',
-                400: '#94a3b8',
-                500: '#64748b',
-                600: '#475569',
-                700: '#334155',
-                800: '#1e293b',
-                900: '#0f172a', // Deep Navy/Slate
+                // Custom "Institutional Navy" Palette
+                // Designed to read as "Ink" and "Structure"
+                50: '#F7F9FB',  // Very faint cool white
+                100: '#EBF1F6',
+                200: '#D2DEEB', // Crisp blue-gray for dividers
+                300: '#B0C4DB',
+                400: '#8AA2C2',
+                500: '#6482A6', // Steel blue
+                600: '#466385', // Deep Steel (Metadata/Subheads)
+                700: '#324A66', // Primary "Blue Ink" text
+                800: '#22344A',
+                900: '#0F1A29', // Deepest Navy (Headings)
               }
             }
           }
@@ -51,7 +53,7 @@
 }
 </script>
 </head>
-  <body class="bg-white text-corporate-900 selection:bg-corporate-200">
+  <body class="bg-corporate-50 text-corporate-900 selection:bg-corporate-200 selection:text-corporate-900">
     <div id="root"></div>
   </body>
 </html>
