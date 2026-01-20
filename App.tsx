@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Section, SectionTitle } from './components/Section';
-import { ChevronDown, ChevronUp, MapPin, Phone, Mail } from 'lucide-react';
+import { ChevronDown, ChevronUp, Phone, Mail } from 'lucide-react';
 import { WhyItem, OperationStep, Asset, FAQItem } from './types';
 
 // --- Data Definitions ---
@@ -27,14 +27,12 @@ const assets: Asset[] = [
     name: "Summit One Tower",
     location: "Mandaluyong City",
     scope: "Operational scope: unit-level",
-    // Architectural, established feel
     imageUrl: "https://picsum.photos/id/437/800/450" 
   },
   {
     name: "Facilities Centre",
     location: "Mandaluyong City",
     scope: "Operational scope: unit-level",
-    // Abstract building detail
     imageUrl: "https://picsum.photos/id/534/800/450"
   }
 ];
@@ -52,15 +50,24 @@ const faqs: FAQItem[] = [
 // --- Components ---
 
 const Header: React.FC = () => (
-  <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-corporate-100 z-50">
+  <header className="sticky top-0 bg-white border-b border-corporate-200 z-50">
     <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div className="font-serif text-xl md:text-2xl text-corporate-900 tracking-tight italic font-semibold">
-        FI
+      <div className="font-serif text-lg text-corporate-900 font-semibold tracking-tight">
+        Facilities, Incorporated
       </div>
-      <a 
-        href="#contact" 
-        className="text-sm font-medium text-corporate-600 hover:text-corporate-900 transition-colors uppercase tracking-widest"
-      >
+      
+      {/* Desktop Nav */}
+      <nav className="hidden md:flex items-center space-x-8 text-sm text-corporate-600">
+        <a href="#why-us" className="hover:text-corporate-900 transition-colors">Why Facilities</a>
+        <a href="#operations" className="hover:text-corporate-900 transition-colors">How We Operate</a>
+        <a href="#assets" className="hover:text-corporate-900 transition-colors">Assets</a>
+        <a href="#faq" className="hover:text-corporate-900 transition-colors">FAQ</a>
+        <a href="#contact" className="hover:text-corporate-900 transition-colors">Contact</a>
+      </nav>
+
+      {/* Mobile Nav Placeholder - keeping it simple/hidden for "calm" aesthetic, 
+          in production would likely be a simple hamburger menu */}
+      <a href="#contact" className="md:hidden text-sm text-corporate-900 font-medium">
         Contact
       </a>
     </div>
@@ -68,53 +75,55 @@ const Header: React.FC = () => (
 );
 
 const Hero: React.FC = () => (
-  <section className="min-h-screen flex flex-col justify-center items-center pt-20 pb-20 px-6 bg-corporate-50/30">
-    <div className="max-w-[720px] w-full mx-auto space-y-12 md:space-y-16 text-center md:text-left">
-      <div className="space-y-6">
-        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-corporate-900 leading-tight">
-          Facilities, Incorporated
-        </h1>
-        <p className="text-xl md:text-2xl text-corporate-500 font-light tracking-wide">
-          Commercial property operations and asset management
-        </p>
-      </div>
+  <section className="min-h-[70vh] flex flex-col justify-center px-6 bg-white border-b border-corporate-100">
+    <div className="max-w-3xl mx-auto w-full py-20">
+      <div className="space-y-8 md:space-y-10">
+        <div className="space-y-2">
+          <h1 className="font-serif text-3xl md:text-4xl text-corporate-900 leading-tight">
+            Facilities, Incorporated
+          </h1>
+          <p className="text-lg md:text-xl text-corporate-500 font-light">
+            Commercial property operations and asset management
+          </p>
+        </div>
 
-      <div className="space-y-8 text-corporate-700 leading-relaxed text-lg font-light">
-        <p>
-          Facilities, Incorporated is a family-run operating company established in 1960, responsible for the day-to-day operation of specific commercial units within Mandaluyong-based properties.
-        </p>
-        <p>
-          The company currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
-        </p>
-      </div>
+        <div className="space-y-6 text-corporate-800 leading-relaxed text-base md:text-lg font-normal max-w-2xl">
+          <p>
+            Facilities, Incorporated is a family-run operating company established in 1960, responsible for the day-to-day operation of specific commercial units within Mandaluyong-based properties.
+          </p>
+          <p>
+            The company currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
+          </p>
+        </div>
 
-      <div className="pt-8 border-t border-corporate-200 w-full md:w-32 md:border-t-0 md:pt-0">
-        <p className="text-xs font-semibold text-corporate-400 uppercase tracking-[0.2em] mb-12">
-          Quality has no substitute.
-        </p>
-        
-        <a 
-          href="#contact" 
-          className="inline-block px-10 py-3 border border-corporate-300 text-corporate-800 text-sm font-medium hover:bg-white hover:border-corporate-400 transition-all duration-300"
-        >
-          Contact
-        </a>
+        <div className="pt-4 space-y-8">
+          <p className="text-sm italic text-corporate-500 font-serif">
+            Quality has no substitute.
+          </p>
+          
+          <a 
+            href="#contact" 
+            className="inline-block px-8 py-3 border border-corporate-300 text-corporate-900 text-sm font-medium hover:bg-corporate-50 transition-colors"
+          >
+            Contact
+          </a>
+        </div>
       </div>
     </div>
   </section>
 );
 
 const WhyUs: React.FC = () => (
-  <Section id="why-us" className="bg-white">
+  <Section id="why-us" className="bg-white" narrow>
     <SectionTitle>Why Facilities, Incorporated</SectionTitle>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {whyItems.map((item, idx) => (
         <div 
           key={idx} 
-          className="p-8 border border-corporate-100 rounded-sm bg-white hover:border-corporate-200 transition-colors duration-500 min-h-[160px] flex flex-col justify-between"
+          className="p-6 border border-corporate-200 bg-white"
         >
-          <h3 className="text-lg font-medium text-corporate-800">{item.title}</h3>
-          <span className="text-corporate-300 font-light block mt-4 select-none">{item.description}</span>
+          <h3 className="text-base font-medium text-corporate-900 mb-4">{item.title}</h3>
+          <span className="text-corporate-300 font-light block select-none">{item.description}</span>
         </div>
       ))}
     </div>
@@ -124,17 +133,17 @@ const WhyUs: React.FC = () => (
 const Operations: React.FC = () => (
   <Section id="operations" className="bg-corporate-50/50" narrow>
     <SectionTitle>How We Operate</SectionTitle>
-    <div className="space-y-0 divide-y divide-corporate-200 border-t border-b border-corporate-200">
+    <div className="border-t border-corporate-200">
       {operations.map((op, idx) => (
-        <div key={idx} className="flex flex-col md:flex-row py-8 group">
-          <div className="md:w-32 mb-2 md:mb-0">
-            <span className="text-sm font-mono text-corporate-400">{op.step}</span>
+        <div key={idx} className="flex flex-col sm:flex-row py-6 border-b border-corporate-200 items-baseline">
+          <div className="w-24 mb-2 sm:mb-0 flex-shrink-0">
+            <span className="text-xs font-mono text-corporate-400 tracking-wider">{op.step}</span>
           </div>
           <div className="flex-1">
-            <h3 className="text-lg text-corporate-900 font-normal group-hover:text-corporate-700 transition-colors">
+            <h3 className="text-base text-corporate-900 font-normal">
               {op.title}
             </h3>
-            {/* Empty description area as requested */}
+            {/* Empty description area */}
             <div className="h-0" aria-hidden="true"></div> 
           </div>
         </div>
@@ -144,24 +153,25 @@ const Operations: React.FC = () => (
 );
 
 const Assets: React.FC = () => (
-  <Section id="assets" className="bg-white">
+  <Section id="assets" className="bg-white" narrow>
     <SectionTitle>Assets Under Operation</SectionTitle>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+    <div className="space-y-12">
       {assets.map((asset, idx) => (
-        <div key={idx} className="group">
-          <div className="aspect-[16/9] w-full overflow-hidden bg-corporate-100 mb-6 border border-corporate-100">
+        <div key={idx} className="block">
+          {/* Static image - no hover effects */}
+          <div className="w-full bg-corporate-100 mb-4 border border-corporate-100">
             <img 
               src={asset.imageUrl} 
               alt={asset.name}
-              className="w-full h-full object-cover opacity-90 grayscale-[20%] group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-out"
+              className="w-full h-auto object-cover grayscale-[10%] opacity-95"
             />
           </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-medium text-corporate-900">{asset.name}</h3>
-            <div className="flex flex-col sm:flex-row sm:items-center text-sm text-corporate-500 gap-y-1 gap-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between border-t border-corporate-100 pt-3">
+            <h3 className="text-lg font-serif text-corporate-900">{asset.name}</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center text-sm text-corporate-500 gap-y-1 gap-x-4 mt-1 sm:mt-0">
               <span>{asset.location}</span>
-              <span className="hidden sm:inline text-corporate-300">•</span>
-              <span className="font-mono text-xs uppercase tracking-wider text-corporate-400">{asset.scope}</span>
+              <span className="hidden sm:inline text-corporate-300">/</span>
+              <span className="text-corporate-400">{asset.scope}</span>
             </div>
           </div>
         </div>
@@ -185,18 +195,18 @@ const FAQ: React.FC = () => {
           <div key={idx} className="border-b border-corporate-200">
             <button 
               onClick={() => toggle(idx)}
-              className="w-full py-6 flex items-center justify-between text-left focus:outline-none group"
+              className="w-full py-5 flex items-start justify-between text-left focus:outline-none"
               aria-expanded={openIndex === idx}
             >
-              <span className={`text-lg font-light transition-colors ${openIndex === idx ? 'text-corporate-900' : 'text-corporate-600 group-hover:text-corporate-800'}`}>
+              <span className="text-base text-corporate-800 font-normal pr-8">
                 {faq.question}
               </span>
-              <span className="ml-6 text-corporate-400">
-                {openIndex === idx ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              <span className="text-corporate-400 mt-1 flex-shrink-0">
+                {openIndex === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </span>
             </button>
             {openIndex === idx && (
-              <div className="pb-6 pr-12 text-corporate-500 font-light">
+              <div className="pb-5 pr-8 text-corporate-500 text-sm leading-relaxed">
                 <p>{faq.answer}</p>
               </div>
             )}
@@ -208,33 +218,29 @@ const FAQ: React.FC = () => {
 };
 
 const Contact: React.FC = () => (
-  <Section id="contact" className="bg-corporate-50">
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+  <Section id="contact" className="bg-corporate-50" narrow>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
       {/* Contact Info */}
-      <div className="lg:col-span-4 space-y-12">
-        <h2 className="text-2xl font-medium text-corporate-900">Contact</h2>
+      <div className="lg:col-span-4 space-y-8">
+        <h2 className="text-xl font-serif text-corporate-900">Contact</h2>
         
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-corporate-400">Main Office</h3>
-            <p className="text-corporate-700 leading-relaxed">
+        <div className="space-y-6 text-sm">
+          <div className="space-y-1">
+            <h3 className="font-medium text-corporate-900">Main Office</h3>
+            <p className="text-corporate-600 leading-relaxed">
               23/F Summit One Office Tower<br />
               530 Shaw Boulevard<br />
               Mandaluyong City 1552
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4 text-corporate-700">
-              <Phone size={18} className="mt-1 text-corporate-400" />
-              <div className="space-y-1">
-                <p>+63 (632) 7118-9463</p>
-                <p>+63 (632) 7118-0659</p>
-              </div>
+          <div className="space-y-3 pt-2">
+            <div className="space-y-1 text-corporate-600">
+              <p>+63 (632) 7118-9463</p>
+              <p>+63 (632) 7118-0659</p>
             </div>
             
-            <div className="flex items-center space-x-4 text-corporate-700">
-              <Mail size={18} className="text-corporate-400" />
+            <div className="text-corporate-600">
               <p>inquiries@facilities-inc.com</p>
             </div>
           </div>
@@ -243,47 +249,47 @@ const Contact: React.FC = () => (
 
       {/* Form */}
       <div className="lg:col-span-8">
-        <form className="space-y-6 max-w-lg" onSubmit={(e) => e.preventDefault()}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-corporate-600">Full Name</label>
+        <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1">
+              <label htmlFor="name" className="text-xs font-medium text-corporate-500 uppercase tracking-wide">Name</label>
               <input 
                 type="text" 
                 id="name" 
-                className="w-full px-4 py-3 bg-white border border-corporate-200 focus:border-corporate-400 focus:ring-0 outline-none transition-colors"
+                className="w-full px-3 py-2 bg-white border border-corporate-300 focus:border-corporate-500 focus:outline-none transition-colors rounded-none"
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-corporate-600">Email Address</label>
+            <div className="space-y-1">
+              <label htmlFor="email" className="text-xs font-medium text-corporate-500 uppercase tracking-wide">Email</label>
               <input 
                 type="email" 
                 id="email" 
-                className="w-full px-4 py-3 bg-white border border-corporate-200 focus:border-corporate-400 focus:ring-0 outline-none transition-colors"
+                className="w-full px-3 py-2 bg-white border border-corporate-300 focus:border-corporate-500 focus:outline-none transition-colors rounded-none"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="phone" className="text-sm font-medium text-corporate-600">Phone (Optional)</label>
+          <div className="space-y-1">
+            <label htmlFor="phone" className="text-xs font-medium text-corporate-500 uppercase tracking-wide">Phone (Optional)</label>
             <input 
               type="tel" 
               id="phone" 
-              className="w-full px-4 py-3 bg-white border border-corporate-200 focus:border-corporate-400 focus:ring-0 outline-none transition-colors"
+              className="w-full px-3 py-2 bg-white border border-corporate-300 focus:border-corporate-500 focus:outline-none transition-colors rounded-none"
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="message" className="text-sm font-medium text-corporate-600">Message</label>
+          <div className="space-y-1">
+            <label htmlFor="message" className="text-xs font-medium text-corporate-500 uppercase tracking-wide">Message</label>
             <textarea 
               id="message" 
               rows={4} 
-              className="w-full px-4 py-3 bg-white border border-corporate-200 focus:border-corporate-400 focus:ring-0 outline-none transition-colors resize-none"
+              className="w-full px-3 py-2 bg-white border border-corporate-300 focus:border-corporate-500 focus:outline-none transition-colors rounded-none resize-none"
             ></textarea>
           </div>
 
           <button 
             type="submit" 
-            className="px-8 py-3 bg-corporate-900 text-white text-sm font-medium hover:bg-corporate-800 transition-colors"
+            className="px-6 py-2 bg-corporate-900 text-white text-sm font-medium hover:bg-corporate-800 transition-colors rounded-none"
           >
             Send Message
           </button>
@@ -295,22 +301,17 @@ const Contact: React.FC = () => (
 
 const Footer: React.FC = () => (
   <footer className="bg-white border-t border-corporate-100 py-12">
-    <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-sm text-corporate-400">
-      <div className="mb-4 md:mb-0">
-        &copy; {new Date().getFullYear()} Facilities, Incorporated. All rights reserved.
-      </div>
-      <div className="flex space-x-6">
-        <span className="cursor-not-allowed">Privacy</span>
-        <span className="cursor-not-allowed">Terms</span>
-        <span className="cursor-not-allowed">Sitemap</span>
-      </div>
+    <div className="max-w-4xl mx-auto px-6 text-center md:text-left">
+      <p className="text-xs text-corporate-400">
+        &copy; {new Date().getFullYear()} Facilities, Incorporated.
+      </p>
     </div>
   </footer>
 );
 
 export default function App() {
   return (
-    <div className="antialiased min-h-screen">
+    <div className="antialiased min-h-screen bg-white">
       <Header />
       <main>
         <Hero />
