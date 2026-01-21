@@ -283,7 +283,7 @@ const Assets: React.FC = () => (
               Mandaluyong City, Metro Manila
             </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
-              Located on Shaw Boulevard, this property is a mixed-use development comprising office, residential, and commercial sectors. Facilities, Incorporated manages commercial office space on the upper levels, providing operational support for corporate headquarters and BPO locators.
+              Located on Shaw Boulevard, this PEZA-accredited property comprises dedicated office and commercial spaces under Facilities, Incorporated’s operational management.
             </p>
         </figcaption>
       </figure>
