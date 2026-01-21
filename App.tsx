@@ -59,6 +59,15 @@ const Header: React.FC = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
+  const scrollToId = (targetId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    closeMenu();
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 z-50">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -68,11 +77,11 @@ const Header: React.FC = () => {
         
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
-          <a href="#why-us" className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
-          <a href="#operations" className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
-          <a href="#assets" className="hover:text-[#C9D2E3] transition-colors duration-300">Assets</a>
-          <a href="#faq" className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
-          <a href="#contact" className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
+          <a href="#why" onClick={scrollToId("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
+          <a href="#operate" onClick={scrollToId("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
+          <a href="#assets" onClick={scrollToId("assets")} className="hover:text-[#C9D2E3] transition-colors duration-300">Assets</a>
+          <a href="#faq" onClick={scrollToId("faq")} className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
+          <a href="#contact" onClick={scrollToId("contact")} className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
         </nav>
 
         {/* Mobile Hamburger Button */}
@@ -90,36 +99,36 @@ const Header: React.FC = () => {
         <div className="md:hidden absolute top-20 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 shadow-xl">
           <nav className="flex flex-col py-8 px-6 space-y-6">
             <a 
-              href="#why-us" 
-              onClick={closeMenu}
+              href="#why" 
+              onClick={scrollToId("why")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               Why Facilities
             </a>
             <a 
-              href="#operations" 
-              onClick={closeMenu}
+              href="#operate" 
+              onClick={scrollToId("operate")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               How We Operate
             </a>
             <a 
               href="#assets" 
-              onClick={closeMenu}
+              onClick={scrollToId("assets")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               Assets
             </a>
             <a 
               href="#faq" 
-              onClick={closeMenu}
+              onClick={scrollToId("faq")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               FAQ
             </a>
             <a 
               href="#contact" 
-              onClick={closeMenu}
+              onClick={scrollToId("contact")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               Contact
@@ -161,7 +170,11 @@ const Hero: React.FC = () => (
               </p>
               
               <a 
-                href="#contact" 
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
                 className="inline-block px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-500 tracking-wide"
               >
                 Make an Inquiry
@@ -184,7 +197,7 @@ const Hero: React.FC = () => (
 );
 
 const WhyUs: React.FC = () => (
-  <Section id="why-us" className="bg-white">
+  <Section id="why" className="bg-white">
     <div className="border-b border-corporate-200 mb-16 pb-4">
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         Why Facilities, Incorporated
@@ -207,7 +220,7 @@ const WhyUs: React.FC = () => (
 );
 
 const Operations: React.FC = () => (
-  <Section id="operations" className="bg-corporate-50 border-t border-corporate-200">
+  <Section id="operate" className="bg-corporate-50 border-t border-corporate-200">
     <div className="border-b border-corporate-200 mb-16 pb-4">
        <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         How We Operate
