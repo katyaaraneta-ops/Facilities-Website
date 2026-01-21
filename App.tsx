@@ -68,12 +68,22 @@ const Header: React.FC = () => {
     closeMenu();
   };
 
+  const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeMenu();
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 z-50">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="font-serif text-xl text-[#E6EAF2] font-medium tracking-tight opacity-95">
+        <a 
+          href="#"
+          onClick={scrollToTop}
+          className="font-serif text-2xl text-[#E6EAF2] font-medium tracking-tight opacity-95"
+        >
           Facilities, Incorporated
-        </div>
+        </a>
         
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
@@ -142,7 +152,7 @@ const Header: React.FC = () => {
 
 const Hero: React.FC = () => (
   <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-corporate-50 pt-20 border-b border-corporate-200">
-    <div className="max-w-5xl mx-auto w-full py-24 md:py-32">
+    <div className="max-w-5xl mx-auto w-full pt-16 pb-20 md:pt-20 md:pb-28">
       <div className="space-y-12">
         <div className="space-y-6">
           <h1 className="font-serif text-5xl md:text-7xl text-corporate-900 leading-[1.05] tracking-tight">
@@ -232,7 +242,7 @@ const Operations: React.FC = () => (
         <div key={idx} className="flex flex-col md:flex-row md:items-stretch">
           {/* Left Column: Number + Title */}
           <div className="w-full md:w-5/12 pb-6 md:pb-0 md:pr-12">
-             <span className="block text-6xl md:text-7xl font-serif text-corporate-200 leading-none mb-6">
+             <span className="block text-6xl md:text-7xl font-serif text-corporate-200 leading-none mb-6 -mt-2">
               {op.step}
             </span>
             <h3 className="text-2xl md:text-3xl font-serif text-corporate-800 leading-tight">
@@ -241,7 +251,7 @@ const Operations: React.FC = () => (
           </div>
           
           {/* Right Column: Divider & Description */}
-          <div className="w-full md:w-7/12 md:border-l border-corporate-200 md:pl-12 pt-1">
+          <div className="w-full md:w-7/12 md:border-l border-corporate-200 md:pl-12">
             <p className="text-lg text-corporate-600 leading-relaxed">
               {op.description}
             </p>
