@@ -164,11 +164,11 @@ const Hero: React.FC = () => (
               The company currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
             </p>
             
-            <div className="pt-8 space-y-8">
-               <p className="text-lg italic text-corporate-500 font-serif">
-                Quality has no substitute.
-              </p>
-              
+            <p className="text-lg font-serif italic text-corporate-400 mt-12 mb-8">
+              Quality has no substitute.
+            </p>
+
+            <div className="pt-8">
               <a 
                 href="#contact"
                 onClick={(e) => {
@@ -362,7 +362,7 @@ const FAQ: React.FC = () => {
 };
 
 const Contact: React.FC = () => (
-  <Section id="contact" className="bg-white border-t border-corporate-200">
+  <Section id="contact" className="bg-white border-t border-corporate-200 md:!py-12 lg:!py-32">
      <div className="border-b border-corporate-200 mb-16 pb-4">
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         Contact
