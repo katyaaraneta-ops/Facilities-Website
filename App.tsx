@@ -227,20 +227,21 @@ const Operations: React.FC = () => (
       </h2>
     </div>
 
-    <div className="space-y-20">
+    <div className="space-y-16 md:space-y-24">
       {operations.map((op, idx) => (
-        <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-3">
-             <span className="text-6xl md:text-7xl font-serif text-corporate-200 leading-none">
+        <div key={idx} className="flex flex-col md:flex-row md:items-stretch">
+          {/* Left Column: Number + Title */}
+          <div className="w-full md:w-5/12 pb-6 md:pb-0 md:pr-12">
+             <span className="block text-6xl md:text-7xl font-serif text-corporate-200 leading-none mb-6">
               {op.step}
             </span>
-          </div>
-          <div className="md:col-span-4">
             <h3 className="text-2xl md:text-3xl font-serif text-corporate-800 leading-tight">
               {op.title}
             </h3>
           </div>
-          <div className="md:col-span-5">
+          
+          {/* Right Column: Divider & Description */}
+          <div className="w-full md:w-7/12 md:border-l border-corporate-200 md:pl-12 pt-1">
             <p className="text-lg text-corporate-600 leading-relaxed">
               {op.description}
             </p>
