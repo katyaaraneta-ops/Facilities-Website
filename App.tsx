@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Menu, X } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 
 // --- Data Definitions ---
@@ -53,32 +53,86 @@ const faqs: FAQItem[] = [
 
 // --- Components ---
 
-const Header: React.FC = () => (
-  <header className="fixed top-0 left-0 right-0 bg-corporate-900 border-b border-corporate-800 z-50">
-    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div className="font-serif text-xl text-white font-semibold tracking-tight">
-        Facilities, Incorporated
-      </div>
-      
-      {/* Desktop Nav */}
-      <nav className="hidden md:flex items-center space-x-8 text-sm text-white/80 font-medium tracking-wide">
-        <a href="#why-us" className="hover:text-white transition-colors">Why Facilities</a>
-        <a href="#operations" className="hover:text-white transition-colors">How We Operate</a>
-        <a href="#assets" className="hover:text-white transition-colors">Assets</a>
-        <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-        <a href="#contact" className="hover:text-white transition-colors">Contact</a>
-      </nav>
+const Header: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-      {/* Mobile Nav Link */}
-      <a href="#contact" className="md:hidden text-sm text-white font-medium">
-        Contact
-      </a>
-    </div>
-  </header>
-);
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const closeMenu = () => setIsMenuOpen(false);
+
+  return (
+    <header className="fixed top-0 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 z-50">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="font-serif text-xl text-[#E6EAF2] font-medium tracking-tight opacity-95">
+          Facilities, Incorporated
+        </div>
+        
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
+          <a href="#why-us" className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
+          <a href="#operations" className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
+          <a href="#assets" className="hover:text-[#C9D2E3] transition-colors duration-300">Assets</a>
+          <a href="#faq" className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
+          <a href="#contact" className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
+        </nav>
+
+        {/* Mobile Hamburger Button */}
+        <button 
+          className="md:hidden text-[#E6EAF2] hover:text-[#C9D2E3] transition-colors focus:outline-none"
+          onClick={toggleMenu}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-20 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 shadow-xl">
+          <nav className="flex flex-col py-8 px-6 space-y-6">
+            <a 
+              href="#why-us" 
+              onClick={closeMenu}
+              className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
+            >
+              Why Facilities
+            </a>
+            <a 
+              href="#operations" 
+              onClick={closeMenu}
+              className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
+            >
+              How We Operate
+            </a>
+            <a 
+              href="#assets" 
+              onClick={closeMenu}
+              className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
+            >
+              Assets
+            </a>
+            <a 
+              href="#faq" 
+              onClick={closeMenu}
+              className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
+            >
+              FAQ
+            </a>
+            <a 
+              href="#contact" 
+              onClick={closeMenu}
+              className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
+            >
+              Contact
+            </a>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+};
 
 const Hero: React.FC = () => (
-  <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-white pt-20">
+  <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-corporate-50 pt-20 border-b border-corporate-200">
     <div className="max-w-5xl mx-auto w-full py-24 md:py-32">
       <div className="space-y-12">
         <div className="space-y-6">
@@ -108,7 +162,7 @@ const Hero: React.FC = () => (
               
               <a 
                 href="#contact" 
-                className="inline-block px-8 py-4 bg-corporate-900 text-white text-sm font-medium hover:bg-corporate-800 transition-colors tracking-wide"
+                className="inline-block px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-500 tracking-wide"
               >
                 Make an Inquiry
               </a>
@@ -120,7 +174,7 @@ const Hero: React.FC = () => (
               <img 
               src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop" 
               alt="Abstract Building Facade"
-              className="absolute inset-0 w-full h-full object-cover grayscale opacity-80 mix-blend-multiply"
+              className="absolute inset-0 w-full h-full object-cover grayscale opacity-60 mix-blend-multiply contrast-125"
             />
           </div>
         </div>
@@ -130,7 +184,7 @@ const Hero: React.FC = () => (
 );
 
 const WhyUs: React.FC = () => (
-  <Section id="why-us" className="bg-corporate-50">
+  <Section id="why-us" className="bg-white">
     <div className="border-b border-corporate-200 mb-16 pb-4">
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         Why Facilities, Incorporated
@@ -140,7 +194,7 @@ const WhyUs: React.FC = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-16">
       {whyItems.map((item, idx) => (
         <div key={idx} className="space-y-4">
-          <h3 className="text-sm font-bold text-corporate-900 tracking-widest uppercase">
+          <h3 className="text-sm font-bold text-corporate-900 tracking-widest uppercase opacity-90">
             {item.title}
           </h3>
           <p className="text-lg text-corporate-600 leading-relaxed">
@@ -153,7 +207,7 @@ const WhyUs: React.FC = () => (
 );
 
 const Operations: React.FC = () => (
-  <Section id="operations" className="bg-white">
+  <Section id="operations" className="bg-corporate-50 border-t border-corporate-200">
     <div className="border-b border-corporate-200 mb-16 pb-4">
        <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         How We Operate
@@ -169,7 +223,7 @@ const Operations: React.FC = () => (
             </span>
           </div>
           <div className="md:col-span-4">
-            <h3 className="text-2xl md:text-3xl font-serif text-corporate-900 leading-tight">
+            <h3 className="text-2xl md:text-3xl font-serif text-corporate-800 leading-tight">
               {op.title}
             </h3>
           </div>
@@ -185,7 +239,7 @@ const Operations: React.FC = () => (
 );
 
 const Assets: React.FC = () => (
-  <Section id="assets" className="bg-white">
+  <Section id="assets" className="bg-white border-t border-corporate-200">
     <div className="border-b border-corporate-200 mb-16 pb-4">
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         Assets Under Operation
@@ -196,12 +250,13 @@ const Assets: React.FC = () => (
       
       {/* Asset 1: Summit One Tower */}
       <figure className="flex flex-col gap-8 group">
-        {/* Vertical/Portrait Aspect Ratio */}
-        <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[4/5]">
+        {/* Adjusted Aspect Ratio: Reduced height by ~28% (aspect-[10/9]) compared to previous 4/5 */}
+        {/* Constrained width to ~720px on desktop, centered */}
+        <div className="w-full md:max-w-[720px] mx-auto bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[10/9]">
            <img 
             src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop" 
             alt="Summit One Tower Detail"
-            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9]"
+            className="w-full h-full object-cover grayscale-[40%] contrast-[0.95]"
           />
         </div>
         
@@ -226,7 +281,7 @@ const Assets: React.FC = () => (
             <img 
             src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=1200&auto=format&fit=crop" 
             alt="Facilities Centre Frontage"
-            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9]"
+            className="w-full h-full object-cover grayscale-[40%] contrast-[0.95]"
           />
         </div>
 
@@ -256,32 +311,32 @@ const FAQ: React.FC = () => {
   };
 
   return (
-    <Section id="faq" className="bg-corporate-50" narrow>
+    <Section id="faq" className="bg-corporate-50 border-t border-corporate-200" narrow>
       <div className="mb-12 md:mb-16 border-b border-corporate-200 pb-6 inline-block pr-16 leading-tight">
         <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Frequently Asked Questions</h2>
       </div>
       
-      {/* Darker structural border: border-corporate-300 */}
-      <div className="border-t border-corporate-300">
+      {/* Darker structural border: border-corporate-300 replaced with 200 for subtlety */}
+      <div className="border-t border-corporate-200">
         {faqs.map((faq, idx) => (
-          /* Darker item border: border-corporate-300 */
-          <div key={idx} className="border-b border-corporate-300">
+          /* Item border: border-corporate-200 */
+          <div key={idx} className="border-b border-corporate-200">
             <button 
               onClick={() => toggle(idx)}
               className="w-full py-6 flex items-start justify-between text-left focus:outline-none group"
               aria-expanded={openIndex === idx}
             >
               {/* Increased size to text-xl */}
-              <span className="text-xl text-corporate-800 font-normal pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors">
+              <span className="text-xl text-corporate-700 font-normal pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors">
                 {faq.question}
               </span>
-              {/* Institutional Navy Plus Icon */}
-              <span className="text-corporate-900 mt-1 flex-shrink-0">
+              {/* Institutional Navy Plus Icon - muted to 300/500 */}
+              <span className="text-corporate-400 mt-1 flex-shrink-0 group-hover:text-corporate-600 transition-colors">
                 {openIndex === idx ? <Minus size={20} /> : <Plus size={20} />}
               </span>
             </button>
             {openIndex === idx && (
-              <div className="pb-6 pr-8 text-corporate-600 text-base leading-relaxed">
+              <div className="pb-6 pr-8 text-corporate-500 text-base leading-relaxed">
                 <p>{faq.answer}</p>
               </div>
             )}
@@ -293,7 +348,7 @@ const FAQ: React.FC = () => {
 };
 
 const Contact: React.FC = () => (
-  <Section id="contact" className="bg-white">
+  <Section id="contact" className="bg-white border-t border-corporate-200">
      <div className="border-b border-corporate-200 mb-16 pb-4">
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
         Contact
@@ -304,8 +359,8 @@ const Contact: React.FC = () => (
       {/* Contact Info */}
       <div className="md:col-span-4 space-y-12">
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Head Office</h3>
-          <p className="text-lg text-corporate-800 leading-relaxed font-serif">
+          <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Head Office</h3>
+          <p className="text-lg text-corporate-700 leading-relaxed font-serif">
             23/F Summit One Tower<br />
             530 Shaw Boulevard<br />
             Mandaluyong City 1552<br />
@@ -314,17 +369,17 @@ const Contact: React.FC = () => (
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Telephone</h3>
-           <div className="text-lg text-corporate-800 leading-relaxed font-serif">
+          <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Telephone</h3>
+           <div className="text-lg text-corporate-700 leading-relaxed font-serif">
             <p>+63 2 8555 0100</p>
             <p>+63 2 8555 0101</p>
           </div>
         </div>
         
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Email</h3>
-           <div className="text-lg text-corporate-800 leading-relaxed font-serif">
-            <a href="mailto:info@facilities-inc.com" className="hover:text-corporate-600 underline decoration-corporate-200 underline-offset-4">
+          <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email</h3>
+           <div className="text-lg text-corporate-700 leading-relaxed font-serif">
+            <a href="mailto:info@facilities-inc.com" className="hover:text-corporate-900 underline decoration-corporate-200 underline-offset-4 transition-colors">
               info@facilities-inc.com
             </a>
           </div>
@@ -336,49 +391,49 @@ const Contact: React.FC = () => (
         <form className="space-y-12" onSubmit={(e) => e.preventDefault()}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Name</label>
+              <label htmlFor="name" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Name</label>
               <input 
                 type="text" 
                 id="name" 
                 placeholder="Full Name"
-                className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300"
+                className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
               />
             </div>
              <div className="space-y-2">
-              <label htmlFor="company" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Company</label>
+              <label htmlFor="company" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Company</label>
               <input 
                 type="text" 
                 id="company" 
                 placeholder="Organization Name"
-                className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300"
+                className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="email" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Email Address</label>
+            <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email Address</label>
             <input 
               type="email" 
               id="email" 
               placeholder="name@company.com"
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
             />
           </div>
 
 
           <div className="space-y-2">
-            <label htmlFor="message" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Inquiry</label>
+            <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Inquiry</label>
             <textarea 
               id="message" 
               rows={4} 
               placeholder="How can we assist you?"
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
             ></textarea>
           </div>
 
           <button 
             type="submit" 
-            className="px-10 py-4 bg-corporate-900 text-white text-sm font-medium hover:bg-corporate-800 transition-colors tracking-wide"
+            className="px-10 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-300 tracking-wide"
           >
             Submit Inquiry
           </button>
@@ -389,7 +444,7 @@ const Contact: React.FC = () => (
 );
 
 const Footer: React.FC = () => (
-  <footer className="bg-corporate-900 text-white py-12">
+  <footer className="bg-[#181852] text-[#C9D2E3] py-12">
     <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-80 text-xs tracking-widest uppercase">
       <p>
         &copy; {new Date().getFullYear() + 1} Facilities, Incorporated. All rights reserved.
@@ -403,7 +458,7 @@ const Footer: React.FC = () => (
 
 export default function App() {
   return (
-    <div className="antialiased min-h-screen bg-corporate-50 font-sans">
+    <div className="antialiased min-h-screen bg-corporate-50 font-sans text-corporate-600">
       <Header />
       <main>
         <Hero />
