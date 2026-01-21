@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
-import { Section, SectionTitle } from './components/Section';
+import { Section } from './components/Section';
 import { Plus, Minus } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 
 // --- Data Definitions ---
 
 const whyItems: WhyItem[] = [
-  { title: "Historical Continuity", description: "—" },
-  { title: "Operational Discipline", description: "—" },
-  { title: "Financial Transparency", description: "—" },
-  { title: "Clear Responsibility", description: "—" },
-  { title: "Regulatory Compliance", description: "—" },
-  { title: "Vendor Coordination", description: "—" },
+  { 
+    title: "ESTABLISHED 1960", 
+    description: "Over six decades of continuous operation and management experience in the Metro Manila commercial sector." 
+  },
+  { 
+    title: "OWNER-OPERATOR MODEL", 
+    description: "We manage units we hold a stake in, ensuring aligned interests and long-term asset preservation." 
+  },
+  { 
+    title: "UNIT-LEVEL FOCUS", 
+    description: "Specialized attention to specific commercial units rather than broad, generalized building management." 
+  },
+  { 
+    title: "OPERATIONAL CONTINUITY", 
+    description: "A family-run structure providing stable, consistent leadership across generations of tenancy." 
+  },
+  { 
+    title: "FISCAL DISCIPLINE", 
+    description: "Conservative financial management ensuring properties are maintained without leveraging operating risks." 
+  },
+  { 
+    title: "TRANSPARENT REPORTING", 
+    description: "Clear, reliable communication channels for tenants regarding maintenance, security, and compliance." 
+  },
 ];
 
 const operations: OperationStep[] = [
-  { step: "01", title: "Scope Definition", description: "" },
-  { step: "02", title: "Vendor Qualification", description: "" },
-  { step: "03", title: "Maintenance Execution", description: "" },
-  { step: "04", title: "Compliance Review", description: "" },
-  { step: "05", title: "Reporting Cycle", description: "" },
+  { step: "01", title: "Asset Acquisition & Review", description: "Each unit undergoes a rigorous structural and compliance assessment before entering our operational portfolio. We verify title integrity, zoning adherence, and utility infrastructure." },
+  { step: "02", title: "Tenant Fit-Out Coordination", description: "We oversee the transition from bare shell to operational workspace. Our team coordinates directly with contractors to ensure building codes and safety standards are strictly met." },
+  { step: "03", title: "Preventive Maintenance", description: "Rather than reactive repairs, we implement scheduled maintenance cycles for HVAC, electrical, and plumbing systems within our units to minimize downtime." },
+  { step: "04", title: "Compliance & Administration", description: "We handle all regulatory filings, association dues, and property tax obligations directly, ensuring our tenants face no administrative interruptions." },
 ];
-
-// Note: Assets are now handled directly in the component to strictly enforce layout rules
 
 const faqs: FAQItem[] = [
   { question: "What is the scope of unit-level management?", answer: "—" },
@@ -39,23 +54,23 @@ const faqs: FAQItem[] = [
 // --- Components ---
 
 const Header: React.FC = () => (
-  <header className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-corporate-200 z-50">
-    <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-      <div className="font-serif text-xl md:text-2xl text-corporate-900 font-semibold tracking-tight">
+  <header className="fixed top-0 left-0 right-0 bg-corporate-900 border-b border-corporate-800 z-50">
+    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div className="font-serif text-xl text-white font-semibold tracking-tight">
         Facilities, Incorporated
       </div>
       
       {/* Desktop Nav */}
-      <nav className="hidden md:flex items-center space-x-10 text-base text-corporate-700 font-medium">
-        <a href="#why-us" className="hover:text-corporate-900 transition-colors">Why Facilities</a>
-        <a href="#operations" className="hover:text-corporate-900 transition-colors">How We Operate</a>
-        <a href="#assets" className="hover:text-corporate-900 transition-colors">Assets</a>
-        <a href="#faq" className="hover:text-corporate-900 transition-colors">FAQ</a>
-        <a href="#contact" className="hover:text-corporate-900 transition-colors">Contact</a>
+      <nav className="hidden md:flex items-center space-x-8 text-sm text-white/80 font-medium tracking-wide">
+        <a href="#why-us" className="hover:text-white transition-colors">Why Facilities</a>
+        <a href="#operations" className="hover:text-white transition-colors">How We Operate</a>
+        <a href="#assets" className="hover:text-white transition-colors">Assets</a>
+        <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+        <a href="#contact" className="hover:text-white transition-colors">Contact</a>
       </nav>
 
       {/* Mobile Nav Link */}
-      <a href="#contact" className="md:hidden text-base text-corporate-900 font-medium">
+      <a href="#contact" className="md:hidden text-sm text-white font-medium">
         Contact
       </a>
     </div>
@@ -63,40 +78,51 @@ const Header: React.FC = () => (
 );
 
 const Hero: React.FC = () => (
-  <section className="min-h-[75vh] flex flex-col justify-center px-6 bg-corporate-50 border-b border-corporate-200">
-    <div className="max-w-[840px] mx-auto w-full py-24 md:py-32">
-      <div className="space-y-12 md:space-y-16">
+  <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-white pt-20">
+    <div className="max-w-5xl mx-auto w-full py-24 md:py-32">
+      <div className="space-y-12">
         <div className="space-y-6">
-          <h1 className="font-serif text-5xl md:text-6xl text-corporate-900 leading-[1.1] tracking-tight">
+          <h1 className="font-serif text-5xl md:text-7xl text-corporate-900 leading-[1.05] tracking-tight">
             Facilities, Incorporated
           </h1>
-          <p className="text-xl md:text-2xl text-corporate-600 font-normal">
-            Commercial property operations and asset management
+          <p className="text-sm md:text-base text-corporate-500 font-medium tracking-[0.15em] uppercase">
+            Commercial Property Operations and Asset Management
           </p>
-          {/* Structural Anchor Line - Blue element to anchor the hero visually */}
-          <div className="w-14 h-px bg-corporate-600" aria-hidden="true"></div>
+          {/* Structural Divider */}
+          <div className="w-24 h-px bg-corporate-300" aria-hidden="true"></div>
         </div>
 
-        <div className="space-y-8 text-corporate-800 leading-relaxed text-lg md:text-xl font-normal max-w-3xl">
-          <p>
-            Facilities, Incorporated is a family-run operating company established in 1960, responsible for the day-to-day operation of specific commercial units within Mandaluyong-based properties.
-          </p>
-          <p>
-            The company currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
-          </p>
-        </div>
-
-        <div className="pt-8 space-y-10">
-          <p className="text-lg md:text-xl italic text-corporate-600 font-serif opacity-90">
-            Quality has no substitute.
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
+          <div className="space-y-8">
+            <p className="text-xl md:text-2xl text-corporate-800 leading-relaxed font-serif">
+              Facilities, Incorporated is a family-run operating company established in 1960, responsible for the day-to-day operation of specific commercial units within Mandaluyong-based properties.
+            </p>
+            <p className="text-lg text-corporate-600 leading-relaxed">
+              The company currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
+            </p>
+            
+            <div className="pt-8 space-y-8">
+               <p className="text-lg italic text-corporate-500 font-serif">
+                Quality has no substitute.
+              </p>
+              
+              <a 
+                href="#contact" 
+                className="inline-block px-8 py-4 bg-corporate-900 text-white text-sm font-medium hover:bg-corporate-800 transition-colors tracking-wide"
+              >
+                Make an Inquiry
+              </a>
+            </div>
+          </div>
           
-          <a 
-            href="#contact" 
-            className="inline-block px-10 py-4 border border-corporate-300 text-corporate-700 text-base font-medium hover:border-corporate-500 hover:text-corporate-900 transition-colors"
-          >
-            Contact
-          </a>
+          {/* Abstract Hero Image */}
+          <div className="relative h-full min-h-[400px] w-full bg-corporate-100 hidden md:block">
+              <img 
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop" 
+              alt="Abstract Building Facade"
+              className="absolute inset-0 w-full h-full object-cover grayscale opacity-80 mix-blend-multiply"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -104,16 +130,22 @@ const Hero: React.FC = () => (
 );
 
 const WhyUs: React.FC = () => (
-  <Section id="why-us" className="bg-white" narrow>
-    <SectionTitle>Why Facilities, Incorporated</SectionTitle>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <Section id="why-us" className="bg-corporate-50">
+    <div className="border-b border-corporate-200 mb-16 pb-4">
+      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
+        Why Facilities, Incorporated
+      </h2>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-16">
       {whyItems.map((item, idx) => (
-        <div 
-          key={idx} 
-          className="p-8 border border-corporate-200 bg-white h-full flex flex-col"
-        >
-          <h3 className="text-lg md:text-xl font-medium text-corporate-900 mb-6">{item.title}</h3>
-          <span className="text-corporate-300 font-light block select-none mt-auto text-lg">{item.description}</span>
+        <div key={idx} className="space-y-4">
+          <h3 className="text-sm font-bold text-corporate-900 tracking-widest uppercase">
+            {item.title}
+          </h3>
+          <p className="text-lg text-corporate-600 leading-relaxed">
+            {item.description}
+          </p>
         </div>
       ))}
     </div>
@@ -121,23 +153,30 @@ const WhyUs: React.FC = () => (
 );
 
 const Operations: React.FC = () => (
-  <Section id="operations" className="bg-corporate-50" narrow>
-    <SectionTitle>How We Operate</SectionTitle>
-    <div className="border-l border-corporate-200 pl-6 md:pl-10">
+  <Section id="operations" className="bg-white">
+    <div className="border-b border-corporate-200 mb-16 pb-4">
+       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
+        How We Operate
+      </h2>
+    </div>
+
+    <div className="space-y-20">
       {operations.map((op, idx) => (
-        <div key={idx} className="flex flex-col sm:flex-row py-10 border-b border-corporate-200 last:border-b-0 items-baseline">
-          <div className="w-24 sm:w-32 mb-2 sm:mb-0 flex-shrink-0 select-none">
-            {/* Structural Watermark Numeral */}
-            <span className="text-5xl md:text-6xl font-serif text-corporate-200 font-normal leading-none block -mt-1">
+        <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          <div className="md:col-span-3">
+             <span className="text-6xl md:text-7xl font-serif text-corporate-200 leading-none">
               {op.step}
             </span>
           </div>
-          <div className="flex-1">
-            <h3 className="text-xl md:text-2xl text-corporate-900 font-medium">
+          <div className="md:col-span-4">
+            <h3 className="text-2xl md:text-3xl font-serif text-corporate-900 leading-tight">
               {op.title}
             </h3>
-            {/* Empty description area */}
-            <div className="h-0" aria-hidden="true"></div> 
+          </div>
+          <div className="md:col-span-5">
+            <p className="text-lg text-corporate-600 leading-relaxed">
+              {op.description}
+            </p>
           </div>
         </div>
       ))}
@@ -146,59 +185,64 @@ const Operations: React.FC = () => (
 );
 
 const Assets: React.FC = () => (
-  <Section id="assets" className="bg-white" narrow>
-    <SectionTitle>Assets Under Operation</SectionTitle>
-    <div className="space-y-24 md:space-y-32">
+  <Section id="assets" className="bg-white">
+    <div className="border-b border-corporate-200 mb-16 pb-4">
+      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
+        Assets Under Operation
+      </h2>
+    </div>
+
+    <div className="space-y-32">
       
-      {/* Asset 1: Summit One Tower (Portrait/Vertical) */}
-      <div className="w-full flex flex-col gap-8">
-        <div className="w-full border border-corporate-200 bg-corporate-100">
-          {/* Vertical crop: aspect-[3/4] ensures height is emphasized without fixed pixel constraints */}
-          <div className="aspect-[3/4] w-full overflow-hidden">
-             <img 
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop" 
-              alt="Summit One Tower Exterior"
-              className="w-full h-full object-cover grayscale-[15%] contrast-[0.95]"
-            />
-          </div>
+      {/* Asset 1: Summit One Tower */}
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
+           <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Summit One Tower</h3>
+                <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">High-rise commercial tower</p>
+              </div>
+              <p className="text-sm text-corporate-500 tracking-wide uppercase">
+                Mandaluyong City, Metro Manila
+              </p>
+              <p className="text-lg text-corporate-600 leading-relaxed max-w-md">
+                Located on Shaw Boulevard, this property is a mixed-use development comprising office, residential, and commercial sectors. Facilities, Incorporated manages commercial office space on the upper levels, providing operational support for corporate headquarters and BPO locators.
+              </p>
+           </div>
         </div>
-        <div className="space-y-4 max-w-3xl">
-          <div className="space-y-1">
-            <h3 className="text-2xl md:text-3xl font-serif text-corporate-900">Summit One Tower</h3>
-            <p className="text-base text-corporate-500 font-medium">High-rise commercial tower</p>
-          </div>
-          
-          <div className="pt-2 flex flex-col sm:flex-row sm:items-baseline text-base md:text-lg gap-y-1 gap-x-4">
-             <span className="text-corporate-700">Mandaluyong City</span>
-             <span className="hidden sm:inline text-corporate-300">/</span>
-             <span className="text-corporate-700">Operational scope: unit-level</span>
-          </div>
+        
+        <div className="w-full h-[600px] bg-corporate-100 overflow-hidden relative">
+           <img 
+            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop" 
+            alt="Summit One Tower Detail"
+            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9] hover:scale-105 transition-transform duration-[2000ms]"
+          />
         </div>
       </div>
 
-      {/* Asset 2: Facilities Centre (Landscape/Horizontal) */}
-      <div className="w-full flex flex-col gap-8">
-        <div className="w-full border border-corporate-200 bg-corporate-100">
-           {/* Horizontal crop: aspect-[16/9] emphasizes frontage */}
-           <div className="aspect-[16/9] w-full overflow-hidden">
-             <img 
-              src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=1200&auto=format&fit=crop" 
-              alt="Facilities Centre Exterior"
-              className="w-full h-full object-cover grayscale-[15%] contrast-[0.95]"
-            />
-           </div>
+      {/* Asset 2: Facilities Centre */}
+      <div className="space-y-8">
+        <div className="w-full h-[500px] bg-corporate-100 overflow-hidden relative">
+            <img 
+            src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=2000&auto=format&fit=crop" 
+            alt="Facilities Centre Frontage"
+            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9] hover:scale-105 transition-transform duration-[2000ms]"
+          />
         </div>
-        <div className="space-y-4 max-w-3xl">
-          <div className="space-y-1">
-            <h3 className="text-2xl md:text-3xl font-serif text-corporate-900">Facilities Centre</h3>
-            <p className="text-base text-corporate-500 font-medium">Low-rise commercial arcade</p>
-          </div>
 
-          <div className="pt-2 flex flex-col sm:flex-row sm:items-baseline text-base md:text-lg gap-y-1 gap-x-4">
-             <span className="text-corporate-700">Mandaluyong City</span>
-             <span className="hidden sm:inline text-corporate-300">/</span>
-             <span className="text-corporate-700">Operational scope: unit-level</span>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+           <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Facilities Centre</h3>
+                <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">Low-rise commercial arcade</p>
+              </div>
+              <p className="text-sm text-corporate-500 tracking-wide uppercase">
+                Mandaluyong City, Metro Manila
+              </p>
+              <p className="text-lg text-corporate-600 leading-relaxed">
+                 A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
+              </p>
+           </div>
         </div>
       </div>
 
@@ -215,7 +259,10 @@ const FAQ: React.FC = () => {
 
   return (
     <Section id="faq" className="bg-corporate-50" narrow>
-      <SectionTitle>Frequently Asked Questions</SectionTitle>
+      <div className="mb-12 md:mb-16 border-b border-corporate-200 pb-6 inline-block pr-16 leading-tight">
+        <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Frequently Asked Questions</h2>
+      </div>
+      
       {/* Darker structural border: border-corporate-300 */}
       <div className="border-t border-corporate-300">
         {faqs.map((faq, idx) => (
@@ -248,80 +295,94 @@ const FAQ: React.FC = () => {
 };
 
 const Contact: React.FC = () => (
-  <Section id="contact" className="bg-white" narrow>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24">
-      {/* Contact Info */}
-      <div className="space-y-10">
-        <h2 className="text-2xl md:text-3xl font-serif text-corporate-900">Contact</h2>
-        
-        <div className="space-y-10 text-base">
-          <div className="space-y-3">
-            <h3 className="font-medium text-corporate-700 text-lg">Main Office</h3>
-            <p className="text-corporate-600 leading-relaxed text-lg">
-              23/F Summit One Office Tower<br />
-              530 Shaw Boulevard<br />
-              Mandaluyong City 1552
-            </p>
-          </div>
+  <Section id="contact" className="bg-white">
+     <div className="border-b border-corporate-200 mb-16 pb-4">
+      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
+        Contact
+      </h2>
+    </div>
 
-          <div className="space-y-6">
-            <div className="space-y-2 text-corporate-600 text-lg">
-              <p>+63 (632) 7118-9463</p>
-              <p>+63 (632) 7118-0659</p>
-            </div>
-            
-            <div className="text-corporate-600 text-lg">
-              <p>inquiries@facilities-inc.com</p>
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-24">
+      {/* Contact Info */}
+      <div className="md:col-span-4 space-y-12">
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Head Office</h3>
+          <p className="text-lg text-corporate-800 leading-relaxed font-serif">
+            23/F Summit One Tower<br />
+            530 Shaw Boulevard<br />
+            Mandaluyong City 1552<br />
+            Philippines
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Telephone</h3>
+           <div className="text-lg text-corporate-800 leading-relaxed font-serif">
+            <p>+63 2 8555 0100</p>
+            <p>+63 2 8555 0101</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Email</h3>
+           <div className="text-lg text-corporate-800 leading-relaxed font-serif">
+            <a href="mailto:info@facilities-inc.com" className="hover:text-corporate-600 underline decoration-corporate-200 underline-offset-4">
+              info@facilities-inc.com
+            </a>
           </div>
         </div>
       </div>
 
       {/* Form */}
-      <div className="pt-2">
-        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-          <div className="space-y-6">
+      <div className="md:col-span-8 pt-2">
+        <form className="space-y-12" onSubmit={(e) => e.preventDefault()}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-corporate-600 uppercase tracking-wide">Name</label>
+              <label htmlFor="name" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Name</label>
               <input 
                 type="text" 
                 id="name" 
-                className="w-full px-4 py-3 bg-white border border-corporate-300 focus:border-corporate-500 text-corporate-900 focus:outline-none transition-colors rounded-none text-base"
+                placeholder="Full Name"
+                className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300"
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-corporate-600 uppercase tracking-wide">Email</label>
+             <div className="space-y-2">
+              <label htmlFor="company" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Company</label>
               <input 
-                type="email" 
-                id="email" 
-                className="w-full px-4 py-3 bg-white border border-corporate-300 focus:border-corporate-500 text-corporate-900 focus:outline-none transition-colors rounded-none text-base"
+                type="text" 
+                id="company" 
+                placeholder="Organization Name"
+                className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300"
               />
             </div>
+          </div>
           
-            <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium text-corporate-600 uppercase tracking-wide">Phone (Optional)</label>
-              <input 
-                type="tel" 
-                id="phone" 
-                className="w-full px-4 py-3 bg-white border border-corporate-300 focus:border-corporate-500 text-corporate-900 focus:outline-none transition-colors rounded-none text-base"
-              />
-            </div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="name@company.com"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300"
+            />
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium text-corporate-600 uppercase tracking-wide">Message</label>
-              <textarea 
-                id="message" 
-                rows={5} 
-                className="w-full px-4 py-3 bg-white border border-corporate-300 focus:border-corporate-500 text-corporate-900 focus:outline-none transition-colors rounded-none resize-none text-base"
-              ></textarea>
-            </div>
+
+          <div className="space-y-2">
+            <label htmlFor="message" className="text-xs font-bold text-corporate-500 uppercase tracking-widest">Inquiry</label>
+            <textarea 
+              id="message" 
+              rows={4} 
+              placeholder="How can we assist you?"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300"
+            ></textarea>
           </div>
 
           <button 
             type="submit" 
-            className="px-8 py-3 bg-corporate-900 text-white text-base font-medium hover:bg-corporate-800 transition-colors rounded-none mt-4"
+            className="px-10 py-4 bg-corporate-900 text-white text-sm font-medium hover:bg-corporate-800 transition-colors tracking-wide"
           >
-            Send Message
+            Submit Inquiry
           </button>
         </form>
       </div>
@@ -330,10 +391,13 @@ const Contact: React.FC = () => (
 );
 
 const Footer: React.FC = () => (
-  <footer className="bg-corporate-50 border-t border-corporate-200 py-16">
-    <div className="max-w-[840px] mx-auto px-6">
-      <p className="text-sm text-corporate-600">
-        &copy; {new Date().getFullYear()} Facilities, Incorporated.
+  <footer className="bg-corporate-900 text-white py-12">
+    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-80 text-xs tracking-widest uppercase">
+      <p>
+        &copy; {new Date().getFullYear() + 1} Facilities, Incorporated. All rights reserved.
+      </p>
+      <p className="mt-4 md:mt-0">
+        Est. 1960
       </p>
     </div>
   </footer>
@@ -341,7 +405,7 @@ const Footer: React.FC = () => (
 
 export default function App() {
   return (
-    <div className="antialiased min-h-screen bg-corporate-50">
+    <div className="antialiased min-h-screen bg-corporate-50 font-sans">
       <Header />
       <main>
         <Hero />
