@@ -192,59 +192,57 @@ const Assets: React.FC = () => (
       </h2>
     </div>
 
-    <div className="space-y-32">
+    <div className="space-y-24 md:space-y-32">
       
       {/* Asset 1: Summit One Tower */}
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
-           <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Summit One Tower</h3>
-                <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">High-rise commercial tower</p>
-              </div>
-              <p className="text-sm text-corporate-500 tracking-wide uppercase">
-                Mandaluyong City, Metro Manila
-              </p>
-              <p className="text-lg text-corporate-600 leading-relaxed max-w-md">
-                Located on Shaw Boulevard, this property is a mixed-use development comprising office, residential, and commercial sectors. Facilities, Incorporated manages commercial office space on the upper levels, providing operational support for corporate headquarters and BPO locators.
-              </p>
-           </div>
+      <figure className="flex flex-col gap-8 group">
+        {/* Vertical/Portrait Aspect Ratio */}
+        <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[4/5]">
+           <img 
+            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop" 
+            alt="Summit One Tower Detail"
+            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9]"
+          />
         </div>
         
-        <div className="w-full h-[600px] bg-corporate-100 overflow-hidden relative">
-           <img 
-            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop" 
-            alt="Summit One Tower Detail"
-            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9] hover:scale-105 transition-transform duration-[2000ms]"
-          />
-        </div>
-      </div>
+        <figcaption className="space-y-6 max-w-2xl">
+           <div className="space-y-2">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Summit One Tower</h3>
+              <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">High-rise commercial tower</p>
+            </div>
+            <p className="text-sm text-corporate-500 tracking-wide uppercase">
+              Mandaluyong City, Metro Manila
+            </p>
+            <p className="text-lg text-corporate-600 leading-relaxed">
+              Located on Shaw Boulevard, this property is a mixed-use development comprising office, residential, and commercial sectors. Facilities, Incorporated manages commercial office space on the upper levels, providing operational support for corporate headquarters and BPO locators.
+            </p>
+        </figcaption>
+      </figure>
 
       {/* Asset 2: Facilities Centre */}
-      <div className="space-y-8">
-        <div className="w-full h-[500px] bg-corporate-100 overflow-hidden relative">
+      <figure className="flex flex-col gap-8 group">
+         {/* Horizontal Aspect Ratio */}
+        <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img 
-            src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=2000&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=1200&auto=format&fit=crop" 
             alt="Facilities Centre Frontage"
-            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9] hover:scale-105 transition-transform duration-[2000ms]"
+            className="w-full h-full object-cover grayscale-[20%] contrast-[0.9]"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-           <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Facilities Centre</h3>
-                <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">Low-rise commercial arcade</p>
-              </div>
-              <p className="text-sm text-corporate-500 tracking-wide uppercase">
-                Mandaluyong City, Metro Manila
-              </p>
-              <p className="text-lg text-corporate-600 leading-relaxed">
-                 A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
-              </p>
-           </div>
-        </div>
-      </div>
+        <figcaption className="space-y-6 max-w-2xl">
+           <div className="space-y-2">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Facilities Centre</h3>
+              <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">Low-rise commercial arcade</p>
+            </div>
+            <p className="text-sm text-corporate-500 tracking-wide uppercase">
+              Mandaluyong City, Metro Manila
+            </p>
+            <p className="text-lg text-corporate-600 leading-relaxed">
+               A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
+            </p>
+        </figcaption>
+      </figure>
 
     </div>
   </Section>
