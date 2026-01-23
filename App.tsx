@@ -7,28 +7,28 @@ import { WhyItem, OperationStep, FAQItem } from './types';
 
 const whyItems: WhyItem[] = [
   { 
-    title: "ESTABLISHED 1960", 
-    description: "Over six decades of continuous operation and management experience in the Metro Manila commercial sector." 
+    title: "Established Continuity", 
+    description: "Operating since 1960 with over six decades of continuous operation and management experience in the Metro Manila commercial sector." 
   },
   { 
-    title: "OWNER-OPERATOR MODEL", 
-    description: "We manage units we hold a stake in, ensuring aligned interests and long-term asset preservation." 
+    title: "Defined Scope", 
+    description: "Operations are limited to specific units under management, ensuring clarity of responsibility." 
   },
   { 
-    title: "UNIT-LEVEL FOCUS", 
-    description: "Specialized attention to specific commercial units rather than broad, generalized building management." 
+    title: "On-Site Operations", 
+    description: "Day-to-day building operations are handled directly for managed units within Summit One Tower and Facilities Centre." 
   },
   { 
-    title: "OPERATIONAL CONTINUITY", 
-    description: "A family-run structure providing stable, consistent leadership across generations of tenancy." 
+    title: "Tenant Interface", 
+    description: "Primary operational contact for tenants occupying managed units." 
   },
   { 
-    title: "FISCAL DISCIPLINE", 
-    description: "Conservative financial management ensuring properties are maintained without leveraging operating risks." 
+    title: "Utilities Coordination", 
+    description: "Coordination of power, water, and telecommunications for managed units." 
   },
   { 
-    title: "TRANSPARENT REPORTING", 
-    description: "Clear, reliable communication channels for tenants regarding maintenance, security, and compliance." 
+    title: "Local Coordination", 
+    description: "Coordination with relevant regulatory offices and LGUs where required for managed units." 
   },
 ];
 
