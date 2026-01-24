@@ -1,6 +1,8 @@
+import React from 'react';
+
 export interface FAQItem {
   question: string;
-  answer: string; // Intentionally left blank or "—" as per requirements
+  answer: React.ReactNode;
 }
 
 export interface WhyItem {

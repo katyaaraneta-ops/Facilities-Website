@@ -40,15 +40,98 @@ const operations: OperationStep[] = [
 ];
 
 const faqs: FAQItem[] = [
-  { question: "What is the scope of unit-level management?", answer: "—" },
-  { question: "How are vendor payments processed?", answer: "—" },
-  { question: "What represents a standard reporting period?", answer: "—" },
-  { question: "Do you manage common areas or building structures?", answer: "—" },
-  { question: "What are the requirements for vendor accreditation?", answer: "—" },
-  { question: "How are emergency repairs handled?", answer: "—" },
-  { question: "Is there an escalation matrix for tenants?", answer: "—" },
-  { question: "What is the protocol for lease renewals?", answer: "—" },
-  { question: "How are utility sub-meter readings verified?", answer: "—" },
+  { 
+    question: "What does Facilities, Incorporated do?", 
+    answer: (
+      <>
+        Facilities, Incorporated operates specific commercial units within properties under its care.
+        <br />
+        Our role focuses on day-to-day unit-level operations, coordination, and administration.
+      </>
+    )
+  },
+  { 
+    question: "Does Facilities, Incorporated manage entire buildings?", 
+    answer: "Facilities, Incorporated operates identified units only, not entire buildings or third-party portfolios." 
+  },
+  { 
+    question: "Is Facilities, Incorporated a real estate broker?", 
+    answer: (
+      <>
+        Facilities, Incorporated does not act as a real estate broker.
+        <br />
+        However, Facilities, Incorporated works with brokers and leasing agents in relation to units under its operation. Parties interested in working with our available units may contact us to coordinate listings, viewings, or leasing discussions.
+      </>
+    )
+  },
+  { 
+    question: "Does Facilities, Incorporated market property to the public?", 
+    answer: (
+      <>
+        Facilities, Incorporated may market its own managed units where required.
+        <br />
+        It does not market property on behalf of third parties.
+      </>
+    )
+  },
+  { 
+    question: "Does Facilities, Incorporated sell property?", 
+    answer: (
+      <>
+        Facilities, Incorporated does not sell property. Residential house-and-lot offerings in Lipa are handled by our sister company, ADEL.
+        <br />
+        <span className="italic">(Coming soon.)</span>
+      </>
+    )
+  },
+  { 
+    question: "Does Facilities, Incorporated provide design or architectural services?", 
+    answer: (
+      <>
+        Facilities, Incorporated does not provide architectural or design services.
+        <br />
+        Bespoke development advisory and consulting services may be directed to:
+        <br />
+        Katya Araneta, <a href="mailto:katya.araneta@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-300 underline-offset-2 transition-colors">katya.araneta@gmail.com</a>
+      </>
+    )
+  },
+  { 
+    question: "Does Facilities, Incorporated handle interior fit-outs?", 
+    answer: (
+      <>
+        Facilities, Incorporated may coordinate interior fit-outs where required.
+        <br />
+        All construction and design work is carried out by third-party professionals.
+      </>
+    )
+  },
+  { 
+    question: "What properties does Facilities, Incorporated currently operate?", 
+    answer: (
+      <>
+        Facilities, Incorporated currently operates units within:
+        <ul className="list-disc pl-5 my-2 space-y-1">
+          <li>Summit One Tower, Mandaluyong City</li>
+          <li>Facilities Centre, Mandaluyong City</li>
+        </ul>
+        Additional properties may be added as operations expand.
+      </>
+    )
+  },
+  { 
+    question: "Who should contact Facilities, Incorporated?", 
+    answer: (
+      <>
+        Facilities, Incorporated is the appropriate contact for:
+        <ul className="list-disc pl-5 my-2 space-y-1">
+          <li>Tenants occupying managed units</li>
+          <li>Brokers and leasing agents coordinating on managed units</li>
+          <li>Utilities, service providers, and relevant local authorities</li>
+        </ul>
+      </>
+    )
+  },
 ];
 
 // --- Components ---
@@ -348,12 +431,14 @@ const FAQ: React.FC = () => {
           <div key={idx} className="border-b border-corporate-200">
             <button 
               onClick={() => toggle(idx)}
+              // Added spellCheck={false} to button to prevent browser spellcheck artifacts on "fit-outs"
+              spellCheck={false}
               // Reduced top padding for the first item (pt-3) to remove the gap between the header line and the first question
               className={`w-full flex items-start justify-between text-left focus:outline-none group ${idx === 0 ? 'pt-3 pb-6' : 'py-6'}`}
               aria-expanded={openIndex === idx}
             >
-              {/* Increased size to text-xl */}
-              <span className="text-xl text-corporate-700 font-normal pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors">
+              {/* Increased size to text-xl, added no-underline to ensure no text decoration */}
+              <span className="text-xl text-corporate-700 font-normal pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors no-underline">
                 {faq.question}
               </span>
               {/* Institutional Navy Plus Icon - muted to 300/500 */}
@@ -363,7 +448,8 @@ const FAQ: React.FC = () => {
             </button>
             {openIndex === idx && (
               <div className="pb-6 pr-8 text-corporate-500 text-base leading-relaxed">
-                <p>{faq.answer}</p>
+                {/* Changed from <p> wrapper to direct render to support JSX structure in answers */}
+                {faq.answer}
               </div>
             )}
           </div>
