@@ -369,13 +369,13 @@ const Assets: React.FC = () => (
         </div>
         
         <figcaption className="space-y-6 max-w-2xl">
-           <div className="space-y-2">
-              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Summit One Tower</h3>
-              <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">High-rise commercial tower</p>
+           <div className="space-y-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">Summit One Tower</h3>
+              <div className="text-base text-corporate-500 font-medium space-y-0.5">
+                <p>High-rise commercial tower</p>
+                <p>Mandaluyong City, Metro Manila</p>
+              </div>
             </div>
-            <p className="text-sm text-corporate-500 tracking-wide uppercase">
-              Mandaluyong City, Metro Manila
-            </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
               Located on Shaw Boulevard, this PEZA-accredited property comprises dedicated office and commercial spaces under Facilities, Incorporated’s operational management.
             </p>
@@ -394,13 +394,13 @@ const Assets: React.FC = () => (
         </div>
 
         <figcaption className="space-y-6 max-w-2xl">
-           <div className="space-y-2">
-              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900">Facilities Centre</h3>
-              <p className="text-sm text-corporate-400 font-medium tracking-widest uppercase">Low-rise commercial arcade</p>
+           <div className="space-y-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">Facilities Centre</h3>
+              <div className="text-base text-corporate-500 font-medium space-y-0.5">
+                <p>Low-rise commercial arcade</p>
+                <p>Mandaluyong City, Metro Manila</p>
+              </div>
             </div>
-            <p className="text-sm text-corporate-500 tracking-wide uppercase">
-              Mandaluyong City, Metro Manila
-            </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
                A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
             </p>
