@@ -483,16 +483,18 @@ const Contact: React.FC = () => (
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Telephone</h3>
            <div className="text-lg text-corporate-700 leading-relaxed font-serif">
-            <p>+63 2 8555 0100</p>
-            <p>+63 2 8555 0101</p>
+            <p>+63 2 7118-9463</p>
+            <p>+63 2 7118-0659</p>
+            <p>+63 2 7005-6042</p>
+            <p>+63 2 7718-0147</p>
           </div>
         </div>
         
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email</h3>
            <div className="text-lg text-corporate-700 leading-relaxed font-serif">
-            <a href="mailto:info@facilities-inc.com" className="hover:text-corporate-900 underline decoration-corporate-200 underline-offset-4 transition-colors">
-              info@facilities-inc.com
+            <a href="mailto:mercy.laurenciano@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-200 underline-offset-4 transition-colors">
+              mercy.laurenciano@gmail.com
             </a>
           </div>
         </div>
@@ -537,7 +539,7 @@ const Contact: React.FC = () => (
             <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Inquiry</label>
             <textarea 
               id="message" 
-              rows={4} 
+              rows={8} 
               placeholder="How can we assist you?"
               className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
             ></textarea>
