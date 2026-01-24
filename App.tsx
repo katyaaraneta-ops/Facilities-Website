@@ -371,9 +371,8 @@ const Assets: React.FC = () => (
         <figcaption className="space-y-6 max-w-2xl">
            <div className="space-y-1">
               <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">Summit One Tower</h3>
-              <div className="text-base text-corporate-500 font-medium space-y-0.5">
+              <div className="text-lg text-corporate-500 font-medium space-y-0.5">
                 <p>High-rise commercial tower</p>
-                <p>Mandaluyong City, Metro Manila</p>
               </div>
             </div>
             <p className="text-lg text-corporate-600 leading-relaxed">
@@ -396,9 +395,8 @@ const Assets: React.FC = () => (
         <figcaption className="space-y-6 max-w-2xl">
            <div className="space-y-1">
               <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">Facilities Centre</h3>
-              <div className="text-base text-corporate-500 font-medium space-y-0.5">
+              <div className="text-lg text-corporate-500 font-medium space-y-0.5">
                 <p>Low-rise commercial arcade</p>
-                <p>Mandaluyong City, Metro Manila</p>
               </div>
             </div>
             <p className="text-lg text-corporate-600 leading-relaxed">
@@ -460,150 +458,180 @@ const FAQ: React.FC = () => {
   );
 };
 
-const Contact: React.FC = () => (
-  <Section
-    id="contact"
-    className="bg-white border-t border-corporate-200 md:!py-12 lg:!py-32"
-  >
-    <div className="border-b border-corporate-200 mb-16 pb-4">
-      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
-        Contact
-      </h2>
-    </div>
+const Contact: React.FC = () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
-    {/* ONE form, functioning as the grid container */}
-    <form
-      className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-[auto_auto_auto] gap-16 md:gap-24 items-start"
-      action="/api/contact"
-      method="post"
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Submission failed');
+      }
+
+      const data = await response.json();
+
+      if (data.ok) {
+        alert('Thank you. Your inquiry has been sent.');
+        form.reset();
+      } else {
+        alert(data.error || 'Please fill out all required fields.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('There was an error sending your inquiry. Please try again.');
+    }
+  };
+
+  return (
+    <Section
+      id="contact"
+      className="bg-white border-t border-corporate-200 md:!py-12 lg:!py-32"
     >
-      {/* --- RIGHT COLUMN GROUPS (Form Fields) --- */}
-      {/* DOM Order 1: Name + Company -> Desktop Row 1 Right */}
-      <div className="md:col-span-8 md:col-start-5 md:row-start-1 grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="space-y-2">
-          <label htmlFor="name" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-            Name
+      <div className="border-b border-corporate-200 mb-16 pb-4">
+        <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
+          Contact
+        </h2>
+      </div>
+
+      {/* ONE form, functioning as the grid container */}
+      <form
+        className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-[auto_auto_auto] gap-16 md:gap-24 items-start"
+        onSubmit={handleSubmit}
+      >
+        {/* --- RIGHT COLUMN GROUPS (Form Fields) --- */}
+        {/* DOM Order 1: Name + Company -> Desktop Row 1 Right */}
+        <div className="md:col-span-8 md:col-start-5 md:row-start-1 grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Full Name"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="company" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+              Company
+            </label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              placeholder="Organization Name"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
+            />
+          </div>
+        </div>
+
+        {/* DOM Order 2: Email -> Desktop Row 2 Right */}
+        <div className="md:col-span-8 md:col-start-5 md:row-start-2 space-y-2">
+          <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            Email Address
           </label>
           <input
-            type="text"
-            id="name"
-            name="name"
-            placeholder="Full Name"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="name@company.com"
             className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
           />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="company" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-            Company
-          </label>
-          <input
-            type="text"
-            id="company"
-            name="company"
-            placeholder="Organization Name"
-            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
-          />
-        </div>
-      </div>
-
-      {/* DOM Order 2: Email -> Desktop Row 2 Right */}
-      <div className="md:col-span-8 md:col-start-5 md:row-start-2 space-y-2">
-        <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-          Email Address
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="name@company.com"
-          className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
-        />
-      </div>
-
-      {/* DOM Order 3: Inquiry + Button -> Desktop Row 3 Right */}
-      {/* Grouping textarea and button together */}
-      <div className="md:col-span-8 md:col-start-5 md:row-start-3 grid gap-12">
-        <div className="space-y-2">
-          <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-            Inquiry
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows={8}
-            placeholder="How can we assist you?"
-            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
-          />
-        </div>
-
-        <div className="pt-2">
-          <button
-            type="submit"
-            className="px-10 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-300 tracking-wide"
-          >
-            Submit Inquiry
-          </button>
-        </div>
-      </div>
-
-      {/* --- LEFT COLUMN GROUPS (Info) --- */}
-      {/* DOM Order 4: Head Office -> Desktop Row 1 Left */}
-      <div className="md:col-span-4 md:col-start-1 md:row-start-1 space-y-4">
-        <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-          Head Office
-        </h3>
-        <p className="text-lg text-corporate-700 leading-relaxed font-serif">
-          23/F Summit One Tower<br />
-          530 Shaw Boulevard<br />
-          Mandaluyong City 1552<br />
-          Philippines
-        </p>
-      </div>
-
-      {/* DOM Order 5: Email Info -> Desktop Row 2 Left */}
-      <div className="md:col-span-4 md:col-start-1 md:row-start-2 space-y-4">
-        <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-          Email
-        </h3>
-        <div className="text-lg text-corporate-700 leading-relaxed font-serif">
-          <a
-            href="mailto:mercy.laurenciano@gmail.com"
-            className="hover:text-corporate-900 underline decoration-corporate-200 underline-offset-4 transition-colors"
-          >
-            mercy.laurenciano@gmail.com
-          </a>
-        </div>
-      </div>
-
-      {/* DOM Order 6: Property Inquiries -> Desktop Row 3 Left */}
-      <div className="md:col-span-4 md:col-start-1 md:row-start-3 space-y-4">
-        <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-          Property Inquiries
-        </h3>
-        <div className="text-lg text-corporate-700 leading-relaxed font-serif space-y-6">
-          <div>
-            <span className="block font-medium text-corporate-900">
-              Sylvia
-            </span>
-            <span className="block text-corporate-600">
-              +63 917 523 8157
-            </span>
+        {/* DOM Order 3: Inquiry + Button -> Desktop Row 3 Right */}
+        {/* Grouping textarea and button together */}
+        <div className="md:col-span-8 md:col-start-5 md:row-start-3 grid gap-12">
+          <div className="space-y-2">
+            <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+              Inquiry
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows={8}
+              placeholder="How can we assist you?"
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
+            />
           </div>
-          <div>
-            <span className="block font-medium text-corporate-900">
-              Mercy
-            </span>
-            <span className="block text-corporate-600">
-              +63 933 538 3815
-            </span>
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              className="px-10 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-300 tracking-wide"
+            >
+              Submit Inquiry
+            </button>
           </div>
         </div>
-      </div>
 
-    </form>
-  </Section>
-);
+        {/* --- LEFT COLUMN GROUPS (Info) --- */}
+        {/* DOM Order 4: Head Office -> Desktop Row 1 Left */}
+        <div className="md:col-span-4 md:col-start-1 md:row-start-1 space-y-4">
+          <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            Head Office
+          </h3>
+          <p className="text-lg text-corporate-700 leading-relaxed font-serif">
+            23/F Summit One Tower<br />
+            530 Shaw Boulevard<br />
+            Mandaluyong City 1552<br />
+            Philippines
+          </p>
+        </div>
+
+        {/* DOM Order 5: Email Info -> Desktop Row 2 Left */}
+        <div className="md:col-span-4 md:col-start-1 md:row-start-2 space-y-4">
+          <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            Email
+          </h3>
+          <div className="text-lg text-corporate-700 leading-relaxed font-serif">
+            <a
+              href="mailto:mercy.laurenciano@gmail.com"
+              className="hover:text-corporate-900 underline decoration-corporate-200 underline-offset-4 transition-colors"
+            >
+              mercy.laurenciano@gmail.com
+            </a>
+          </div>
+        </div>
+
+        {/* DOM Order 6: Property Inquiries -> Desktop Row 3 Left */}
+        <div className="md:col-span-4 md:col-start-1 md:row-start-3 space-y-4">
+          <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            Property Inquiries
+          </h3>
+          <div className="text-lg text-corporate-700 leading-relaxed font-serif space-y-6">
+            <div>
+              <span className="block font-medium text-corporate-900">
+                Sylvia
+              </span>
+              <span className="block text-corporate-600">
+                +63 917 523 8157
+              </span>
+            </div>
+            <div>
+              <span className="block font-medium text-corporate-900">
+                Mercy
+              </span>
+              <span className="block text-corporate-600">
+                +63 933 538 3815
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </Section>
+  );
+};
 
 const Footer: React.FC = () => (
   <footer className="bg-[#181852] text-[#C9D2E3] py-12">
