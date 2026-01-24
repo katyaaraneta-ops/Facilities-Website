@@ -362,9 +362,9 @@ const Assets: React.FC = () => (
         {/* Constrained width to ~720px on desktop, centered */}
         <div className="w-full md:max-w-[720px] mx-auto bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[10/9]">
            <img 
-            src="https://placehold.co/1200x1080?text=Summit+One+Tower" 
+            src="https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=1000&auto=format&fit=crop" 
             alt="Summit One Tower Detail"
-            className="w-full h-full object-cover grayscale-[40%] contrast-[0.95]"
+            className="w-full h-full object-cover"
           />
         </div>
         
@@ -386,9 +386,9 @@ const Assets: React.FC = () => (
          {/* Horizontal Aspect Ratio */}
         <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img 
-            src="https://placehold.co/1600x900?text=Facilities+Centre" 
+            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1600&auto=format&fit=crop" 
             alt="Facilities Centre Frontage"
-            className="w-full h-full object-cover grayscale-[40%] contrast-[0.95]"
+            className="w-full h-full object-cover"
           />
         </div>
 
