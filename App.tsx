@@ -11,8 +11,8 @@ const whyItems: WhyItem[] = [
     description: "Operating since 1960 with over six decades of continuous operation and management experience in the Metro Manila commercial sector." 
   },
   { 
-    title: "Defined Scope", 
-    description: "Operations are limited to specific units under management, ensuring clarity of responsibility." 
+    title: "Fiscal Discipline", 
+    description: "Conservative financial management ensuring properties are maintained without leveraging operating risks." 
   },
   { 
     title: "On-Site Operations", 
@@ -35,8 +35,8 @@ const whyItems: WhyItem[] = [
 const operations: OperationStep[] = [
   { step: "01", title: "Asset Acquisition & Review", description: "Each unit undergoes a rigorous structural and compliance assessment before entering our operational portfolio. We verify title integrity, zoning adherence, and utility infrastructure." },
   { step: "02", title: "Tenant Fit-Out Coordination", description: "We oversee the transition from bare shell to operational workspace. Our team coordinates directly with contractors to ensure building codes and safety standards are strictly met." },
-  { step: "03", title: "Preventive Maintenance", description: "Rather than reactive repairs, we implement scheduled maintenance cycles for HVAC, electrical, and plumbing systems within our units to minimize downtime." },
-  { step: "04", title: "Compliance & Administration", description: "We handle all regulatory filings, association dues, and property tax obligations directly, ensuring our tenants face no administrative interruptions." },
+  { step: "03", title: "Utilities & Compliance", description: "We coordinate directly with utility providers and relevant local authorities to support the operation of managed units." },
+  { step: "04", title: "Compliance & Administration", description: "We support unit-level administrative processes through coordination with relevant parties, where applicable." },
 ];
 
 const faqs: FAQItem[] = [
@@ -336,18 +336,20 @@ const FAQ: React.FC = () => {
 
   return (
     <Section id="faq" className="bg-corporate-50 border-t border-corporate-200" narrow>
-      <div className="mb-12 md:mb-16 border-b border-corporate-200 pb-6 inline-block pr-16 leading-tight">
+      {/* Consistent header with no margin bottom, matching WhyUs style (pb-4) */}
+      <div className="border-b border-corporate-200 pb-4">
         <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Frequently Asked Questions</h2>
       </div>
       
-      {/* Darker structural border: border-corporate-300 replaced with 200 for subtlety */}
-      <div className="border-t border-corporate-200">
+      {/* FAQ List */}
+      <div className="">
         {faqs.map((faq, idx) => (
           /* Item border: border-corporate-200 */
           <div key={idx} className="border-b border-corporate-200">
             <button 
               onClick={() => toggle(idx)}
-              className="w-full py-6 flex items-start justify-between text-left focus:outline-none group"
+              // Reduced top padding for the first item (pt-3) to remove the gap between the header line and the first question
+              className={`w-full flex items-start justify-between text-left focus:outline-none group ${idx === 0 ? 'pt-3 pb-6' : 'py-6'}`}
               aria-expanded={openIndex === idx}
             >
               {/* Increased size to text-xl */}
