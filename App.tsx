@@ -41,54 +41,54 @@ const operations: OperationStep[] = [
 
 const faqs: FAQItem[] = [
   { 
-    question: "What does Facilities, Incorporated do?", 
+    question: "What does Facilities, Inc., do?", 
     answer: (
       <>
-        Facilities, Incorporated operates specific commercial units within properties under its care.
+        Facilities, Inc., operates specific commercial units within properties under its care.
         <br />
         Our role focuses on day-to-day unit-level operations, coordination, and administration.
       </>
     )
   },
   { 
-    question: "Does Facilities, Incorporated manage entire buildings?", 
-    answer: "Facilities, Incorporated operates identified units only, not entire buildings or third-party portfolios." 
+    question: "Does Facilities, Inc., manage entire buildings?", 
+    answer: "Facilities, Inc., operates identified units only, not entire buildings or third-party portfolios." 
   },
   { 
-    question: "Is Facilities, Incorporated a real estate broker?", 
+    question: "Is Facilities, Inc., a real estate broker?", 
     answer: (
       <>
-        Facilities, Incorporated does not act as a real estate broker.
+        Facilities, Inc., does not act as a real estate broker.
         <br />
-        However, Facilities, Incorporated works with brokers and leasing agents in relation to units under its operation. Parties interested in working with our available units may contact us to coordinate listings, viewings, or leasing discussions.
+        However, Facilities, Inc., works with brokers and leasing agents in relation to units under its operation. Parties interested in working with our available units may contact us to coordinate listings, viewings, or leasing discussions.
       </>
     )
   },
   { 
-    question: "Does Facilities, Incorporated market property to the public?", 
+    question: "Does Facilities, Inc., market property to the public?", 
     answer: (
       <>
-        Facilities, Incorporated may market its own managed units where required.
+        Facilities, Inc., may market its own managed units where required.
         <br />
         It does not market property on behalf of third parties.
       </>
     )
   },
   { 
-    question: "Does Facilities, Incorporated sell property?", 
+    question: "Does Facilities, Inc., sell property?", 
     answer: (
       <>
-        Facilities, Incorporated does not sell property. Residential house-and-lot offerings in Lipa are handled by our sister company, ADEL.
+        Facilities, Inc., does not sell property. Residential house-and-lot offerings in Lipa are handled by our sister company, ADEL.
         <br />
         <span className="italic">(Coming soon.)</span>
       </>
     )
   },
   { 
-    question: "Does Facilities, Incorporated provide design or architectural services?", 
+    question: "Does Facilities, Inc., provide design or architectural services?", 
     answer: (
       <>
-        Facilities, Incorporated does not provide architectural or design services.
+        Facilities, Inc., does not provide architectural or design services.
         <br />
         Bespoke development advisory and consulting services may be directed to:
         <br />
@@ -97,20 +97,20 @@ const faqs: FAQItem[] = [
     )
   },
   { 
-    question: "Does Facilities, Incorporated handle interior fit-outs?", 
+    question: "Does Facilities, Inc., handle interior fit-outs?", 
     answer: (
       <>
-        Facilities, Incorporated may coordinate interior fit-outs where required.
+        Facilities, Inc., may coordinate interior fit-outs where required.
         <br />
         All construction and design work is carried out by third-party professionals.
       </>
     )
   },
   { 
-    question: "What properties does Facilities, Incorporated currently operate?", 
+    question: "What properties does Facilities, Inc., currently operate?", 
     answer: (
       <>
-        Facilities, Incorporated currently operates units within:
+        Facilities, Inc., currently operates units within:
         <ul className="list-disc pl-5 my-2 space-y-1">
           <li>Summit One Tower, Mandaluyong City</li>
           <li>Facilities Centre, Mandaluyong City</li>
@@ -120,10 +120,10 @@ const faqs: FAQItem[] = [
     )
   },
   { 
-    question: "Who should contact Facilities, Incorporated?", 
+    question: "Who should contact Facilities, Inc.?", 
     answer: (
       <>
-        Facilities, Incorporated is the appropriate contact for:
+        Facilities, Inc., is the appropriate contact for:
         <ul className="list-disc pl-5 my-2 space-y-1">
           <li>Tenants occupying managed units</li>
           <li>Brokers and leasing agents coordinating on managed units</li>
