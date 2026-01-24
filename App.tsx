@@ -8,15 +8,15 @@ import { WhyItem, OperationStep, FAQItem } from './types';
 const whyItems: WhyItem[] = [
   { 
     title: "Established Continuity", 
-    description: "Operating since 1960 with over six decades of continuous operation and management experience in the Metro Manila commercial sector." 
+    description: "Operating since 1960, with over six decades of continuous experience in Metro Manila commercial property operations." 
   },
   { 
     title: "Fiscal Discipline", 
-    description: "Conservative financial management ensuring properties are maintained without leveraging operating risks." 
+    description: "Conservative financial management focused on asset preservation and operational stability." 
   },
   { 
-    title: "On-Site Operations", 
-    description: "Day-to-day building operations are handled directly for managed units within Summit One Tower and Facilities Centre." 
+    title: "Direct On-Site Operations", 
+    description: "Day-to-day operations are handled directly for managed units within Summit One Tower and Facilities Centre." 
   },
   { 
     title: "Tenant Interface", 
@@ -24,18 +24,18 @@ const whyItems: WhyItem[] = [
   },
   { 
     title: "Utilities Coordination", 
-    description: "Coordination of power, water, and telecommunications for managed units." 
+    description: "Coordination of power, water, and telecommunications services for managed units." 
   },
   { 
     title: "Local Coordination", 
-    description: "Coordination with relevant regulatory offices and LGUs where required for managed units." 
+    description: "Coordination with relevant regulatory offices and LGUs where required." 
   },
 ];
 
 const operations: OperationStep[] = [
   { step: "01", title: "Asset Acquisition & Review", description: "Each unit undergoes a rigorous structural and compliance assessment before entering our operational portfolio. We verify title integrity, zoning adherence, and utility infrastructure." },
   { step: "02", title: "Tenant Fit-Out Coordination", description: "We oversee the transition from bare shell to operational workspace. Our team coordinates directly with contractors to ensure building codes and safety standards are strictly met." },
-  { step: "03", title: "Utilities & Compliance", description: "We coordinate directly with utility providers and relevant local authorities to support the operation of managed units." },
+  { step: "03", title: "Utilities & Compliance", description: "We coordinate directly with utility providers and relevant local authorities to support the ongoing operation of managed units." },
   { step: "04", title: "Compliance & Administration", description: "We support unit-level administrative processes through coordination with relevant parties, where applicable." },
 ];
 
@@ -251,10 +251,11 @@ const Hero: React.FC = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           <div className="space-y-8">
             <p className="text-xl md:text-2xl text-corporate-800 leading-relaxed font-serif">
-              Facilities, Incorporated is a family-run operating company established in 1960, responsible for the day-to-day operation of specific commercial units within Mandaluyong-based properties.
+              Facilities, Inc., is a family-owned operating company established in 1960.
+              The company is responsible for the day-to-day operation of selected commercial units within Mandaluyong-based properties.
             </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
-              The company currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
+              Facilities, Inc., currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
             </p>
             
             <p className="text-lg font-serif italic text-corporate-400 mt-12 mb-8">
@@ -293,14 +294,14 @@ const WhyUs: React.FC = () => (
   <Section id="why" className="bg-white">
     <div className="border-b border-corporate-200 mb-16 pb-4">
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
-        Why Facilities, Incorporated
+        Why Facilities, Inc.
       </h2>
     </div>
     
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-16">
       {whyItems.map((item, idx) => (
         <div key={idx} className="space-y-4">
-          <h3 className="text-sm font-bold text-corporate-900 tracking-widest uppercase opacity-90">
+          <h3 className="text-base font-bold text-corporate-900 tracking-widest uppercase opacity-90">
             {item.title}
           </h3>
           <p className="text-lg text-corporate-600 leading-relaxed">
