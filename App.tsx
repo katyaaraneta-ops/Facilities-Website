@@ -41,54 +41,54 @@ const operations: OperationStep[] = [
 
 const faqs: FAQItem[] = [
   { 
-    question: "What does Facilities, Inc., do?", 
+    question: "What does Facilities do?", 
     answer: (
       <>
-        Facilities, Inc., operates specific commercial units within properties under its care.
+        Facilities operates specific commercial units within properties under its care.
         <br />
         Our role focuses on day-to-day unit-level operations, coordination, and administration.
       </>
     )
   },
   { 
-    question: "Does Facilities, Inc., manage entire buildings?", 
-    answer: "Facilities, Inc., operates identified units only, not entire buildings or third-party portfolios." 
+    question: "Does Facilities manage entire buildings?", 
+    answer: "Facilities operates identified units only, not entire buildings or third-party portfolios." 
   },
   { 
-    question: "Is Facilities, Inc., a real estate broker?", 
+    question: "Is Facilities a real estate broker?", 
     answer: (
       <>
-        Facilities, Inc., does not act as a real estate broker.
+        Facilities does not act as a real estate broker.
         <br />
-        However, Facilities, Inc., works with brokers and leasing agents in relation to units under its operation. Parties interested in working with our available units may contact us to coordinate listings, viewings, or leasing discussions.
+        However, Facilities works with brokers and leasing agents in relation to units under its operation. Parties interested in working with our available units may contact us to coordinate listings, viewings, or leasing discussions.
       </>
     )
   },
   { 
-    question: "Does Facilities, Inc., market property to the public?", 
+    question: "Does Facilities market property to the public?", 
     answer: (
       <>
-        Facilities, Inc., may market its own managed units where required.
+        Facilities may market its own managed units where required.
         <br />
         It does not market property on behalf of third parties.
       </>
     )
   },
   { 
-    question: "Does Facilities, Inc., sell property?", 
+    question: "Does Facilities sell property?", 
     answer: (
       <>
-        Facilities, Inc., does not sell property. Residential house-and-lot offerings in Lipa are handled by our sister company, ADEL.
+        Facilities does not sell property. Residential house-and-lot offerings in Lipa are handled by our sister company, ADEL.
         <br />
         <span className="italic">(Coming soon.)</span>
       </>
     )
   },
   { 
-    question: "Does Facilities, Inc., provide design or architectural services?", 
+    question: "Does Facilities provide design or architectural services?", 
     answer: (
       <>
-        Facilities, Inc., does not provide architectural or design services.
+        Facilities does not provide architectural or design services.
         <br />
         Bespoke development advisory and consulting services may be directed to:
         <br />
@@ -97,20 +97,20 @@ const faqs: FAQItem[] = [
     )
   },
   { 
-    question: "Does Facilities, Inc., handle interior fit-outs?", 
+    question: "Does Facilities handle interior fit-outs?", 
     answer: (
       <>
-        Facilities, Inc., may coordinate interior fit-outs where required.
+        Facilities may coordinate interior fit-outs where required.
         <br />
         All construction and design work is carried out by third-party professionals.
       </>
     )
   },
   { 
-    question: "What properties does Facilities, Inc., currently operate?", 
+    question: "What properties does Facilities currently operate?", 
     answer: (
       <>
-        Facilities, Inc., currently operates units within:
+        Facilities currently operates units within:
         <ul className="list-disc pl-5 my-2 space-y-1">
           <li>Summit One Tower, Mandaluyong City</li>
           <li>Facilities Centre, Mandaluyong City</li>
@@ -120,10 +120,10 @@ const faqs: FAQItem[] = [
     )
   },
   { 
-    question: "Who should contact Facilities, Inc.?", 
+    question: "Who should contact Facilities?", 
     answer: (
       <>
-        Facilities, Inc., is the appropriate contact for:
+        Facilities is the appropriate contact for:
         <ul className="list-disc pl-5 my-2 space-y-1">
           <li>Tenants occupying managed units</li>
           <li>Brokers and leasing agents coordinating on managed units</li>
@@ -346,31 +346,33 @@ const Operations: React.FC = () => (
   </Section>
 );
 
-const Assets: React.FC = () => (
-  <Section id="assets" className="bg-white border-t border-corporate-200">
-    <div className="border-b border-corporate-200 mb-16 pb-4">
-      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
-        Assets Under Operation
-      </h2>
-    </div>
+const Assets: React.FC = () => {
+  return (
+    <Section id="assets" className="bg-white border-t border-corporate-200">
+      <div className="border-b border-corporate-200 mb-16 pb-4">
+        <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
+          Assets Under Operation
+        </h2>
+      </div>
 
-    <div className="space-y-24 md:space-y-32">
-      
-      {/* Asset 1: Summit One Tower */}
-      <figure className="flex flex-col gap-8 group">
-        {/* Adjusted Aspect Ratio: Reduced height by ~28% (aspect-[10/9]) compared to previous 4/5 */}
-        {/* Constrained width to ~720px on desktop, centered */}
-        <div className="w-full md:max-w-[720px] mx-auto bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[10/9]">
-           <img 
-            src="https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=1000&auto=format&fit=crop" 
-            alt="Summit One Tower Detail"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        
-        <figcaption className="space-y-6 max-w-2xl">
-           <div className="space-y-1">
-              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">Summit One Tower</h3>
+      <div className="space-y-24 md:space-y-32">
+        {/* Asset 1: Summit One Tower */}
+        <figure className="flex flex-col gap-8 group">
+          {/* Adjusted aspect ratio to 3/4 on desktop to better frame the tall tower image */}
+          <div className="w-full md:max-w-[720px] mx-auto bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[3/4]">
+            <img
+              src="./assets/summit-one-tower.png"
+              alt="Summit One Tower Exterior"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+
+          <figcaption className="space-y-6 max-w-2xl">
+            <div className="space-y-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">
+                Summit One Tower
+              </h3>
               <div className="text-lg text-corporate-500 font-medium space-y-0.5">
                 <p>High-rise commercial tower</p>
               </div>
@@ -378,36 +380,39 @@ const Assets: React.FC = () => (
             <p className="text-lg text-corporate-600 leading-relaxed">
               Located on Shaw Boulevard, this PEZA-accredited property comprises dedicated office and commercial spaces under Facilities, Incorporated’s operational management.
             </p>
-        </figcaption>
-      </figure>
+          </figcaption>
+        </figure>
 
-      {/* Asset 2: Facilities Centre */}
-      <figure className="flex flex-col gap-8 group">
-         {/* Horizontal Aspect Ratio */}
-        <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
-            <img 
-            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1600&auto=format&fit=crop" 
-            alt="Facilities Centre Frontage"
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* Asset 2: Facilities Centre */}
+        <figure className="flex flex-col gap-8 group">
+          {/* Landscape aspect ratio suits the wide structure */}
+          <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
+            <img
+              src="./assets/facilities-centre.png"
+              alt="Facilities Centre Frontage"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
 
-        <figcaption className="space-y-6 max-w-2xl">
-           <div className="space-y-1">
-              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">Facilities Centre</h3>
+          <figcaption className="space-y-6 max-w-2xl">
+            <div className="space-y-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">
+                Facilities Centre
+              </h3>
               <div className="text-lg text-corporate-500 font-medium space-y-0.5">
                 <p>Low-rise commercial arcade</p>
               </div>
             </div>
             <p className="text-lg text-corporate-600 leading-relaxed">
-               A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
+              A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
             </p>
-        </figcaption>
-      </figure>
-
-    </div>
-  </Section>
-);
+          </figcaption>
+        </figure>
+      </div>
+    </Section>
+  );
+};
 
 const FAQ: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
