@@ -462,40 +462,88 @@ const FAQ: React.FC = () => {
 };
 
 const Contact: React.FC = () => {
+  const [isSending, setIsSending] = useState(false);
+
+  // Netlify expects URL-encoded form bodies for JS submits
+  const encode = (data: Record<string, string>) =>
+    Object.keys(data)
+      .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(data[key] ?? ''))
+      .join('&');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+
+    // Pull values from the form
+    const formData = new FormData(form);
+    const payload: Record<string, string> = {
+      'form-name': 'contact', // MUST match form name below
+      name: String(formData.get('name') ?? ''),
+      company: String(formData.get('company') ?? ''),
+      email: String(formData.get('email') ?? ''),
+      message: String(formData.get('message') ?? ''),
+    };
+
+    // Basic client-side validation
+    if (!payload.name || !payload.email || !payload.message) {
+      alert('Please fill out Name, Email Address, and Inquiry.');
+      return;
+    }
+
+    try {
+      setIsSending(true);
+
+      // IMPORTANT: POST to "/" for Netlify Forms
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encode(payload),
+      });
+
+      if (!res.ok) throw new Error('Submission failed');
+
+      alert('Thank you. Your inquiry has been sent.');
+      form.reset();
+    } catch (err) {
+      console.error('Netlify form submit error:', err);
+      alert('There was an error sending your inquiry. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <Section
       id="contact"
       className="bg-white border-t border-corporate-200 md:!py-12 lg:!py-32"
     >
-      <div className="border-b border-corporate-200 mb-16 pb-4">
+      <div className="border-b border-corporate-200 mb-16 lg:mb-8 pb-4">
         <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">
           Contact
         </h2>
       </div>
 
-      {/* ONE form, functioning as the grid container */}
+      {/* NOTE: netlify attributes + hidden form-name input are required */}
       <form
         name="contact"
         method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
-        className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-[auto_auto_auto] gap-16 md:gap-24 items-start"
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[auto_auto_auto] gap-12 lg:gap-24 items-start"
       >
-        {/* Required hidden fields for Netlify */}
+        {/* Netlify required hidden fields */}
         <input type="hidden" name="form-name" value="contact" />
         <p className="hidden">
           <label>
-            Don’t fill this out if you’re human: <input name="bot-field" />
+            Don’t fill this out: <input name="bot-field" />
           </label>
         </p>
 
         {/* --- RIGHT COLUMN GROUPS (Form Fields) --- */}
-        <div className="md:col-span-8 md:col-start-5 md:row-start-1 grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="lg:col-span-8 lg:col-start-5 lg:row-start-1 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div className="space-y-2">
-            <label
-              htmlFor="name"
-              className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
-            >
+            <label htmlFor="name" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
               Name
             </label>
             <input
@@ -503,16 +551,13 @@ const Contact: React.FC = () => {
               id="name"
               name="name"
               placeholder="Full Name"
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
               required
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
             />
           </div>
 
           <div className="space-y-2">
-            <label
-              htmlFor="company"
-              className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
-            >
+            <label htmlFor="company" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
               Company
             </label>
             <input
@@ -525,11 +570,8 @@ const Contact: React.FC = () => {
           </div>
         </div>
 
-        <div className="md:col-span-8 md:col-start-5 md:row-start-2 space-y-2">
-          <label
-            htmlFor="email"
-            className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
-          >
+        <div className="lg:col-span-8 lg:col-start-5 lg:row-start-2 space-y-2">
+          <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Email Address
           </label>
           <input
@@ -537,17 +579,14 @@ const Contact: React.FC = () => {
             id="email"
             name="email"
             placeholder="name@company.com"
-            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
             required
+            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
           />
         </div>
 
-        <div className="md:col-span-8 md:col-start-5 md:row-start-3 grid gap-12">
+        <div className="lg:col-span-8 lg:col-start-5 lg:row-start-3 grid gap-8 lg:gap-12">
           <div className="space-y-2">
-            <label
-              htmlFor="message"
-              className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
-            >
+            <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
               Inquiry
             </label>
             <textarea
@@ -555,23 +594,24 @@ const Contact: React.FC = () => {
               name="message"
               rows={8}
               placeholder="How can we assist you?"
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
               required
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
             />
           </div>
 
           <div className="pt-2">
             <button
               type="submit"
-              className="px-10 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-300 tracking-wide"
+              disabled={isSending}
+              className="px-10 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors duration-300 tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Submit Inquiry
+              {isSending ? 'Sending…' : 'Submit Inquiry'}
             </button>
           </div>
         </div>
 
         {/* --- LEFT COLUMN GROUPS (Info) --- */}
-        <div className="md:col-span-4 md:col-start-1 md:row-start-1 space-y-4">
+        <div className="lg:col-span-4 lg:col-start-1 lg:row-start-1 space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Head Office
           </h3>
@@ -583,7 +623,7 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        <div className="md:col-span-4 md:col-start-1 md:row-start-2 space-y-4">
+        <div className="lg:col-span-4 lg:col-start-1 lg:row-start-2 space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Email
           </h3>
@@ -597,7 +637,7 @@ const Contact: React.FC = () => {
           </div>
         </div>
 
-        <div className="md:col-span-4 md:col-start-1 md:row-start-3 space-y-4">
+        <div className="lg:col-span-4 lg:col-start-1 lg:row-start-3 space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Property Inquiries
           </h3>
