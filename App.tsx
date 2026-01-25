@@ -358,13 +358,12 @@ const Assets: React.FC = () => {
       <div className="space-y-24 md:space-y-32">
         {/* Asset 1: Summit One Tower */}
         <figure className="flex flex-col gap-8 group">
-          {/* Adjusted aspect ratio to 3/4 on desktop to better frame the tall tower image */}
-          <div className="w-full md:max-w-[720px] mx-auto bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[3/4]">
+          {/* Adjusted aspect ratio for landscape image */}
+          <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
-              src="/assets/summit-one-tower.png"
+              src="https://lh3.googleusercontent.com/pw/AP1GczPOXR3hdFc1ofHAfXjC-SPo8tZOmQwLmLzLJOPg3k0nNbUQmwZoJT_6iyXGy-ci77jZt_DmECvXkXwKTULOzzYWWZCFeeSeDMolcDe4A1aj2LJlZaxfaMi45v6JfZS3voOGnDOpk41JnBmpBAjNZjHE1qegsX0xLL6S87jmgVTxnBPEUloF1EOC5aSKmhhQtH7ZEBatWmp1fGhHkCJoqPm_IF-noX-Aj5oS2CoDvL17OPqGv7JUemOfMYhnxK9KKVKunE72Zz-Txl4UrRFnaHvWGBNva-1IOK__2lYyNHXJeOihXd9BA21_iQ47vA5v8kQk4aF4ICAQwPCXCQ9DbOk4PlD5KYEdAncnD1uw_gA3QddlJCaveTa22vx_mdPAAQiJQHCQv4ubDNjJIRIKatrJowlHVto4RybuloW1hVWphARyDtyPSlOemv9zuTKQH_449mebBDCPa4qPGBb_qtv6pHD4adtQmzyGVmG9nLAFTX7bFXwWF8o7nZFXQQQHx8rHwgVRqC7xWtUZr51YkQXfD4HcK2ayDynTehrPKMTxkQT9W3HBCNb6uZjtxLrjBqdqVhOkt8fjUhVilDFSmSy48VdT0i-4Dae-Mi8KDPciyMGe49Vri2jjNRZvnuhgO0_tZ8Lb42pNvBaKIZmHxyp6Dug58dPYZiE2vtZNkw4-YOTNZoR_EdYOXDW2f7F6h2I5-Ftl0J4qaGghFc_EXy84nYGC3wBXdUph3Ug3lzBUkM_zaIRsDxwg00wHzaSao8GNTWxLv5-sn-ctbDHyZdz-GMnQkmwXXJVrM8JVGkTOrk_OrvjRGfysYprb7geeS5qecAFHyEvxB9vBGxMTbkFUqbh89U5Bv3VcUTyYaNY8jxy-gHZbvXJ1z_tI_n-5WxAckWF6eL6BmNZFSifEJH90pJaORMveJcL-NorpRZWVV6n-masLCm4=w1397-h937-s-no?authuser=0"
               alt="Summit One Tower Exterior"
               className="w-full h-full object-cover"
-              loading="lazy"
             />
           </div>
 
@@ -388,10 +387,9 @@ const Assets: React.FC = () => {
           {/* Landscape aspect ratio suits the wide structure */}
           <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
-              src="/assets/facilities-centre.png"
+              src="https://lh3.googleusercontent.com/pw/AP1GczNolR0s_EuXFL5dt40X1xZsc7KoNNO8ibUGh92fW8rOHMXB-Jkm-UBdfVMNZQv8OhpDMpEa7EpP6sP498cZnx5Z5C7mHjaUsb6UU6_BEGbetCgaOIWSbnWMHbQzAMWGuKRiCLGmwHxEPrzCbNbFdX4LqKmiTxaRTePlSusOuUGs-te_DvESFEZWNtrLQ_BIAJcdpGAhD67B586h3seCEoA5Frc4LTp1L61e92rxPruFJYL82cpDo-4MI0PVAZRC9VNHn30WFo5wTNfzjzsdIFXzFVqbmIQhCofkqQI5G3xyEQ0xYsky7vq0Ciud3U8QpKoh8Dg2jHZbd9IRUJw9nrYkZOFqoBPi9mDPOkE3l8F1bAm-Ju-7S9z6VTqn_tpXUMp2sE1HlHNtcvxoBqOHr6pz7DRwBw6W8tt5IGUCYb2BiQe6Irchr_xuIU8A1O2ebHg1FV0SdYYn3MKNCwSRub62vHFuPY304UBnRW3m98W_DPo0uahbGolgrtHY60lmuU7MLIzLluoxzn7DozISU7b8r04kaemznqmTkwJ9brEnrtQ8cfkCpupoeNsFPMah8rtW51ttADtJLk1NOuoeKJqUUxqwajkx2VUuTV3iJ7cQVL-6RChUFVBnOZfsU61Em3E3bb9dtHoRQ2TFpaHlP_2plrDsL6ulLHUfZ54hfDyen0OqDxVtWIllmg1w9BBCcpwRYxcYyxz6-_A6qgwuhtDZUw33l0K7IWIy9DzTcKqXNb8RAXvoIt4xyexf0TGrNIeochBsbQTr895fogX76c0j1OkukFpHNWTRLtnhoIJyWvq_FkH_YVfYd4QhkAc4KlX460z87E6xktfObjwvqV810Kzn0x8sz2UKdcFoB-SQXKZxJuaTJSt2szdigvU32uuB2QZ1z1t4LRx2TqrE5eTu8aeou4HXod4znZllnvSjwJyw08S5s80=w403-h220-no?authuser=0"
               alt="Facilities Centre Frontage"
               className="w-full h-full object-cover"
-              loading="lazy"
             />
           </div>
 
