@@ -462,35 +462,6 @@ const FAQ: React.FC = () => {
 };
 
 const Contact: React.FC = () => {
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Submission failed');
-      }
-
-      const data = await response.json();
-
-      if (data.ok) {
-        alert('Thank you. Your inquiry has been sent.');
-        form.reset();
-      } else {
-        alert(data.error || 'Please fill out all required fields.');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('There was an error sending your inquiry. Please try again.');
-    }
-  };
-
   return (
     <Section
       id="contact"
@@ -504,14 +475,27 @@ const Contact: React.FC = () => {
 
       {/* ONE form, functioning as the grid container */}
       <form
+        name="contact"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
         className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-[auto_auto_auto] gap-16 md:gap-24 items-start"
-        onSubmit={handleSubmit}
       >
+        {/* Required hidden fields for Netlify */}
+        <input type="hidden" name="form-name" value="contact" />
+        <p className="hidden">
+          <label>
+            Don’t fill this out if you’re human: <input name="bot-field" />
+          </label>
+        </p>
+
         {/* --- RIGHT COLUMN GROUPS (Form Fields) --- */}
-        {/* DOM Order 1: Name + Company -> Desktop Row 1 Right */}
         <div className="md:col-span-8 md:col-start-5 md:row-start-1 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="space-y-2">
-            <label htmlFor="name" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            <label
+              htmlFor="name"
+              className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
+            >
               Name
             </label>
             <input
@@ -520,11 +504,15 @@ const Contact: React.FC = () => {
               name="name"
               placeholder="Full Name"
               className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
+              required
             />
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="company" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            <label
+              htmlFor="company"
+              className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
+            >
               Company
             </label>
             <input
@@ -537,9 +525,11 @@ const Contact: React.FC = () => {
           </div>
         </div>
 
-        {/* DOM Order 2: Email -> Desktop Row 2 Right */}
         <div className="md:col-span-8 md:col-start-5 md:row-start-2 space-y-2">
-          <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+          <label
+            htmlFor="email"
+            className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
+          >
             Email Address
           </label>
           <input
@@ -548,14 +538,16 @@ const Contact: React.FC = () => {
             name="email"
             placeholder="name@company.com"
             className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
+            required
           />
         </div>
 
-        {/* DOM Order 3: Inquiry + Button -> Desktop Row 3 Right */}
-        {/* Grouping textarea and button together */}
         <div className="md:col-span-8 md:col-start-5 md:row-start-3 grid gap-12">
           <div className="space-y-2">
-            <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            <label
+              htmlFor="message"
+              className="text-xs font-bold text-corporate-400 uppercase tracking-widest"
+            >
               Inquiry
             </label>
             <textarea
@@ -564,6 +556,7 @@ const Contact: React.FC = () => {
               rows={8}
               placeholder="How can we assist you?"
               className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
+              required
             />
           </div>
 
@@ -578,7 +571,6 @@ const Contact: React.FC = () => {
         </div>
 
         {/* --- LEFT COLUMN GROUPS (Info) --- */}
-        {/* DOM Order 4: Head Office -> Desktop Row 1 Left */}
         <div className="md:col-span-4 md:col-start-1 md:row-start-1 space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Head Office
@@ -591,7 +583,6 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        {/* DOM Order 5: Email Info -> Desktop Row 2 Left */}
         <div className="md:col-span-4 md:col-start-1 md:row-start-2 space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Email
@@ -606,35 +597,26 @@ const Contact: React.FC = () => {
           </div>
         </div>
 
-        {/* DOM Order 6: Property Inquiries -> Desktop Row 3 Left */}
         <div className="md:col-span-4 md:col-start-1 md:row-start-3 space-y-4">
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Property Inquiries
           </h3>
           <div className="text-lg text-corporate-700 leading-relaxed font-serif space-y-6">
             <div>
-              <span className="block font-medium text-corporate-900">
-                Sylvia
-              </span>
-              <span className="block text-corporate-600">
-                +63 917 523 8157
-              </span>
+              <span className="block font-medium text-corporate-900">Sylvia</span>
+              <span className="block text-corporate-600">+63 917 523 8157</span>
             </div>
             <div>
-              <span className="block font-medium text-corporate-900">
-                Mercy
-              </span>
-              <span className="block text-corporate-600">
-                +63 933 538 3815
-              </span>
+              <span className="block font-medium text-corporate-900">Mercy</span>
+              <span className="block text-corporate-600">+63 933 538 3815</span>
             </div>
           </div>
         </div>
-
       </form>
     </Section>
   );
 };
+
 
 const Footer: React.FC = () => (
   <footer className="bg-[#181852] text-[#C9D2E3] py-12">
