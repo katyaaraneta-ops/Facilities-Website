@@ -361,7 +361,7 @@ const Assets: React.FC = () => {
           {/* Adjusted aspect ratio to 3/4 on desktop to better frame the tall tower image */}
           <div className="w-full md:max-w-[720px] mx-auto bg-corporate-100 overflow-hidden relative aspect-[3/4] md:aspect-[3/4]">
             <img
-              src="public/assets/summit-one-tower.png"
+              src="assets/summit-one-tower.png"
               alt="Summit One Tower Exterior"
               className="w-full h-full object-cover"
               loading="lazy"
@@ -388,7 +388,7 @@ const Assets: React.FC = () => {
           {/* Landscape aspect ratio suits the wide structure */}
           <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
-              src="public/assets/facilities-centre.png"
+              src="assets/facilities-centre.png"
               alt="Facilities Centre Frontage"
               className="w-full h-full object-cover"
               loading="lazy"
