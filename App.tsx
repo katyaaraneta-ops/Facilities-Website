@@ -542,61 +542,69 @@ const Contact: React.FC = () => {
 
         {/* --- RIGHT COLUMN GROUPS (Form Fields) --- */}
         <div className="lg:col-span-8 lg:col-start-5 lg:row-start-1 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          <div className="space-y-2">
+          <div className="space-y-2 lg:space-y-4">
             <label htmlFor="name" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
               Name
             </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="Full Name"
-              required
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
-            />
+            <div className="w-full border-b border-corporate-200 focus-within:border-corporate-900 transition-colors">
+              <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Full Name"
+                required
+                className="w-full py-3 bg-transparent border-none focus:ring-0 text-corporate-900 focus:outline-none placeholder-corporate-300 font-light text-lg block appearance-none"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 lg:space-y-4">
             <label htmlFor="company" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
               Company
             </label>
+            <div className="w-full border-b border-corporate-200 focus-within:border-corporate-900 transition-colors">
+              <input
+                type="text"
+                id="company"
+                name="company"
+                placeholder="Organization Name"
+                className="w-full py-3 bg-transparent border-none focus:ring-0 text-corporate-900 focus:outline-none placeholder-corporate-300 font-light text-lg block appearance-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-8 lg:col-start-5 lg:row-start-2 space-y-2 lg:space-y-4">
+          <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
+            Email Address
+          </label>
+          <div className="w-full border-b border-corporate-200 focus-within:border-corporate-900 transition-colors">
             <input
-              type="text"
-              id="company"
-              name="company"
-              placeholder="Organization Name"
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
+              type="email"
+              id="email"
+              name="email"
+              placeholder="name@company.com"
+              required
+              className="w-full py-3 bg-transparent border-none focus:ring-0 text-corporate-900 focus:outline-none placeholder-corporate-300 font-light text-lg block appearance-none"
             />
           </div>
         </div>
 
-        <div className="lg:col-span-8 lg:col-start-5 lg:row-start-2 space-y-2">
-          <label htmlFor="email" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="name@company.com"
-            required
-            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors text-lg placeholder-corporate-300 font-light"
-          />
-        </div>
-
         <div className="lg:col-span-8 lg:col-start-5 lg:row-start-3 grid gap-8 lg:gap-12">
-          <div className="space-y-2">
+          <div className="space-y-2 lg:space-y-4">
             <label htmlFor="message" className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
               Inquiry
             </label>
-            <textarea
-              id="message"
-              name="message"
-              rows={8}
-              placeholder="How can we assist you?"
-              required
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 text-corporate-900 focus:outline-none transition-colors resize-none text-lg placeholder-corporate-300 font-light"
-            />
+            <div className="w-full border-b border-corporate-200 focus-within:border-corporate-900 transition-colors">
+              <textarea
+                id="message"
+                name="message"
+                rows={8}
+                placeholder="How can we assist you?"
+                required
+                className="w-full py-3 bg-transparent border-none focus:ring-0 text-corporate-900 focus:outline-none placeholder-corporate-300 font-light text-lg resize-none block appearance-none"
+              />
+            </div>
           </div>
 
           <div className="pt-2">
@@ -615,7 +623,7 @@ const Contact: React.FC = () => {
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Head Office
           </h3>
-          <p className="text-lg text-corporate-700 leading-relaxed font-serif">
+          <p className="text-lg text-corporate-700 leading-relaxed font-serif lg:pt-3">
             23/F Summit One Tower<br />
             530 Shaw Boulevard<br />
             Mandaluyong City 1552<br />
@@ -627,7 +635,7 @@ const Contact: React.FC = () => {
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Email
           </h3>
-          <div className="text-lg text-corporate-700 leading-relaxed font-serif">
+          <div className="text-lg text-corporate-700 leading-relaxed font-serif lg:pt-3">
             <a
               href="mailto:mercy.laurenciano@gmail.com"
               className="hover:text-corporate-900 underline decoration-corporate-200 underline-offset-4 transition-colors"
@@ -641,7 +649,7 @@ const Contact: React.FC = () => {
           <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">
             Property Inquiries
           </h3>
-          <div className="text-lg text-corporate-700 leading-relaxed font-serif space-y-6">
+          <div className="text-lg text-corporate-700 leading-relaxed font-serif space-y-6 lg:pt-3">
             <div>
               <span className="block font-medium text-corporate-900">Sylvia</span>
               <span className="block text-corporate-600">+63 917 523 8157</span>
