@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X } from 'lucide-react';
+import { Plus, Minus, Menu, X, Heart, Maximize2, Layout, Building2, ArrowLeft } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 
 // --- Data Definitions ---
@@ -134,25 +134,126 @@ const faqs: FAQItem[] = [
   },
 ];
 
+// --- Listing Data ---
+
+interface PropertyUnit {
+  id: string;
+  title: string;
+  price: string;
+  location: string;
+  area: string;
+  type: string;
+  condition: string;
+  imageUrl: string;
+}
+
+const summitUnits: PropertyUnit[] = [
+  {
+    id: "S-1201",
+    title: "Unit 1201 - Executive Suite",
+    price: "₱85,000 / mo",
+    location: "Summit One Tower, Level 12",
+    area: "125 sqm",
+    type: "Office",
+    condition: "Fully Fitted",
+    imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "S-2305",
+    title: "Unit 2305 - Open Plan",
+    price: "₱45,000 / mo",
+    location: "Summit One Tower, Level 23",
+    area: "85 sqm",
+    type: "Office",
+    condition: "Warm Shell",
+    imageUrl: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "S-3402",
+    title: "Unit 3402 - Corner Unit",
+    price: "₱110,000 / mo",
+    location: "Summit One Tower, Level 34",
+    area: "150 sqm",
+    type: "Office",
+    condition: "Bare Shell",
+    imageUrl: "https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "S-1504",
+    title: "Unit 1504 - Standard Office",
+    price: "₱60,000 / mo",
+    location: "Summit One Tower, Level 15",
+    area: "100 sqm",
+    type: "Office",
+    condition: "Semi-Fitted",
+    imageUrl: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"
+  },
+];
+
+const facilitiesUnits: PropertyUnit[] = [
+  {
+    id: "F-G02",
+    title: "Unit G-02 - Retail Space",
+    price: "₱150,000 / mo",
+    location: "Facilities Centre, Ground Floor",
+    area: "75 sqm",
+    type: "Retail",
+    condition: "Bare Shell",
+    imageUrl: "https://images.unsplash.com/photo-1582037928769-181f242afcf8?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "F-301",
+    title: "Unit 301 - Admin Office",
+    price: "₱25,000 / mo",
+    location: "Facilities Centre, Level 3",
+    area: "40 sqm",
+    type: "Office",
+    condition: "Fitted",
+    imageUrl: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "F-505",
+    title: "Unit 505 - Storage / Ops",
+    price: "₱35,000 / mo",
+    location: "Facilities Centre, Level 5",
+    area: "60 sqm",
+    type: "Flex",
+    condition: "Warm Shell",
+    imageUrl: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop"
+  },
+];
+
 // --- Components ---
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onNavigateHome: () => void;
+  currentPage: 'landing' | 'listings';
+}
+
+const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
-  const scrollToId = (targetId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleNavClick = (targetId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    const el = document.getElementById(targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (currentPage === 'listings') {
+      onNavigateHome();
+      setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    } else {
+      const el = document.getElementById(targetId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     closeMenu();
   };
 
   const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    onNavigateHome();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     closeMenu();
   };
@@ -170,11 +271,11 @@ const Header: React.FC = () => {
         
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
-          <a href="#why" onClick={scrollToId("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
-          <a href="#operate" onClick={scrollToId("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
-          <a href="#assets" onClick={scrollToId("assets")} className="hover:text-[#C9D2E3] transition-colors duration-300">Assets</a>
-          <a href="#faq" onClick={scrollToId("faq")} className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
-          <a href="#contact" onClick={scrollToId("contact")} className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
+          <a href="#why" onClick={handleNavClick("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
+          <a href="#operate" onClick={handleNavClick("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
+          <a href="#assets" onClick={handleNavClick("assets")} className="hover:text-[#C9D2E3] transition-colors duration-300">Assets</a>
+          <a href="#faq" onClick={handleNavClick("faq")} className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
+          <a href="#contact" onClick={handleNavClick("contact")} className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
         </nav>
 
         {/* Mobile Hamburger Button */}
@@ -193,35 +294,35 @@ const Header: React.FC = () => {
           <nav className="flex flex-col py-8 px-6 space-y-6">
             <a 
               href="#why" 
-              onClick={scrollToId("why")}
+              onClick={handleNavClick("why")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               Why Facilities
             </a>
             <a 
               href="#operate" 
-              onClick={scrollToId("operate")}
+              onClick={handleNavClick("operate")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               How We Operate
             </a>
             <a 
               href="#assets" 
-              onClick={scrollToId("assets")}
+              onClick={handleNavClick("assets")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               Assets
             </a>
             <a 
               href="#faq" 
-              onClick={scrollToId("faq")}
+              onClick={handleNavClick("faq")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               FAQ
             </a>
             <a 
               href="#contact" 
-              onClick={scrollToId("contact")}
+              onClick={handleNavClick("contact")}
               className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
             >
               Contact
@@ -232,6 +333,113 @@ const Header: React.FC = () => {
     </header>
   );
 };
+
+const ListingPage: React.FC<{ propertyName: string; units: PropertyUnit[]; onBack: () => void }> = ({ propertyName, units, onBack }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-white pt-20 pb-24">
+      <div className="max-w-7xl mx-auto px-6 pt-12">
+        
+        {/* Breadcrumb / Back */}
+        <button 
+          onClick={onBack}
+          className="flex items-center text-corporate-500 hover:text-corporate-900 transition-colors mb-8 text-sm font-medium tracking-wide uppercase group"
+        >
+          <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Overview
+        </button>
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-8 border-b border-corporate-100 pb-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-serif text-corporate-900 tracking-tight">
+              {propertyName}
+            </h1>
+            <p className="text-corporate-500">
+              We found <span className="font-semibold text-corporate-900">{units.length}</span> units available
+            </p>
+          </div>
+          
+          <div className="mt-4 md:mt-0 relative">
+            <label className="text-sm text-corporate-500 mr-2">Sort By:</label>
+            <select className="text-sm font-medium text-corporate-900 bg-transparent border-none focus:ring-0 cursor-pointer pr-8">
+              <option>Default</option>
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+              <option>Area: Low to High</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+          {units.map((unit) => (
+            <div key={unit.id} className="group cursor-pointer flex flex-col">
+              {/* Image Card */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-corporate-100 mb-4">
+                <img 
+                  src={unit.imageUrl} 
+                  alt={unit.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                {/* Heart Icon Overlay */}
+                <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-corporate-400 hover:text-red-500 transition-colors shadow-sm">
+                  <Heart size={18} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-lg font-bold text-corporate-900 leading-tight">
+                    {unit.title}
+                  </h3>
+                  <span className="text-lg font-bold text-corporate-900 whitespace-nowrap ml-4">
+                    {unit.price}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-corporate-500 font-medium">
+                  {unit.location}
+                </p>
+
+                {/* Specs Divider */}
+                <div className="h-px bg-corporate-100 w-full my-2"></div>
+
+                {/* Specs Icons */}
+                <div className="flex items-center gap-6 text-sm text-corporate-600">
+                   <div className="flex items-center gap-2">
+                      <Maximize2 size={16} className="text-corporate-400" />
+                      <span>{unit.area}</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                      <Layout size={16} className="text-corporate-400" />
+                      <span>{unit.type}</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                      <Building2 size={16} className="text-corporate-400" />
+                      <span>{unit.condition}</span>
+                   </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State Fallback if needed */}
+        {units.length === 0 && (
+           <div className="py-24 text-center">
+             <p className="text-xl text-corporate-400 font-serif italic">No units currently listed.</p>
+           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 const Hero: React.FC = () => (
   <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-corporate-50 pt-20 border-b border-corporate-200">
@@ -346,7 +554,12 @@ const Operations: React.FC = () => (
   </Section>
 );
 
-const Assets: React.FC = () => {
+interface AssetsProps {
+  onViewSummit: () => void;
+  onViewFacilities: () => void;
+}
+
+const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => {
   return (
     <Section id="assets" className="bg-white border-t border-corporate-200">
       <div className="border-b border-corporate-200 mb-16 pb-4">
@@ -357,19 +570,28 @@ const Assets: React.FC = () => {
 
       <div className="space-y-24 md:space-y-32">
         {/* Asset 1: Summit One Tower */}
-        <figure className="flex flex-col gap-8 group">
+        <figure 
+          className="flex flex-col gap-8 group cursor-pointer"
+          onClick={onViewSummit}
+        >
           {/* Adjusted aspect ratio for landscape image */}
           <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
               src="https://lh3.googleusercontent.com/pw/AP1GczPOXR3hdFc1ofHAfXjC-SPo8tZOmQwLmLzLJOPg3k0nNbUQmwZoJT_6iyXGy-ci77jZt_DmECvXkXwKTULOzzYWWZCFeeSeDMolcDe4A1aj2LJlZaxfaMi45v6JfZS3voOGnDOpk41JnBmpBAjNZjHE1qegsX0xLL6S87jmgVTxnBPEUloF1EOC5aSKmhhQtH7ZEBatWmp1fGhHkCJoqPm_IF-noX-Aj5oS2CoDvL17OPqGv7JUemOfMYhnxK9KKVKunE72Zz-Txl4UrRFnaHvWGBNva-1IOK__2lYyNHXJeOihXd9BA21_iQ47vA5v8kQk4aF4ICAQwPCXCQ9DbOk4PlD5KYEdAncnD1uw_gA3QddlJCaveTa22vx_mdPAAQiJQHCQv4ubDNjJIRIKatrJowlHVto4RybuloW1hVWphARyDtyPSlOemv9zuTKQH_449mebBDCPa4qPGBb_qtv6pHD4adtQmzyGVmG9nLAFTX7bFXwWF8o7nZFXQQQHx8rHwgVRqC7xWtUZr51YkQXfD4HcK2ayDynTehrPKMTxkQT9W3HBCNb6uZjtxLrjBqdqVhOkt8fjUhVilDFSmSy48VdT0i-4Dae-Mi8KDPciyMGe49Vri2jjNRZvnuhgO0_tZ8Lb42pNvBaKIZmHxyp6Dug58dPYZiE2vtZNkw4-YOTNZoR_EdYOXDW2f7F6h2I5-Ftl0J4qaGghFc_EXy84nYGC3wBXdUph3Ug3lzBUkM_zaIRsDxwg00wHzaSao8GNTWxLv5-sn-ctbDHyZdz-GMnQkmwXXJVrM8JVGkTOrk_OrvjRGfysYprb7geeS5qecAFHyEvxB9vBGxMTbkFUqbh89U5Bv3VcUTyYaNY8jxy-gHZbvXJ1z_tI_n-5WxAckWF6eL6BmNZFSifEJH90pJaORMveJcL-NorpRZWVV6n-masLCm4=w1397-h937-s-no?authuser=0"
               alt="Summit One Tower Exterior"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
+            {/* Hover indication overlay */}
+            <div className="absolute inset-0 bg-corporate-900/0 group-hover:bg-corporate-900/10 transition-colors duration-300 flex items-center justify-center">
+               <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                 View Available Units
+               </span>
+            </div>
           </div>
 
           <figcaption className="space-y-6 max-w-2xl">
             <div className="space-y-1">
-              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1 group-hover:text-corporate-700 transition-colors">
                 Summit One Tower
               </h3>
               <div className="text-lg text-corporate-500 font-medium space-y-0.5">
@@ -383,19 +605,28 @@ const Assets: React.FC = () => {
         </figure>
 
         {/* Asset 2: Facilities Centre */}
-        <figure className="flex flex-col gap-8 group">
+        <figure 
+           className="flex flex-col gap-8 group cursor-pointer"
+           onClick={onViewFacilities}
+        >
           {/* Landscape aspect ratio suits the wide structure */}
           <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
               src="https://lh3.googleusercontent.com/pw/AP1GczNolR0s_EuXFL5dt40X1xZsc7KoNNO8ibUGh92fW8rOHMXB-Jkm-UBdfVMNZQv8OhpDMpEa7EpP6sP498cZnx5Z5C7mHjaUsb6UU6_BEGbetCgaOIWSbnWMHbQzAMWGuKRiCLGmwHxEPrzCbNbFdX4LqKmiTxaRTePlSusOuUGs-te_DvESFEZWNtrLQ_BIAJcdpGAhD67B586h3seCEoA5Frc4LTp1L61e92rxPruFJYL82cpDo-4MI0PVAZRC9VNHn30WFo5wTNfzjzsdIFXzFVqbmIQhCofkqQI5G3xyEQ0xYsky7vq0Ciud3U8QpKoh8Dg2jHZbd9IRUJw9nrYkZOFqoBPi9mDPOkE3l8F1bAm-Ju-7S9z6VTqn_tpXUMp2sE1HlHNtcvxoBqOHr6pz7DRwBw6W8tt5IGUCYb2BiQe6Irchr_xuIU8A1O2ebHg1FV0SdYYn3MKNCwSRub62vHFuPY304UBnRW3m98W_DPo0uahbGolgrtHY60lmuU7MLIzLluoxzn7DozISU7b8r04kaemznqmTkwJ9brEnrtQ8cfkCpupoeNsFPMah8rtW51ttADtJLk1NOuoeKJqUUxqwajkx2VUuTV3iJ7cQVL-6RChUFVBnOZfsU61Em3E3bb9dtHoRQ2TFpaHlP_2plrDsL6ulLHUfZ54hfDyen0OqDxVtWIllmg1w9BBCcpwRYxcYyxz6-_A6qgwuhtDZUw33l0K7IWIy9DzTcKqXNb8RAXvoIt4xyexf0TGrNIeochBsbQTr895fogX76c0j1OkukFpHNWTRLtnhoIJyWvq_FkH_YVfYd4QhkAc4KlX460z87E6xktfObjwvqV810Kzn0x8sz2UKdcFoB-SQXKZxJuaTJSt2szdigvU32uuB2QZ1z1t4LRx2TqrE5eTu8aeou4HXod4znZllnvSjwJyw08S5s80=w403-h220-no?authuser=0"
               alt="Facilities Centre Frontage"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
+            {/* Hover indication overlay */}
+            <div className="absolute inset-0 bg-corporate-900/0 group-hover:bg-corporate-900/10 transition-colors duration-300 flex items-center justify-center">
+               <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                 View Available Units
+               </span>
+            </div>
           </div>
 
           <figcaption className="space-y-6 max-w-2xl">
             <div className="space-y-1">
-              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1 group-hover:text-corporate-700 transition-colors">
                 Facilities Centre
               </h3>
               <div className="text-lg text-corporate-500 font-medium space-y-0.5">
@@ -404,6 +635,31 @@ const Assets: React.FC = () => {
             </div>
             <p className="text-lg text-corporate-600 leading-relaxed">
               A dedicated commercial structure adjacent to key transport hubs. Our operations focus on commercial units and retail spaces, prioritizing accessibility and efficient utility management for tenants.
+            </p>
+          </figcaption>
+        </figure>
+
+        {/* Asset 3: Palladium Village - No interaction requested for this one */}
+        <figure className="flex flex-col gap-8 group">
+          <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
+            <img
+              src="https://images.unsplash.com/photo-1592595896551-12b371d546d5?q=80&w=1600&auto=format&fit=crop"
+              alt="Palladium Village"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          <figcaption className="space-y-6 max-w-2xl">
+            <div className="space-y-1">
+              <h3 className="text-3xl md:text-4xl font-serif text-corporate-900 mb-1">
+                Palladium Village
+              </h3>
+              <div className="text-lg text-corporate-500 font-medium space-y-0.5">
+                <p>Private subdivision</p>
+              </div>
+            </div>
+            <p className="text-lg text-corporate-600 leading-relaxed">
+              This exclusive, low-density residential community is located along Shaw Boulevard in Brgy. Highway Hills, Mandaluyong City, directly across from Wack Wack Golf and Country Club. It is known for its intimate, secure setting with only about 65 houses, making it a highly desirable, quiet neighborhood in a prime, central location.
             </p>
           </figcaption>
         </figure>
@@ -680,16 +936,52 @@ const Footer: React.FC = () => (
 );
 
 export default function App() {
-  return (
-    <div className="antialiased min-h-screen bg-corporate-50 font-sans text-corporate-600">
-      <Header />
-      <main>
+  const [view, setView] = useState<'landing' | 'summit' | 'facilities'>('landing');
+
+  // Helper to render current view content
+  const renderView = () => {
+    if (view === 'summit') {
+      return (
+        <ListingPage 
+          propertyName="Summit One Tower" 
+          units={summitUnits} 
+          onBack={() => setView('landing')} 
+        />
+      );
+    }
+    if (view === 'facilities') {
+      return (
+        <ListingPage 
+          propertyName="Facilities Centre" 
+          units={facilitiesUnits} 
+          onBack={() => setView('landing')} 
+        />
+      );
+    }
+    // Landing View
+    return (
+      <>
         <Hero />
         <WhyUs />
         <Operations />
-        <Assets />
+        <Assets 
+          onViewSummit={() => setView('summit')}
+          onViewFacilities={() => setView('facilities')}
+        />
         <FAQ />
         <Contact />
+      </>
+    );
+  };
+
+  return (
+    <div className="antialiased min-h-screen bg-corporate-50 font-sans text-corporate-600">
+      <Header 
+        onNavigateHome={() => setView('landing')} 
+        currentPage={view === 'landing' ? 'landing' : 'listings'}
+      />
+      <main>
+        {renderView()}
       </main>
       <Footer />
     </div>
