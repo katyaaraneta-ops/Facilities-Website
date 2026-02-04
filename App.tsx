@@ -1007,7 +1007,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => {
           {/* Adjusted aspect ratio for landscape image */}
           <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
-              src="images/summit-one-tower.png"
+              src="/images/summit-one-tower.png"
               alt="Summit One Tower Exterior"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -1042,7 +1042,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => {
           {/* Landscape aspect ratio suits the wide structure */}
           <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
             <img
-              src="images/facilities-centre.png"
+              src="/images/facilities-centre.png"
               alt="Facilities Centre Frontage"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
