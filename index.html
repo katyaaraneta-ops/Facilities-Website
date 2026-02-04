@@ -56,7 +56,15 @@
 }
 </script>
 </head>
-  <body class="bg-corporate-50 text-corporate-900 selection:bg-corporate-200 selection:text-corporate-900">
-    <div id="root"></div>
-  </body>
+ <body class="bg-corporate-50 text-corporate-900 selection:bg-corporate-200 selection:text-corporate-900"> 
+  
+  <form name="contact" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input type="text" name="name" />
+    <input type="email" name="email" />
+    <input type="text" name="company" />
+    <textarea name="message"></textarea>
+  </form>
+
+  <div id="root"></div> 
+</body>
 </html>

@@ -497,9 +497,35 @@ const ListingPage: React.FC<{
   onBack: () => void;
   onUnitClick: (unit: PropertyUnit) => void;
 }> = ({ propertyName, units, onBack, onUnitClick }) => {
+  const [sortOption, setSortOption] = useState('default');
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const getSortedUnits = () => {
+    // Create a shallow copy to avoid mutating props
+    const unitsCopy = [...units];
+    
+    const extractNumber = (str: string) => {
+      // Removes non-numeric chars. "₱85,000 / mo" -> 85000. "125 sqm" -> 125.
+      return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+    };
+
+    switch (sortOption) {
+      case 'price-asc':
+        return unitsCopy.sort((a, b) => extractNumber(a.price) - extractNumber(b.price));
+      case 'price-desc':
+        return unitsCopy.sort((a, b) => extractNumber(b.price) - extractNumber(a.price));
+      case 'area-asc':
+        return unitsCopy.sort((a, b) => extractNumber(a.area) - extractNumber(b.area));
+      default:
+        // Default order from the array
+        return unitsCopy;
+    }
+  };
+
+  const sortedUnits = getSortedUnits();
 
   return (
     <div className="min-h-screen bg-white pt-20 pb-24">
@@ -527,18 +553,22 @@ const ListingPage: React.FC<{
           
           <div className="mt-4 md:mt-0 relative">
             <label className="text-sm text-corporate-500 mr-2">Sort By:</label>
-            <select className="text-sm font-medium text-corporate-900 bg-transparent border-none focus:ring-0 cursor-pointer pr-8">
-              <option>Default</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Area: Low to High</option>
+            <select 
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="text-sm font-medium text-corporate-900 bg-transparent border-none focus:ring-0 cursor-pointer pr-8"
+            >
+              <option value="default">Default</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="area-asc">Area: Low to High</option>
             </select>
           </div>
         </div>
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {units.map((unit) => (
+          {sortedUnits.map((unit) => (
             <div 
               key={unit.id} 
               className="group cursor-pointer flex flex-col"
