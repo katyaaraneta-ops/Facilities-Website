@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Heart, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 
 // --- Data Definitions ---
@@ -581,10 +581,6 @@ const ListingPage: React.FC<{
                   alt={unit.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                {/* Heart Icon Overlay */}
-                <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-corporate-400 hover:text-red-500 transition-colors shadow-sm">
-                  <Heart size={18} />
-                </button>
               </div>
 
               {/* Content */}
