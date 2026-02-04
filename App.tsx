@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Heart, Maximize2, Layout, Building2, ArrowLeft } from 'lucide-react';
+import { Plus, Minus, Menu, X, Heart, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 
 // --- Data Definitions ---
@@ -8,7 +8,7 @@ import { WhyItem, OperationStep, FAQItem } from './types';
 const whyItems: WhyItem[] = [
   { 
     title: "Established Continuity", 
-    description: "Operating since 1960, with over six decades of continuous experience in Metro Manila commercial property operations." 
+    description: "Operating since 1960, with over six decades of continuous experience in the Philippine commercial real estate market." 
   },
   { 
     title: "Fiscal Discipline", 
@@ -16,7 +16,7 @@ const whyItems: WhyItem[] = [
   },
   { 
     title: "Direct On-Site Operations", 
-    description: "Day-to-day operations are handled directly for managed units within Summit One Tower and Facilities Centre." 
+    description: "Our flagship operations at Summit One Tower and Facilities Centre demonstrate a hands-on management model engineered for deployment across any Philippine location." 
   },
   { 
     title: "Tenant Interface", 
@@ -27,8 +27,8 @@ const whyItems: WhyItem[] = [
     description: "Coordination of power, water, and telecommunications services for managed units." 
   },
   { 
-    title: "Local Coordination", 
-    description: "Coordination with relevant regulatory offices and LGUs where required." 
+    title: "Regulatory & LGU Liaison", 
+    description: "Expert handling of compliance and administrative requirements, bridging the gap between property owners and Local Government Units (LGUs) nationwide." 
   },
 ];
 
@@ -44,23 +44,23 @@ const faqs: FAQItem[] = [
     question: "What does Facilities do?", 
     answer: (
       <>
-        Facilities operates specific commercial units within properties under its care.
+        Facilities, Inc. is a professional real estate operating company.
         <br />
-        Our role focuses on day-to-day unit-level operations, coordination, and administration.
+        We execute comprehensive asset management strategies focused on operational efficiency, asset preservation, and value retention for commercial properties across the Philippines.
       </>
     )
   },
   { 
     question: "Does Facilities manage entire buildings?", 
-    answer: "Facilities operates identified units only, not entire buildings or third-party portfolios." 
+    answer: "Our operational model is scalable and modular. While we are capable of building-level management, our primary focus is on the precise operation of specific asset portfolios and commercial units to ensure high-performance standards." 
   },
   { 
     question: "Is Facilities a real estate broker?", 
     answer: (
       <>
-        Facilities does not act as a real estate broker.
+        No. We are an asset operating firm, not a brokerage.
         <br />
-        However, Facilities works with brokers and leasing agents in relation to units under its operation. Parties interested in working with our available units may contact us to coordinate listings, viewings, or leasing discussions.
+        While we collaborate closely with leasing agents to ensure occupancy, our core mandate is the physical and financial stewardship of the assets under our management.
       </>
     )
   },
@@ -68,9 +68,9 @@ const faqs: FAQItem[] = [
     question: "Does Facilities market property to the public?", 
     answer: (
       <>
-        Facilities may market its own managed units where required.
+        Our marketing activities are strictly limited to the assets within our managed portfolio.
         <br />
-        It does not market property on behalf of third parties.
+        We focus on strategic tenant acquisition and retention to maintain optimal occupancy levels for the properties we operate.
       </>
     )
   },
@@ -78,7 +78,9 @@ const faqs: FAQItem[] = [
     question: "Does Facilities sell property?", 
     answer: (
       <>
-        Facilities does not sell property. Residential house-and-lot offerings in Lipa are handled by our sister company, ADEL.
+        We focus on long-term asset preservation rather than disposition.
+        <br />
+        Sales inquiries for specific residential land banks (such as those under our affiliate, ADEL) are handled by separate development arms.
         <br />
         <span className="italic">(Coming soon.)</span>
       </>
@@ -88,11 +90,11 @@ const faqs: FAQItem[] = [
     question: "Does Facilities provide design or architectural services?", 
     answer: (
       <>
-        Facilities does not provide architectural or design services.
+        We provide technical oversight and operational compliance reviews.
         <br />
-        Bespoke development advisory and consulting services may be directed to:
+        For architectural design and development advisory, we coordinate with specialized partners to align physical infrastructure with operational requirements.
         <br />
-        Katya Araneta, <a href="mailto:katya.araneta@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-300 underline-offset-2 transition-colors">katya.araneta@gmail.com</a>
+        Development Advisory: <a href="mailto:katya.araneta@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-300 underline-offset-2 transition-colors">katya.araneta@gmail.com</a>
       </>
     )
   },
@@ -100,9 +102,9 @@ const faqs: FAQItem[] = [
     question: "Does Facilities handle interior fit-outs?", 
     answer: (
       <>
-        Facilities may coordinate interior fit-outs where required.
+        We act as the owner’s representative during the fit-out phase.
         <br />
-        All construction and design work is carried out by third-party professionals.
+        We enforce strict compliance with building codes and operational standards, supervising third-party contractors to protect the asset’s structural integrity.
       </>
     )
   },
@@ -110,12 +112,12 @@ const faqs: FAQItem[] = [
     question: "What properties does Facilities currently operate?", 
     answer: (
       <>
-        Facilities currently operates units within:
+        Our portfolio is anchored by our flagship operations at:
         <ul className="list-disc pl-5 my-2 space-y-1">
-          <li>Summit One Tower, Mandaluyong City</li>
-          <li>Facilities Centre, Mandaluyong City</li>
+          <li>Summit One Tower (Flagship High-Rise Asset)</li>
+          <li>Facilities Centre (Flagship Commercial Asset)</li>
         </ul>
-        Additional properties may be added as operations expand.
+        These assets serve as the operational blueprint for our expansion into key commercial markets nationwide.
       </>
     )
   },
@@ -123,11 +125,12 @@ const faqs: FAQItem[] = [
     question: "Who should contact Facilities?", 
     answer: (
       <>
-        Facilities is the appropriate contact for:
+        Facilities is the primary interface for:
         <ul className="list-disc pl-5 my-2 space-y-1">
           <li>Tenants occupying managed units</li>
-          <li>Brokers and leasing agents coordinating on managed units</li>
-          <li>Utilities, service providers, and relevant local authorities</li>
+          <li>Institutional partners and leasing agents</li>
+          <li>Regulatory bodies and utility providers</li>
+          <li>Asset owners exploring professional management solutions</li>
         </ul>
       </>
     )
@@ -139,87 +142,181 @@ const faqs: FAQItem[] = [
 interface PropertyUnit {
   id: string;
   title: string;
+  headline: string;
   price: string;
   location: string;
   area: string;
   type: string;
   condition: string;
-  imageUrl: string;
+  images: string[];
+  specs: { label: string; value: string }[];
+  narrative: string;
 }
 
 const summitUnits: PropertyUnit[] = [
   {
     id: "S-1201",
-    title: "Unit 1201 - Executive Suite",
+    title: "Unit 1201",
+    headline: "Executive Command Node",
     price: "₱85,000 / mo",
     location: "Summit One Tower, Level 12",
     area: "125 sqm",
     type: "Office",
     condition: "Fully Fitted",
-    imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "125 sqm" },
+      { label: "Connectivity", value: "Fiber-Ready" },
+      { label: "HVAC", value: "Centralized" },
+      { label: "Finish", value: "Fully Fitted" },
+      { label: "Access", value: "Elevator Core A" }
+    ],
+    narrative: "Designed for high-level management operations, this unit features premium acoustic isolation and dedicated executive washrooms. The layout prioritizes privacy and secure decision-making environments, ensuring distraction-free leadership workflows."
   },
   {
     id: "S-2305",
-    title: "Unit 2305 - Open Plan",
+    title: "Unit 2305",
+    headline: "Scalable Operations Floor",
     price: "₱45,000 / mo",
     location: "Summit One Tower, Level 23",
     area: "85 sqm",
     type: "Office",
     condition: "Warm Shell",
-    imageUrl: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "85 sqm" },
+      { label: "Capacity", value: "~15 Workstations" },
+      { label: "HVAC", value: "Centralized" },
+      { label: "Power", value: "100% Backup" },
+      { label: "Layout", value: "Column-Free" }
+    ],
+    narrative: "A column-free efficient floor plate designed for rapid deployment of workstations. Ideal for BPO or high-density administrative functions requiring maximum floor efficiency and adaptable configuration options."
   },
   {
     id: "S-3402",
-    title: "Unit 3402 - Corner Unit",
+    title: "Unit 3402",
+    headline: "Strategic Corner Vantage",
     price: "₱110,000 / mo",
     location: "Summit One Tower, Level 34",
     area: "150 sqm",
     type: "Office",
     condition: "Bare Shell",
-    imageUrl: "https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "150 sqm" },
+      { label: "Orientation", value: "North-East" },
+      { label: "Glazing", value: "Double-Glazed" },
+      { label: "Layout", value: "Open Plan" },
+      { label: "View", value: "Ortigas Skyline" }
+    ],
+    narrative: "Offering dual-aspect views of the Ortigas skyline, this unit combines operational utility with prestigious positioning. Natural light penetration is maximized for energy efficiency and occupant well-being."
   },
   {
     id: "S-1504",
-    title: "Unit 1504 - Standard Office",
+    title: "Unit 1504",
+    headline: "Standard Operational Unit",
     price: "₱60,000 / mo",
     location: "Summit One Tower, Level 15",
     area: "100 sqm",
     type: "Office",
     condition: "Semi-Fitted",
-    imageUrl: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "100 sqm" },
+      { label: "Partitions", value: "Glass/Aluminum" },
+      { label: "Lighting", value: "LED Matrix" },
+      { label: "Flooring", value: "Carpet Tiles" },
+      { label: "Turnover", value: "Immediate" }
+    ],
+    narrative: "The baseline for corporate efficiency, providing a balanced mix of open work areas and partitioned meeting rooms. Ready for immediate turnover and seamless operational integration for small-to-medium teams."
   },
 ];
 
 const facilitiesUnits: PropertyUnit[] = [
   {
     id: "F-G02",
-    title: "Unit G-02 - Retail Space",
+    title: "Unit G-02",
+    headline: "High-Visibility Retail Interface",
     price: "₱150,000 / mo",
     location: "Facilities Centre, Ground Floor",
     area: "75 sqm",
     type: "Retail",
     condition: "Bare Shell",
-    imageUrl: "https://images.unsplash.com/photo-1582037928769-181f242afcf8?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1582037928769-181f242afcf8?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1565514020176-dbf227747046?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "75 sqm" },
+      { label: "Frontage", value: "6 Meters" },
+      { label: "Access", value: "Direct Street" },
+      { label: "Utilities", value: "Commercial Grade" },
+      { label: "Traffic", value: "High Volume" }
+    ],
+    narrative: "Positioned at the primary ingress point, this unit captures maximum foot traffic from the Shaw Boulevard artery. Optimized for service retail or quick-turnaround transactional operations requiring high visibility."
   },
   {
     id: "F-301",
-    title: "Unit 301 - Admin Office",
+    title: "Unit 301",
+    headline: "Administrative Control Hub",
     price: "₱25,000 / mo",
     location: "Facilities Centre, Level 3",
     area: "40 sqm",
     type: "Office",
     condition: "Fitted",
-    imageUrl: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "40 sqm" },
+      { label: "Security", value: "Access Control" },
+      { label: "Lighting", value: "Standard Office" },
+      { label: "Ventilation", value: "Independent AC" },
+      { label: "Privacy", value: "High" }
+    ],
+    narrative: "A secure, low-traffic unit located on the podium level, ideal for back-office accounting or records management. Separation from public zones ensures operational continuity and data security."
   },
   {
     id: "F-505",
-    title: "Unit 505 - Storage / Ops",
+    title: "Unit 505",
+    headline: "Logistics & Storage Node",
     price: "₱35,000 / mo",
     location: "Facilities Centre, Level 5",
     area: "60 sqm",
     type: "Flex",
     condition: "Warm Shell",
-    imageUrl: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop"
+    images: [
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1586880244406-55983627908f?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "60 sqm" },
+      { label: "Floor Load", value: "Heavy Duty" },
+      { label: "Ceiling", value: "Open Grid" },
+      { label: "Access", value: "Freight Elevator" },
+      { label: "Usage", value: "Storage/Support" }
+    ],
+    narrative: "Utilitarian space designed for inventory management or operational support equipment. Heavy-load flooring and wide-door access facilitate movement of goods and equipment integration."
   },
 ];
 
@@ -227,18 +324,21 @@ const facilitiesUnits: PropertyUnit[] = [
 
 interface HeaderProps {
   onNavigateHome: () => void;
-  currentPage: 'landing' | 'listings';
+  onViewSummit: () => void;
+  onViewFacilities: () => void;
+  currentPage: ViewState['type'];
 }
 
-const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
+const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFacilities, currentPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Handles clicking a standard navigation link
   const handleNavClick = (targetId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    if (currentPage === 'listings') {
+    if (currentPage !== 'landing') {
       onNavigateHome();
       setTimeout(() => {
         const el = document.getElementById(targetId);
@@ -249,6 +349,13 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     closeMenu();
+  };
+
+  // Handles clicking a listing link
+  const handleListingClick = (action: () => void) => () => {
+    action();
+    closeMenu();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -273,7 +380,38 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
         <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
           <a href="#why" onClick={handleNavClick("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
           <a href="#operate" onClick={handleNavClick("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
-          <a href="#assets" onClick={handleNavClick("assets")} className="hover:text-[#C9D2E3] transition-colors duration-300">Assets</a>
+          
+          {/* Dropdown for Assets */}
+          <div className="relative group">
+            <a 
+              href="#assets" 
+              onClick={handleNavClick("assets")} 
+              className="flex items-center gap-1 hover:text-[#C9D2E3] transition-colors duration-300 py-6"
+            >
+              Assets
+              <ChevronDown size={14} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+            </a>
+            
+            {/* Dropdown Content */}
+            <div className="absolute top-full -left-4 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 w-64">
+              <div className="bg-white rounded-lg shadow-xl border border-corporate-200 overflow-hidden py-2">
+                <button 
+                  onClick={handleListingClick(onViewSummit)}
+                  className="w-full text-left px-5 py-3 text-corporate-800 hover:bg-corporate-50 hover:text-corporate-900 transition-colors text-sm font-medium"
+                >
+                  Summit One Units for Rent
+                </button>
+                <div className="h-px bg-corporate-100 mx-5 my-1"></div>
+                <button 
+                  onClick={handleListingClick(onViewFacilities)}
+                  className="w-full text-left px-5 py-3 text-corporate-800 hover:bg-corporate-50 hover:text-corporate-900 transition-colors text-sm font-medium"
+                >
+                  Facilities Centre Units for Rent
+                </button>
+              </div>
+            </div>
+          </div>
+
           <a href="#faq" onClick={handleNavClick("faq")} className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
           <a href="#contact" onClick={handleNavClick("contact")} className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
         </nav>
@@ -290,7 +428,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-20 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 shadow-xl">
+        <div className="md:hidden absolute top-20 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 shadow-xl max-h-[calc(100vh-80px)] overflow-y-auto">
           <nav className="flex flex-col py-8 px-6 space-y-6">
             <a 
               href="#why" 
@@ -306,13 +444,32 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
             >
               How We Operate
             </a>
-            <a 
-              href="#assets" 
-              onClick={handleNavClick("assets")}
-              className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors"
-            >
-              Assets
-            </a>
+            
+            <div className="space-y-4">
+              <a 
+                href="#assets" 
+                onClick={handleNavClick("assets")}
+                className="text-[#E6EAF2] text-lg font-medium tracking-wide hover:text-[#C9D2E3] transition-colors block"
+              >
+                Assets
+              </a>
+              {/* Indented Sub-links for Mobile */}
+              <div className="pl-6 flex flex-col space-y-3 border-l border-[#E6EAF2]/20">
+                <button 
+                  onClick={handleListingClick(onViewSummit)}
+                  className="text-[#C9D2E3] text-base text-left hover:text-white transition-colors"
+                >
+                  Summit One Units for Rent
+                </button>
+                <button 
+                  onClick={handleListingClick(onViewFacilities)}
+                  className="text-[#C9D2E3] text-base text-left hover:text-white transition-colors"
+                >
+                  Facilities Centre Units for Rent
+                </button>
+              </div>
+            </div>
+
             <a 
               href="#faq" 
               onClick={handleNavClick("faq")}
@@ -334,7 +491,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, currentPage }) => {
   );
 };
 
-const ListingPage: React.FC<{ propertyName: string; units: PropertyUnit[]; onBack: () => void }> = ({ propertyName, units, onBack }) => {
+const ListingPage: React.FC<{ 
+  propertyName: string; 
+  units: PropertyUnit[]; 
+  onBack: () => void;
+  onUnitClick: (unit: PropertyUnit) => void;
+}> = ({ propertyName, units, onBack, onUnitClick }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -377,11 +539,15 @@ const ListingPage: React.FC<{ propertyName: string; units: PropertyUnit[]; onBac
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
           {units.map((unit) => (
-            <div key={unit.id} className="group cursor-pointer flex flex-col">
+            <div 
+              key={unit.id} 
+              className="group cursor-pointer flex flex-col"
+              onClick={() => onUnitClick(unit)}
+            >
               {/* Image Card */}
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-corporate-100 mb-4">
                 <img 
-                  src={unit.imageUrl} 
+                  src={unit.images[0]} 
                   alt={unit.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -403,7 +569,7 @@ const ListingPage: React.FC<{ propertyName: string; units: PropertyUnit[]; onBac
                 </div>
                 
                 <p className="text-sm text-corporate-500 font-medium">
-                  {unit.location}
+                  {unit.headline}
                 </p>
 
                 {/* Specs Divider */}
@@ -440,6 +606,245 @@ const ListingPage: React.FC<{ propertyName: string; units: PropertyUnit[]; onBac
   );
 };
 
+// --- Unit Gallery Component ---
+const UnitGallery: React.FC<{ images: string[], condition: string }> = ({ images, condition }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const nextImage = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
+
+  const prevImage = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const goToImage = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (isLightboxOpen) {
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+    }
+  }, [isLightboxOpen, nextImage, prevImage]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  return (
+    <>
+      {/* Carousel Container */}
+      <div 
+        className="relative aspect-video w-full overflow-hidden rounded-xl bg-corporate-200 shadow-sm border border-corporate-200 group"
+      >
+        {/* Main Image */}
+        <div 
+           className="w-full h-full cursor-zoom-in"
+           onClick={() => setIsLightboxOpen(true)}
+        >
+           <img 
+             src={images[currentIndex]} 
+             alt={`View ${currentIndex + 1}`}
+             className="w-full h-full object-cover transition-all duration-500"
+           />
+        </div>
+
+        {/* Condition Badge (Overlayed) */}
+        <div className="absolute bottom-6 left-6 bg-corporate-900/90 backdrop-blur-md px-4 py-2 rounded-lg z-10 pointer-events-none">
+           <span className="text-white text-sm font-medium tracking-wide uppercase">{condition}</span>
+        </div>
+
+        {/* Navigation Arrows (Hover Only) */}
+        <button 
+          onClick={prevImage}
+          className="absolute top-1/2 left-4 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button 
+          onClick={nextImage}
+          className="absolute top-1/2 right-4 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0"
+        >
+          <ChevronRight size={24} />
+        </button>
+
+        {/* Pagination Dots */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); goToImage(idx); }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                idx === currentIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/80'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4">
+          <button 
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-6 right-6 p-2 text-white/70 hover:text-white transition-colors"
+          >
+            <X size={32} />
+          </button>
+
+          <button 
+            onClick={prevImage}
+            className="absolute left-6 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-colors"
+          >
+            <ChevronLeft size={48} />
+          </button>
+
+          <div className="max-w-7xl max-h-[90vh] relative">
+             <img 
+               src={images[currentIndex]} 
+               alt={`Full View ${currentIndex + 1}`}
+               className="max-h-[85vh] max-w-full object-contain mx-auto"
+             />
+             <div className="text-center mt-4 text-white/50 font-mono text-sm">
+                {currentIndex + 1} / {images.length}
+             </div>
+          </div>
+
+          <button 
+            onClick={nextImage}
+            className="absolute right-6 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-colors"
+          >
+            <ChevronRight size={48} />
+          </button>
+        </div>
+      )}
+    </>
+  );
+};
+
+
+const UnitDetailPage: React.FC<{ 
+  unit: PropertyUnit; 
+  onBack: () => void; 
+  propertyName: string;
+}> = ({ unit, onBack, propertyName }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Construct mailto link
+  const emailSubject = `Rent Inquiry for ${unit.title} Ref ID ${unit.id}`;
+  const mailtoLink = `mailto:mercy.laurenciano@gmail.com?subject=${encodeURIComponent(emailSubject)}`;
+
+  return (
+    <div className="min-h-screen bg-corporate-50 pt-20 pb-24">
+      <div className="max-w-7xl mx-auto px-6 pt-12">
+        
+        {/* Breadcrumb / Back */}
+        <div className="mb-8">
+          <button 
+            onClick={onBack}
+            className="flex items-center text-corporate-500 hover:text-corporate-900 transition-colors text-sm font-medium tracking-wide uppercase group"
+          >
+            <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to {propertyName}
+          </button>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          {/* LEFT COLUMN: Visuals & Info */}
+          <div className="lg:col-span-8 space-y-8">
+            
+            {/* Gallery Component Replaces Static Image */}
+            <UnitGallery images={unit.images} condition={unit.condition} />
+
+            {/* Title Block */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-corporate-200 pb-8 gap-4">
+              <div className="space-y-2">
+                 <div className="flex items-center gap-3 text-corporate-500 text-sm font-medium uppercase tracking-widest">
+                   <MapPin size={16} />
+                   <span>{unit.location}</span>
+                 </div>
+                 <h1 className="text-4xl md:text-5xl font-serif text-corporate-900 leading-tight">
+                   {unit.headline}
+                 </h1>
+                 <p className="text-xl text-corporate-600 font-light">{unit.title}</p>
+              </div>
+              <div className="text-left md:text-right">
+                <p className="text-3xl font-bold text-corporate-900">{unit.price}</p>
+              </div>
+            </div>
+
+            {/* Narrative & Specs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
+               <div className="space-y-6">
+                 <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">About this Unit</h3>
+                 <p className="text-lg text-corporate-600 leading-relaxed">
+                   {unit.narrative}
+                 </p>
+               </div>
+
+               <div className="space-y-6">
+                 <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">Key Specifications</h3>
+                 <div className="border-t border-corporate-200">
+                   {unit.specs.map((spec, idx) => (
+                     <div key={idx} className="flex justify-between py-3 border-b border-corporate-200 text-base">
+                       <span className="text-corporate-500 font-medium">{spec.label}</span>
+                       <span className="text-corporate-900 font-semibold text-right">{spec.value}</span>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Contact Sidebar */}
+          <div className="lg:col-span-4 space-y-8">
+            <div className="bg-white p-8 rounded-xl border border-corporate-200 shadow-sm sticky top-28">
+              <h3 className="text-2xl font-serif text-corporate-900 mb-6">
+                Interested in this property?
+              </h3>
+              <p className="text-corporate-600 mb-8 leading-relaxed">
+                Our leasing team is ready to schedule a viewing or provide a detailed floor plan for {unit.title}.
+              </p>
+              
+              <div className="space-y-4">
+                <a 
+                  href={mailtoLink}
+                  className="w-full py-4 bg-corporate-900 text-white font-medium hover:bg-corporate-800 transition-colors rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Mail size={18} />
+                  Inquire via Email
+                </a>
+                <div className="flex gap-4">
+                  <a href="tel:+639335383815" className="flex-1 py-3 border border-corporate-300 text-corporate-700 font-medium hover:border-corporate-900 hover:text-corporate-900 transition-colors rounded-lg flex items-center justify-center gap-2">
+                    <Phone size={18} />
+                    Call Mercy
+                  </a>
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-corporate-100 text-sm text-corporate-500 text-center">
+                Ref ID: <span className="font-mono text-corporate-700">{unit.id}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 const Hero: React.FC = () => (
   <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-corporate-50 pt-20 border-b border-corporate-200">
@@ -459,11 +864,10 @@ const Hero: React.FC = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           <div className="space-y-8">
             <p className="text-xl md:text-2xl text-corporate-800 leading-relaxed font-serif">
-              Facilities, Inc., is a family-owned operating company established in 1960.
-              The company is responsible for the day-to-day operation of selected commercial units within Mandaluyong-based properties.
+              Facilities, Inc. is a premier, family-owned asset management and operating company with a legacy of excellence dating back to 1960. With foundations rooted in our flagship Mandaluyong developments, we are a Philippine-centric firm with the proven expertise to manage and scale commercial operations nationwide.
             </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
-              Facilities, Inc., currently operates units within Summit One Tower and Facilities Centre, with operations expanding beyond Metro Manila.
+              Currently overseeing key assets within Summit One Tower and Facilities Centre, our operational footprint continues to grow as we expand our management standards to strategic locations beyond Metro Manila.
             </p>
             
             <p className="text-lg font-serif italic text-corporate-400 mt-12 mb-8">
@@ -907,10 +1311,6 @@ const Contact: React.FC = () => {
           </h3>
           <div className="text-lg text-corporate-700 leading-relaxed font-serif space-y-6 lg:pt-3">
             <div>
-              <span className="block font-medium text-corporate-900">Sylvia</span>
-              <span className="block text-corporate-600">+63 917 523 8157</span>
-            </div>
-            <div>
               <span className="block font-medium text-corporate-900">Mercy</span>
               <span className="block text-corporate-600">+63 933 538 3815</span>
             </div>
@@ -935,29 +1335,46 @@ const Footer: React.FC = () => (
   </footer>
 );
 
+type ViewState =
+  | { type: 'landing' }
+  | { type: 'listing'; property: 'summit' | 'facilities' }
+  | { type: 'detail'; unit: PropertyUnit; source: 'summit' | 'facilities' };
+
 export default function App() {
-  const [view, setView] = useState<'landing' | 'summit' | 'facilities'>('landing');
+  const [viewState, setViewState] = useState<ViewState>({ type: 'landing' });
 
   // Helper to render current view content
   const renderView = () => {
-    if (view === 'summit') {
+    if (viewState.type === 'listing' && viewState.property === 'summit') {
       return (
         <ListingPage 
           propertyName="Summit One Tower" 
           units={summitUnits} 
-          onBack={() => setView('landing')} 
+          onBack={() => setViewState({ type: 'landing' })} 
+          onUnitClick={(unit) => setViewState({ type: 'detail', unit, source: 'summit' })}
         />
       );
     }
-    if (view === 'facilities') {
+    if (viewState.type === 'listing' && viewState.property === 'facilities') {
       return (
         <ListingPage 
           propertyName="Facilities Centre" 
           units={facilitiesUnits} 
-          onBack={() => setView('landing')} 
+          onBack={() => setViewState({ type: 'landing' })}
+          onUnitClick={(unit) => setViewState({ type: 'detail', unit, source: 'facilities' })}
         />
       );
     }
+    if (viewState.type === 'detail') {
+      return (
+        <UnitDetailPage 
+          unit={viewState.unit} 
+          onBack={() => setViewState({ type: 'listing', property: viewState.source })}
+          propertyName={viewState.source === 'summit' ? "Summit One Tower" : "Facilities Centre"}
+        />
+      );
+    }
+    
     // Landing View
     return (
       <>
@@ -965,8 +1382,8 @@ export default function App() {
         <WhyUs />
         <Operations />
         <Assets 
-          onViewSummit={() => setView('summit')}
-          onViewFacilities={() => setView('facilities')}
+          onViewSummit={() => setViewState({ type: 'listing', property: 'summit' })}
+          onViewFacilities={() => setViewState({ type: 'listing', property: 'facilities' })}
         />
         <FAQ />
         <Contact />
@@ -977,8 +1394,10 @@ export default function App() {
   return (
     <div className="antialiased min-h-screen bg-corporate-50 font-sans text-corporate-600">
       <Header 
-        onNavigateHome={() => setView('landing')} 
-        currentPage={view === 'landing' ? 'landing' : 'listings'}
+        onNavigateHome={() => setViewState({ type: 'landing' })} 
+        onViewSummit={() => setViewState({ type: 'listing', property: 'summit' })}
+        onViewFacilities={() => setViewState({ type: 'listing', property: 'facilities' })}
+        currentPage={viewState.type}
       />
       <main>
         {renderView()}
