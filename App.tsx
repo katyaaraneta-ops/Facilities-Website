@@ -10,29 +10,29 @@ import { AdminDashboard } from './AdminDashboard';
 // --- Data Definitions ---
 
 const whyItems: WhyItem[] = [
-  { 
-    title: "Established Continuity", 
-    description: "Operating since 1960, with over six decades of continuous experience in the Philippine commercial real estate market." 
+  {
+    title: "Established Continuity",
+    description: "Operating since 1960, with over six decades of continuous experience in the Philippine commercial real estate market."
   },
-  { 
-    title: "Fiscal Discipline", 
-    description: "Conservative financial management focused on asset preservation and operational stability." 
+  {
+    title: "Fiscal Discipline",
+    description: "Conservative financial management focused on asset preservation and operational stability."
   },
-  { 
-    title: "Direct On-Site Operations", 
-    description: "Our flagship operations at Summit One Tower and Facilities Centre demonstrate a hands-on management model engineered for deployment across any Philippine location." 
+  {
+    title: "Direct On-Site Operations",
+    description: "Our flagship operations at Summit One Tower and Facilities Centre demonstrate a hands-on management model engineered for deployment across any Philippine location."
   },
-  { 
-    title: "Tenant Interface", 
-    description: "Primary operational contact for tenants occupying managed units." 
+  {
+    title: "Tenant Interface",
+    description: "Primary operational contact for tenants occupying managed units."
   },
-  { 
-    title: "Utilities Coordination", 
-    description: "Coordination of power, water, and telecommunications services for managed units." 
+  {
+    title: "Utilities Coordination",
+    description: "Coordination of power, water, and telecommunications services for managed units."
   },
-  { 
-    title: "Regulatory & LGU Liaison", 
-    description: "Expert handling of compliance and administrative requirements, bridging the gap between property owners and Local Government Units (LGUs) nationwide." 
+  {
+    title: "Regulatory & LGU Liaison",
+    description: "Expert handling of compliance and administrative requirements, bridging the gap between property owners and Local Government Units (LGUs) nationwide."
   },
 ];
 
@@ -44,8 +44,8 @@ const operations: OperationStep[] = [
 ];
 
 const faqs: FAQItem[] = [
-  { 
-    question: "What does Facilities do?", 
+  {
+    question: "What does Facilities do?",
     answer: (
       <>
         Facilities, Inc. is a professional real estate operating company.
@@ -54,12 +54,12 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "Does Facilities manage entire buildings?", 
-    answer: "Our operational model is scalable and modular. While we are capable of building-level management, our primary focus is on the precise operation of specific asset portfolios and commercial units to ensure high-performance standards." 
+  {
+    question: "Does Facilities manage entire buildings?",
+    answer: "Our operational model is scalable and modular. While we are capable of building-level management, our primary focus is on the precise operation of specific asset portfolios and commercial units to ensure high-performance standards."
   },
-  { 
-    question: "Is Facilities a real estate broker?", 
+  {
+    question: "Is Facilities a real estate broker?",
     answer: (
       <>
         No. We are an asset operating firm, not a brokerage.
@@ -68,8 +68,8 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "Does Facilities market property to the public?", 
+  {
+    question: "Does Facilities market property to the public?",
     answer: (
       <>
         Our marketing activities are strictly limited to the assets within our managed portfolio.
@@ -78,8 +78,8 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "Does Facilities sell property?", 
+  {
+    question: "Does Facilities sell property?",
     answer: (
       <>
         We focus on long-term asset preservation rather than disposition.
@@ -90,8 +90,8 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "Does Facilities provide design or architectural services?", 
+  {
+    question: "Does Facilities provide design or architectural services?",
     answer: (
       <>
         We provide technical oversight and operational compliance reviews.
@@ -102,8 +102,8 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "Does Facilities handle interior fit-outs?", 
+  {
+    question: "Does Facilities handle interior fit-outs?",
     answer: (
       <>
         We act as the owner’s representative during the fit-out phase.
@@ -112,8 +112,8 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "What properties does Facilities currently operate?", 
+  {
+    question: "What properties does Facilities currently operate?",
     answer: (
       <>
         Our portfolio is anchored by our flagship operations at:
@@ -125,8 +125,8 @@ const faqs: FAQItem[] = [
       </>
     )
   },
-  { 
-    question: "Who should contact Facilities?", 
+  {
+    question: "Who should contact Facilities?",
     answer: (
       <>
         Facilities is the primary interface for:
@@ -244,38 +244,38 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
   return (
     <header className="fixed top-0 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 z-50">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <a 
+        <a
           href="#"
           onClick={scrollToTop}
           className="font-serif text-2xl text-[#E6EAF2] font-medium tracking-tight opacity-95"
         >
           Facilities, Incorporated
         </a>
-        
+
         <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
           <a href="#why" onClick={handleNavClick("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
           <a href="#operate" onClick={handleNavClick("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
-          
+
           <div className="relative group">
-            <a 
-              href="#assets" 
-              onClick={handleNavClick("assets")} 
+            <a
+              href="#assets"
+              onClick={handleNavClick("assets")}
               className="flex items-center gap-1 hover:text-[#C9D2E3] transition-colors duration-300 py-6"
             >
               Assets
               <ChevronDown size={14} className="opacity-70 group-hover:opacity-100 transition-opacity" />
             </a>
-            
+
             <div className="absolute top-full -left-4 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 w-64">
               <div className="bg-white rounded-lg shadow-xl border border-corporate-200 overflow-hidden py-2">
-                <button 
+                <button
                   onClick={handleListingClick(onViewSummit)}
                   className="w-full text-left px-5 py-3 text-corporate-800 hover:bg-corporate-50 hover:text-corporate-900 transition-colors text-sm font-medium"
                 >
                   Summit One Units for Rent
                 </button>
                 <div className="h-px bg-corporate-100 mx-5 my-1"></div>
-                <button 
+                <button
                   onClick={handleListingClick(onViewFacilities)}
                   className="w-full text-left px-5 py-3 text-corporate-800 hover:bg-corporate-50 hover:text-corporate-900 transition-colors text-sm font-medium"
                 >
@@ -289,7 +289,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
           <a href="#contact" onClick={handleNavClick("contact")} className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
         </nav>
 
-        <button 
+        <button
           className="md:hidden text-[#E6EAF2] hover:text-[#C9D2E3] transition-colors focus:outline-none"
           onClick={toggleMenu}
         >
@@ -318,9 +318,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
   );
 };
 
-const ListingPage: React.FC<{ 
-  propertyName: string; 
-  units: PropertyUnit[]; 
+const ListingPage: React.FC<{
+  propertyName: string;
+  units: PropertyUnit[];
   onBack: () => void;
   onUnitClick: (unit: PropertyUnit) => void;
 }> = ({ propertyName, units, onBack, onUnitClick }) => {
@@ -373,7 +373,7 @@ const ListingPage: React.FC<{
                 <img src={unit.images[0]} alt={unit.unit_number} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 {/* Dynamic Status Badge */}
                 <div className={`absolute top-4 right-4 ${unit.status.toLowerCase().includes('available') ? 'bg-corporate-800' : 'bg-corporate-900'} text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest shadow-lg`}>
-                   {unit.status}
+                  {unit.status}
                 </div>
               </div>
               <div className="space-y-3">
@@ -384,14 +384,14 @@ const ListingPage: React.FC<{
                 <p className="text-sm text-corporate-500 font-medium">{unit.headline}</p>
                 <div className="h-px bg-corporate-100 w-full my-2"></div>
                 <div className="flex items-center gap-6 text-sm text-corporate-600">
-                   <div className="flex items-center gap-2">
-                      <Maximize2 size={16} className="text-corporate-400" />
-                      <span>{unit.area} sqm</span>
-                   </div>
-                   <div className="flex items-center gap-2">
-                      <Building2 size={16} className="text-corporate-400" />
-                      <span>{unit.condition || 'Fitted'}</span>
-                   </div>
+                  <div className="flex items-center gap-2">
+                    <Maximize2 size={16} className="text-corporate-400" />
+                    <span>{unit.area} sqm</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 size={16} className="text-corporate-400" />
+                    <span>{unit.condition || 'Fitted'}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -420,10 +420,10 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
     <>
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-corporate-200 shadow-sm border border-corporate-200 group">
         <div className="w-full h-full cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
-           <img src={images[currentIndex]} alt="View" className="w-full h-full object-cover" />
+          <img src={images[currentIndex]} alt="View" className="w-full h-full object-cover" />
         </div>
         <div className="absolute bottom-6 left-6 bg-corporate-900/90 backdrop-blur-md px-4 py-2 rounded-lg z-10">
-           <span className="text-white text-sm font-medium tracking-wide uppercase">{status}</span>
+          <span className="text-white text-sm font-medium tracking-wide uppercase">{status}</span>
         </div>
         <button onClick={prevImage} className="absolute top-1/2 left-4 -translate-y-1/2 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all">
           <ChevronLeft size={24} />
@@ -447,8 +447,8 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
   const mailtoLink = `mailto:mercy.laurenciano@gmail.com?subject=${encodeURIComponent(`Rent Inquiry for Unit ${unit.unit_number} - ${propertyName}`)}`;
 
   // Formatting for association dues as currency with two decimal places
-  const formattedDues = unit.dues 
-    ? `₱${Number(unit.dues).toLocaleString(undefined, { minimumFractionDigits: 2 })}` 
+  const formattedDues = unit.dues
+    ? `₱${Number(unit.dues).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
     : "Included";
 
   return (
@@ -464,12 +464,12 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
             <UnitGallery images={unit.images} status={unit.status} />
             <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-corporate-200 pb-8 gap-4">
               <div className="space-y-2">
-                 <div className="flex items-center gap-3 text-corporate-500 text-sm font-medium uppercase tracking-widest">
-                   <MapPin size={16} />
-                   <span>{unit.building_name}</span>
-                 </div>
-                 <h1 className="text-4xl md:text-5xl font-serif text-corporate-900 leading-tight">{unit.headline}</h1>
-                 <p className="text-xl text-corporate-600 font-light">Unit {unit.unit_number}</p>
+                <div className="flex items-center gap-3 text-corporate-500 text-sm font-medium uppercase tracking-widest">
+                  <MapPin size={16} />
+                  <span>{unit.building_name}</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-serif text-corporate-900 leading-tight">{unit.headline}</h1>
+                <p className="text-xl text-corporate-600 font-light">Unit {unit.unit_number}</p>
               </div>
               <div className="text-left md:text-right">
                 <p className="text-3xl font-bold text-corporate-900">₱{Number(unit.price).toLocaleString()} / mo</p>
@@ -477,27 +477,27 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
-               <div className="space-y-6">
-                 <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">About this Unit</h3>
-                 <p className="text-lg text-corporate-600 leading-relaxed">{unit.narrative}</p>
-               </div>
-               <div className="space-y-6">
-                 <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">Live Facts</h3>
-                 <div className="border-t border-corporate-200">
-                    {[
-                      { label: "Floor Area", value: `${unit.area} sqm` },
-                      { label: "Assoc. Dues", value: formattedDues },
-                      { label: "Availability", value: unit.available_date || "Immediate" },
-                      { label: "Condition", value: unit.condition || "Fitted" },
-                      ...unit.specs
-                    ].map((spec, idx) => (
-                      <div key={idx} className="flex justify-between py-3 border-b border-corporate-200 text-base">
-                        <span className="text-corporate-500 font-medium">{spec.label}</span>
-                        <span className="text-corporate-900 font-semibold text-right">{spec.value}</span>
-                      </div>
-                    ))}
-                 </div>
-               </div>
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">About this Unit</h3>
+                <p className="text-lg text-corporate-600 leading-relaxed">{unit.narrative}</p>
+              </div>
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">Live Facts</h3>
+                <div className="border-t border-corporate-200">
+                  {[
+                    { label: "Floor Area", value: `${unit.area} sqm` },
+                    { label: "Assoc. Dues", value: formattedDues },
+                    { label: "Availability", value: unit.available_date || "Immediate" },
+                    { label: "Condition", value: unit.condition || "Fitted" },
+                    ...unit.specs
+                  ].map((spec, idx) => (
+                    <div key={idx} className="flex justify-between py-3 border-b border-corporate-200 text-base">
+                      <span className="text-corporate-500 font-medium">{spec.label}</span>
+                      <span className="text-corporate-900 font-semibold text-right">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -549,7 +549,7 @@ const Hero: React.FC = () => (
             </div>
           </div>
           <div className="relative h-full min-h-[400px] w-full bg-corporate-100 hidden md:block">
-            <img src="/images/facilities-b&w.JPG" alt="Building" className="absolute inset-0 w-full h-full object-cover" />
+            <img src="/images/facilities-b&w.jpeg" alt="Summit One Tower Shaw Blvd" className="absolute inset-0 w-full h-full object-cover object-top" />
           </div>
         </div>
       </div>
@@ -576,14 +576,14 @@ const WhyUs: React.FC = () => (
 const Operations: React.FC = () => (
   <Section id="operate" className="bg-corporate-50 border-t border-corporate-200">
     <div className="border-b border-corporate-200 mb-16 pb-4">
-       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">How We Operate</h2>
+      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">How We Operate</h2>
     </div>
     <div className="space-y-16 md:space-y-24">
       {operations.map((op, idx) => (
         <div key={idx} className="flex flex-col md:flex-row md:items-stretch">
           <div className="w-full md:w-5/12 pb-6 md:pb-0 md:pr-12">
-             <span className="block text-6xl md:text-7xl font-serif text-corporate-200 leading-none mb-6 -mt-2">{op.step}</span>
-             <h3 className="text-2xl md:text-3xl font-serif text-corporate-800 leading-tight">{op.title}</h3>
+            <span className="block text-6xl md:text-7xl font-serif text-corporate-200 leading-none mb-6 -mt-2">{op.step}</span>
+            <h3 className="text-2xl md:text-3xl font-serif text-corporate-800 leading-tight">{op.title}</h3>
           </div>
           <div className="w-full md:w-7/12 md:border-l border-corporate-200 md:pl-12">
             <p className="text-lg text-corporate-600 leading-relaxed">{op.description}</p>
@@ -609,7 +609,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
         <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
           <img src="/images/summit-one-tower.png" alt="Summit One" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
           <div className="absolute inset-0 group-hover:bg-corporate-900/10 transition-colors flex items-center justify-center">
-             <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all">View Available Units</span>
+            <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all">View Available Units</span>
           </div>
         </div>
         <figcaption className="space-y-2">
@@ -622,7 +622,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
         <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
           <img src="/images/facilities-centre.png" alt="Facilities Centre" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
           <div className="absolute inset-0 group-hover:bg-corporate-900/10 transition-colors flex items-center justify-center">
-             <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all">View Available Units</span>
+            <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all">View Available Units</span>
           </div>
         </div>
         <figcaption className="space-y-2">
@@ -683,14 +683,14 @@ const Contact: React.FC = () => {
           <button disabled={isSending} className="px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 font-medium hover:border-corporate-900 transition-colors disabled:opacity-50">{isSending ? 'Sending...' : 'Submit Inquiry'}</button>
         </div>
         <div className="lg:col-span-4 lg:col-start-1 lg:row-start-1 space-y-8">
-           <div className="space-y-2">
-             <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Office</h3>
-             <p className="text-lg text-corporate-700 font-serif">23/F Summit One Tower<br />Mandaluyong City, Philippines</p>
-           </div>
-           <div className="space-y-2">
-             <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email</h3>
-             <a href="mailto:mercy.laurenciano@gmail.com" className="text-lg text-corporate-700 font-serif underline decoration-corporate-200">mercy.laurenciano@gmail.com</a>
-           </div>
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Office</h3>
+            <p className="text-lg text-corporate-700 font-serif">23/F Summit One Tower<br />Mandaluyong City, Philippines</p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email</h3>
+            <a href="mailto:mercy.laurenciano@gmail.com" className="text-lg text-corporate-700 font-serif underline decoration-corporate-200">mercy.laurenciano@gmail.com</a>
+          </div>
         </div>
       </form>
     </Section>
@@ -700,7 +700,7 @@ const Contact: React.FC = () => {
 const Footer: React.FC<{ onAdminClick: () => void }> = ({ onAdminClick }) => (
   <footer className="bg-[#181852] text-[#C9D2E3] py-12">
     <div className="max-w-7xl mx-auto px-6 flex justify-between items-center opacity-80 text-xs tracking-widest uppercase">
-      <button 
+      <button
         onClick={onAdminClick}
         className="hover:text-white transition-colors text-left"
       >
@@ -748,7 +748,7 @@ export default function App() {
           area: u.net_area,
           status: u.status,
           dues: u.assoc_dues,
-          condition: u.condition, 
+          condition: u.condition,
           available_date: u.availability_date,
           ...marketing
         };
@@ -759,54 +759,54 @@ export default function App() {
 
   return (
     <div className="antialiased min-h-screen bg-corporate-50 font-sans">
-      <Header 
-        onNavigateHome={() => setViewState({ type: 'landing' })} 
+      <Header
+        onNavigateHome={() => setViewState({ type: 'landing' })}
         onViewSummit={() => setViewState({ type: 'listing', property: 'Summit One Tower' })}
         onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
         currentPage={viewState.type}
       />
       <main>
         {viewState.type === 'login' ? (
-           <LoginPage 
-             onLoginSuccess={(loggedInUser) => {
-               setUser(loggedInUser);
-               setViewState({ type: 'admin' });
-             }}
-             onBack={() => setViewState({ type: 'landing' })}
-           />
+          <LoginPage
+            onLoginSuccess={(loggedInUser) => {
+              setUser(loggedInUser);
+              setViewState({ type: 'admin' });
+            }}
+            onBack={() => setViewState({ type: 'landing' })}
+          />
         ) : viewState.type === 'admin' ? (
-           <AdminDashboard 
-             onLogout={() => {
-               setUser(null);
-               setViewState({ type: 'landing' });
-             }}
-           />
+          <AdminDashboard
+            onLogout={() => {
+              setUser(null);
+              setViewState({ type: 'landing' });
+            }}
+          />
         ) : viewState.type === 'listing' ? (
-           <ListingPage 
-             propertyName={viewState.property} 
-             units={getProcessedUnits(viewState.property)} 
-             onBack={() => setViewState({ type: 'landing' })}
-             onUnitClick={(u) => setViewState({ type: 'detail', unit: u, source: viewState.property })}
-           />
+          <ListingPage
+            propertyName={viewState.property}
+            units={getProcessedUnits(viewState.property)}
+            onBack={() => setViewState({ type: 'landing' })}
+            onUnitClick={(u) => setViewState({ type: 'detail', unit: u, source: viewState.property })}
+          />
         ) : viewState.type === 'detail' ? (
-           /* Corrected line 792: unit={unit} to unit={viewState.unit} */
-           <UnitDetailPage 
-             unit={viewState.unit} 
-             onBack={() => setViewState({ type: 'listing', property: viewState.source })}
-             propertyName={viewState.source}
-           />
+          /* Corrected line 792: unit={unit} to unit={viewState.unit} */
+          <UnitDetailPage
+            unit={viewState.unit}
+            onBack={() => setViewState({ type: 'listing', property: viewState.source })}
+            propertyName={viewState.source}
+          />
         ) : (
-           <>
-             <Hero />
-             <WhyUs />
-             <Operations />
-             <Assets 
-               onViewSummit={() => setViewState({ type: 'listing', property: 'Summit One Tower' })}
-               onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
-             />
-             <FAQ />
-             <Contact />
-           </>
+          <>
+            <Hero />
+            <WhyUs />
+            <Operations />
+            <Assets
+              onViewSummit={() => setViewState({ type: 'listing', property: 'Summit One Tower' })}
+              onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
+            />
+            <FAQ />
+            <Contact />
+          </>
         )}
       </main>
       <Footer onAdminClick={() => setViewState({ type: 'login' })} />
