@@ -246,6 +246,75 @@ const summitUnits: PropertyUnit[] = [
     ],
     narrative: "The baseline for corporate efficiency, providing a balanced mix of open work areas and partitioned meeting rooms. Ready for immediate turnover and seamless operational integration for small-to-medium teams."
   },
+  {
+    id: "S-1802",
+    title: "Unit 1802",
+    headline: "Skyline Operations Suite",
+    price: "₱75,000 / mo",
+    location: "Summit One Tower, Level 18",
+    area: "110 sqm",
+    type: "Office",
+    condition: "Fitted",
+    images: [
+      "https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "110 sqm" },
+      { label: "Lighting", value: "Recessed LED" },
+      { label: "Climate", value: "Zoned HVAC" },
+      { label: "Security", value: "Biometric Prep" },
+      { label: "View", value: "Sierra Madre" }
+    ],
+    narrative: "A premium mid-high rise suite optimized for specialized technical teams. Features enhanced electrical infrastructure and low-latency cabling paths to support demanding operational software."
+  },
+  {
+    id: "S-2106",
+    title: "Unit 2106",
+    headline: "Collaborative Logic Hub",
+    price: "₱55,000 / mo",
+    location: "Summit One Tower, Level 21",
+    area: "95 sqm",
+    type: "Office",
+    condition: "Semi-Fitted",
+    images: [
+      "https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600508774444-466ba7ad9436?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "95 sqm" },
+      { label: "Layout", value: "Hybrid Open" },
+      { label: "Power", value: "Emergency Ready" },
+      { label: "Storage", value: "Integrated Cabinets" },
+      { label: "Access", value: "Core B Access" }
+    ],
+    narrative: "Balancing open-plan collaboration with enclosed focus rooms. This unit is designed for teams prioritizing iterative workflows and internal knowledge sharing."
+  },
+  {
+    id: "S-2901",
+    title: "Unit 2901",
+    headline: "Institutional Core Node",
+    price: "₱95,000 / mo",
+    location: "Summit One Tower, Level 29",
+    area: "135 sqm",
+    type: "Office",
+    condition: "Warm Shell",
+    images: [
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"
+    ],
+    specs: [
+      { label: "Floor Area", value: "135 sqm" },
+      { label: "Infrastructure", value: "Robust Backbone" },
+      { label: "Ceiling", value: "Exposed Industrial" },
+      { label: "Orientation", value: "West Vantage" },
+      { label: "Turnover", value: "30 Days" }
+    ],
+    narrative: "A expansive warm-shell unit ready for bespoke institutional fit-outs. Its significant floor plate supports complex spatial programming for long-term operational stability."
+  }
 ];
 
 const facilitiesUnits: PropertyUnit[] = [
@@ -294,29 +363,6 @@ const facilitiesUnits: PropertyUnit[] = [
       { label: "Privacy", value: "High" }
     ],
     narrative: "A secure, low-traffic unit located on the podium level, ideal for back-office accounting or records management. Separation from public zones ensures operational continuity and data security."
-  },
-  {
-    id: "F-505",
-    title: "Unit 505",
-    headline: "Logistics & Storage Node",
-    price: "₱35,000 / mo",
-    location: "Facilities Centre, Level 5",
-    area: "60 sqm",
-    type: "Flex",
-    condition: "Warm Shell",
-    images: [
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1586880244406-55983627908f?q=80&w=1200&auto=format&fit=crop"
-    ],
-    specs: [
-      { label: "Floor Area", value: "60 sqm" },
-      { label: "Floor Load", value: "Heavy Duty" },
-      { label: "Ceiling", value: "Open Grid" },
-      { label: "Access", value: "Freight Elevator" },
-      { label: "Usage", value: "Storage/Support" }
-    ],
-    narrative: "Utilitarian space designed for inventory management or operational support equipment. Heavy-load flooring and wide-door access facilitate movement of goods and equipment integration."
   },
 ];
 
