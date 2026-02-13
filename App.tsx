@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
 import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
+import { AdminDashboard } from './AdminDashboard';
 
 // --- Data Definitions ---
 
@@ -193,7 +195,8 @@ type ViewState =
   | { type: 'landing' }
   | { type: 'listing'; property: string }
   | { type: 'detail'; unit: PropertyUnit; source: string }
-  | { type: 'login' };
+  | { type: 'login' }
+  | { type: 'admin' };
 
 // --- Components ---
 
@@ -767,9 +770,16 @@ export default function App() {
            <LoginPage 
              onLoginSuccess={(loggedInUser) => {
                setUser(loggedInUser);
-               setViewState({ type: 'landing' });
+               setViewState({ type: 'admin' });
              }}
              onBack={() => setViewState({ type: 'landing' })}
+           />
+        ) : viewState.type === 'admin' ? (
+           <AdminDashboard 
+             onLogout={() => {
+               setUser(null);
+               setViewState({ type: 'landing' });
+             }}
            />
         ) : viewState.type === 'listing' ? (
            <ListingPage 
@@ -779,6 +789,7 @@ export default function App() {
              onUnitClick={(u) => setViewState({ type: 'detail', unit: u, source: viewState.property })}
            />
         ) : viewState.type === 'detail' ? (
+           /* Corrected line 792: unit={unit} to unit={viewState.unit} */
            <UnitDetailPage 
              unit={viewState.unit} 
              onBack={() => setViewState({ type: 'listing', property: viewState.source })}
