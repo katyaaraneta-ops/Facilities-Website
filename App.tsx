@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
 import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
@@ -24,7 +23,7 @@ const whyItems: WhyItem[] = [
   },
   {
     title: "Tenant Interface",
-    description: "Primary operational contact for tenants occupying managed units."
+    description: "A legacy defined by high-quality tenant relationships, exceptional long-tenancy records, and consistently high customer satisfaction ratings."
   },
   {
     title: "Utilities Coordination",
@@ -37,7 +36,7 @@ const whyItems: WhyItem[] = [
 ];
 
 const operations: OperationStep[] = [
-  { step: "01", title: "Asset Acquisition & Review", description: "Each unit undergoes a rigorous structural and compliance assessment before entering our operational portfolio. We verify title integrity, zoning adherence, and utility infrastructure." },
+  { step: "01", title: "Asset Acquisition & Review", description: "We evaluate assets through the lens of a developer. Whether through joint ventures or direct acquisition, we verify title integrity and zoning adherence to ensure long-term growth." },
   { step: "02", title: "Tenant Fit-Out Coordination", description: "We oversee the transition from bare shell to operational workspace. Our team coordinates directly with contractors to ensure building codes and safety standards are strictly met." },
   { step: "03", title: "Utilities & Compliance", description: "We coordinate directly with utility providers and relevant local authorities to support the ongoing operation of managed units." },
   { step: "04", title: "Compliance & Administration", description: "We support unit-level administrative processes through coordination with relevant parties, where applicable." },
@@ -258,11 +257,11 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
 
           <div className="relative group">
             <a
-              href="#assets"
-              onClick={handleNavClick("assets")}
+              href="#projects"
+              onClick={handleNavClick("projects")}
               className="flex items-center gap-1 hover:text-[#C9D2E3] transition-colors duration-300 py-6"
             >
-              Assets
+              Projects
               <ChevronDown size={14} className="opacity-70 group-hover:opacity-100 transition-opacity" />
             </a>
 
@@ -303,7 +302,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
             <a href="#why" onClick={handleNavClick("why")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">Why Facilities</a>
             <a href="#operate" onClick={handleNavClick("operate")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">How We Operate</a>
             <div className="space-y-4">
-              <a href="#assets" onClick={handleNavClick("assets")} className="text-[#E6EAF2] text-lg font-medium tracking-wide block">Assets</a>
+              <a href="#projects" onClick={handleNavClick("projects")} className="text-[#E6EAF2] text-lg font-medium tracking-wide block">Projects</a>
               <div className="pl-6 flex flex-col space-y-3 border-l border-[#E6EAF2]/20">
                 <button onClick={handleListingClick(onViewSummit)} className="text-[#C9D2E3] text-base text-left">Summit One Units for Rent</button>
                 <button onClick={handleListingClick(onViewFacilities)} className="text-[#C9D2E3] text-base text-left">Facilities Centre Units for Rent</button>
@@ -538,10 +537,10 @@ const Hero: React.FC = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           <div className="space-y-8">
             <p className="text-xl md:text-2xl text-corporate-800 leading-relaxed font-serif">
-              Facilities, Inc. is a premier, family-owned asset management and operating company with a legacy of excellence dating back to 1960. With foundations rooted in our flagship Mandaluyong developments, we are a Philippine-centric firm with the proven expertise to manage and scale commercial operations nationwide.
+              Facilities, Inc. is a family-owned real estate developer and management firm with a 60-year history of stability and growth. Since 1960, we have focused on a simple philosophy: managing properties with the same care and fiscal discipline as the families who own them.
             </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
-              Currently overseeing key assets within Summit One Tower and Facilities Centre, our operational footprint continues to grow as we expand our management standards to strategic locations beyond Metro Manila.
+              Our landmark high-rise and commercial developments in Metro Manila serve as our operational standard. We’ve used these flagship assets to refine a management model that is professional, scalable, and ready to meet the needs of property owners across the Philippines. At Facilities, Inc., we believe that whether a project is local or national,
             </p>
             <p className="text-lg font-serif italic text-corporate-400 mt-12">Quality has no substitute.</p>
             <div className="pt-8">
@@ -600,9 +599,9 @@ interface AssetsProps {
 }
 
 const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
-  <Section id="assets" className="bg-white border-t border-corporate-200">
+  <Section id="projects" className="bg-white border-t border-corporate-200">
     <div className="border-b border-corporate-200 mb-16 pb-4">
-      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Assets Under Operation</h2>
+      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Projects</h2>
     </div>
     <div className="space-y-24 md:space-y-32">
       <figure className="flex flex-col gap-8 group cursor-pointer" onClick={onViewSummit}>
@@ -614,7 +613,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
         </div>
         <figcaption className="space-y-2">
           <h3 className="text-3xl font-serif text-corporate-900">Summit One Tower</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed">High-rise commercial tower located on Shaw Boulevard.</p>
+          <p className="text-lg text-corporate-600 leading-relaxed">The tallest landmark on Shaw Boulevard, offering premier office spaces with breathtaking views of the Wack Wack Golf course. This 46-storey commercial icon is engineered for high-performance operations, featuring 100% backup power and full fiber-optic connectivity.</p>
         </figcaption>
       </figure>
 
@@ -627,7 +626,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
         </div>
         <figcaption className="space-y-2">
           <h3 className="text-3xl font-serif text-corporate-900">Facilities Centre</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed">Low-rise commercial arcade adjacent to key transport hubs.</p>
+          <p className="text-lg text-corporate-600 leading-relaxed">A premier commercial hub featuring the longest street frontage along the Shaw Boulevard corridor. This PEZA-accredited complex is home to anchor banking tenants and major corporate offices, providing exceptional accessibility and high-visibility ground-floor retail units.</p>
         </figcaption>
       </figure>
 
@@ -637,7 +636,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
         </div>
         <figcaption className="space-y-2">
           <h3 className="text-3xl font-serif text-corporate-900">Palladium Village</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed">Exclusive, low-density residential community in a prime, central location.</p>
+          <p className="text-lg text-corporate-600 leading-relaxed">A prestigious 76-lot residential landmark known for its exclusivity and innovation. Historically significant as the first development in the Philippines to feature an underground utility wiring system, this community achieved a record-breaking total sell-out within just six months of its launch.</p>
         </figcaption>
       </figure>
     </div>
@@ -789,7 +788,6 @@ export default function App() {
             onUnitClick={(u) => setViewState({ type: 'detail', unit: u, source: viewState.property })}
           />
         ) : viewState.type === 'detail' ? (
-          /* Corrected line 792: unit={unit} to unit={viewState.unit} */
           <UnitDetailPage
             unit={viewState.unit}
             onBack={() => setViewState({ type: 'listing', property: viewState.source })}
