@@ -917,8 +917,8 @@ const Hero: React.FC = () => (
           {/* Abstract Hero Image */}
           <div className="relative h-full min-h-[400px] w-full bg-corporate-100 hidden md:block">
               <img 
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop" 
-              alt="Abstract Building Facade"
+              src="/images/facilities-b&w.JPG" 
+              alt="Facilities, Incorporated Building"
               className="absolute inset-0 w-full h-full object-cover grayscale opacity-60 mix-blend-multiply contrast-125"
             />
           </div>
@@ -1075,7 +1075,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => {
             <img
               src="https://images.unsplash.com/photo-1592595896551-12b371d546d5?q=80&w=1600&auto=format&fit=crop"
               alt="Palladium Village"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           </div>
 
