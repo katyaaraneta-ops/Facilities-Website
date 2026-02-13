@@ -36,7 +36,11 @@ const whyItems: WhyItem[] = [
 ];
 
 const operations: OperationStep[] = [
-  { step: "01", title: "Asset Acquisition & Review", description: "We evaluate assets through the lens of a developer. Whether through joint ventures or direct acquisition, we verify title integrity and zoning adherence to ensure long-term growth." },
+  { 
+    step: "01", 
+    title: "Asset Acquisition & Review", 
+    description: "We evaluate assets through the lens of a developer. Whether through joint ventures or direct acquisition, we verify title integrity and zoning adherence to ensure long-term growth for small to medium-rise commercial centers." 
+  },
   { step: "02", title: "Tenant Fit-Out Coordination", description: "We oversee the transition from bare shell to operational workspace. Our team coordinates directly with contractors to ensure building codes and safety standards are strictly met." },
   { step: "03", title: "Utilities & Compliance", description: "We coordinate directly with utility providers and relevant local authorities to support the ongoing operation of managed units." },
   { step: "04", title: "Compliance & Administration", description: "We support unit-level administrative processes through coordination with relevant parties, where applicable." },
@@ -61,9 +65,7 @@ const faqs: FAQItem[] = [
     question: "Is Facilities a real estate broker?",
     answer: (
       <>
-        No. We are an asset operating firm, not a brokerage.
-        <br />
-        While we collaborate closely with leasing agents to ensure occupancy, our core mandate is the physical and financial stewardship of the assets under our management.
+        Facilities, Inc. is a premier real estate developer and operating company. While we are not a brokerage, we maintain a successful lease business, owning and managing significant portions of our commercial portfolio to ensure the highest standards of tenant care.
       </>
     )
   },
