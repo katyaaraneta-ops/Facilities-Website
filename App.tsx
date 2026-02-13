@@ -915,13 +915,13 @@ const Hero: React.FC = () => (
           </div>
           
           {/* Abstract Hero Image */}
-          <div className="relative h-full min-h-[400px] w-full bg-corporate-100 hidden md:block">
-              <img 
-              src="/images/facilities-b&w.JPG" 
-              alt="Facilities, Incorporated Building"
-              className="absolute inset-0 w-full h-full object-cover grayscale opacity-60 mix-blend-multiply contrast-125"
-            />
-          </div>
+<div className="relative h-full min-h-[400px] w-full bg-corporate-100 hidden md:block">
+  <img 
+    src="/images/facilities-b&w.JPG" 
+    alt="Facilities, Incorporated Building"
+    className="absolute inset-0 w-full h-full object-cover" 
+  />
+</div>
         </div>
       </div>
     </div>
