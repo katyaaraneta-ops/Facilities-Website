@@ -3,6 +3,7 @@ import { Section } from './components/Section';
 import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
+import { LoginPage } from './LoginPage';
 
 // --- Data Definitions ---
 
@@ -187,6 +188,12 @@ interface PropertyUnit {
   narrative: string;
   specs: { label: string; value: string }[];
 }
+
+type ViewState =
+  | { type: 'landing' }
+  | { type: 'listing'; property: string }
+  | { type: 'detail'; unit: PropertyUnit; source: string }
+  | { type: 'login' };
 
 // --- Components ---
 
@@ -687,19 +694,25 @@ const Contact: React.FC = () => {
   );
 };
 
-const Footer: React.FC = () => (
+const Footer: React.FC<{ onAdminClick: () => void }> = ({ onAdminClick }) => (
   <footer className="bg-[#181852] text-[#C9D2E3] py-12">
     <div className="max-w-7xl mx-auto px-6 flex justify-between items-center opacity-80 text-xs tracking-widest uppercase">
-      <p>&copy; {new Date().getFullYear()} Facilities, Incorporated.</p>
+      <button 
+        onClick={onAdminClick}
+        className="hover:text-white transition-colors text-left"
+      >
+        &copy; {new Date().getFullYear()} Facilities, Incorporated.
+      </button>
       <p>Est. 1960</p>
     </div>
   </footer>
 );
 
 export default function App() {
-  const [viewState, setViewState] = useState<any>({ type: 'landing' });
+  const [viewState, setViewState] = useState<ViewState>({ type: 'landing' });
   const [liveUnits, setLiveUnits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     async function fetchUnits() {
@@ -732,7 +745,7 @@ export default function App() {
           area: u.net_area,
           status: u.status,
           dues: u.assoc_dues,
-          condition: u.condition, // Mapped from database field
+          condition: u.condition, 
           available_date: u.availability_date,
           ...marketing
         };
@@ -750,7 +763,15 @@ export default function App() {
         currentPage={viewState.type}
       />
       <main>
-        {viewState.type === 'listing' ? (
+        {viewState.type === 'login' ? (
+           <LoginPage 
+             onLoginSuccess={(loggedInUser) => {
+               setUser(loggedInUser);
+               setViewState({ type: 'landing' });
+             }}
+             onBack={() => setViewState({ type: 'landing' })}
+           />
+        ) : viewState.type === 'listing' ? (
            <ListingPage 
              propertyName={viewState.property} 
              units={getProcessedUnits(viewState.property)} 
@@ -777,7 +798,7 @@ export default function App() {
            </>
         )}
       </main>
-      <Footer />
+      <Footer onAdminClick={() => setViewState({ type: 'login' })} />
     </div>
   );
 }
