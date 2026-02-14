@@ -51,15 +51,13 @@ const faqs: FAQItem[] = [
     question: "What does Facilities do?",
     answer: (
       <>
-        Facilities, Inc. is a professional real estate operating company.
-        <br />
-        We execute comprehensive asset management strategies focused on operational efficiency, asset preservation, and value retention for commercial properties across the Philippines.
+        Facilities, Inc. is a premier real estate developer and asset management firm. We execute comprehensive strategies focused on operational efficiency, asset preservation, and long-term value for properties across the Philippines.
       </>
     )
   },
   {
     question: "Does Facilities manage entire buildings?",
-    answer: "Our operational model is scalable and modular. While we are capable of building-level management, our primary focus is on the precise operation of specific asset portfolios and commercial units to ensure high-performance standards."
+    answer: "Yes. Our management model is scalable and ready for building-level operations nationwide. We focus on maintaining high-performance standards for both specific portfolios and entire commercial assets."
   },
   {
     question: "Is Facilities a real estate broker?",
@@ -83,11 +81,7 @@ const faqs: FAQItem[] = [
     question: "Does Facilities sell property?",
     answer: (
       <>
-        We focus on long-term asset preservation rather than disposition.
-        <br />
-        Sales inquiries for specific residential land banks (such as those under our affiliate, ADEL) are handled by separate development arms.
-        <br />
-        <span className="italic">(Coming soon.)</span>
+        We primarily focus on long-term development and asset preservation. Inquiries regarding residential land banks are handled by our dedicated development arms.
       </>
     )
   },
@@ -95,11 +89,7 @@ const faqs: FAQItem[] = [
     question: "Does Facilities provide design or architectural services?",
     answer: (
       <>
-        We provide technical oversight and operational compliance reviews.
-        <br />
-        For architectural design and development advisory, we coordinate with specialized partners to align physical infrastructure with operational requirements.
-        <br />
-        Development Advisory: <a href="mailto:katya.araneta@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-300 underline-offset-2 transition-colors">katya.araneta@gmail.com</a>
+        We provide technical oversight and operational compliance. For architectural design and development advisory, we coordinate with specialized partners to align physical infrastructure with high operational standards. Contact Katya (<a href="mailto:katya.araneta@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-300 underline-offset-2 transition-colors">katya.araneta@gmail.com</a>) for further details.
       </>
     )
   },
@@ -117,12 +107,7 @@ const faqs: FAQItem[] = [
     question: "What properties does Facilities currently operate?",
     answer: (
       <>
-        Our portfolio is anchored by our flagship operations at:
-        <ul className="list-disc pl-5 my-2 space-y-1">
-          <li>Summit One Tower (Flagship High-Rise Asset)</li>
-          <li>Facilities Centre (Flagship Commercial Asset)</li>
-        </ul>
-        These assets serve as the operational blueprint for our expansion into key commercial markets nationwide.
+        Our portfolio is anchored by our flagship developments: Summit One Tower (the tallest landmark on Shaw Blvd) and Facilities Centre (featuring the longest frontage on Shaw Blvd). These assets serve as the blueprint for our expansion nationwide.
       </>
     )
   },
@@ -254,7 +239,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
         </a>
 
         <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
-          <a href="#why" onClick={handleNavClick("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Facilities</a>
+          <a href="#why" onClick={handleNavClick("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Us</a>
           <a href="#operate" onClick={handleNavClick("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
 
           <div className="relative group">
@@ -301,7 +286,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
       {isMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 shadow-xl max-h-[calc(100vh-80px)] overflow-y-auto">
           <nav className="flex flex-col py-8 px-6 space-y-6">
-            <a href="#why" onClick={handleNavClick("why")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">Why Facilities</a>
+            <a href="#why" onClick={handleNavClick("why")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">Why Us</a>
             <a href="#operate" onClick={handleNavClick("operate")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">How We Operate</a>
             <div className="space-y-4">
               <a href="#projects" onClick={handleNavClick("projects")} className="text-[#E6EAF2] text-lg font-medium tracking-wide block">Projects</a>
@@ -539,10 +524,10 @@ const Hero: React.FC = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           <div className="space-y-8">
             <p className="text-xl md:text-2xl text-corporate-800 leading-relaxed font-serif">
-              Facilities, Inc. is a family-owned real estate developer and management firm with a 60-year history of stability and growth. Since 1960, we have focused on a simple philosophy: managing properties with the same care and fiscal discipline as the families who own them.
+              Facilities, Inc. is a premier, family-owned asset management and operating company with a legacy of excellence dating back to 1960. With foundations rooted in our flagship Mandaluyong developments, we are a Philippine-centric firm with the proven expertise to manage and scale commercial operations nationwide.
             </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
-              Our landmark high-rise and commercial developments in Metro Manila serve as our operational standard. We’ve used these flagship assets to refine a management model that is professional, scalable, and ready to meet the needs of property owners across the Philippines. At Facilities, Inc., we believe that whether a project is local or national,
+              Currently overseeing key assets within Summit One Tower and Facilities Centre, our operational footprint continues to grow as we expand our management standards to strategic locations beyond Metro Manila.
             </p>
             <p className="text-lg font-serif italic text-corporate-400 mt-12">Quality has no substitute.</p>
             <div className="pt-8">
