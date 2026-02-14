@@ -127,39 +127,35 @@ const faqs: FAQItem[] = [
   },
 ];
 
-// --- HYBRID DATA: Marketing Copy ---
+// --- HYBRID DATA: Default Marketing Assets ---
 
 const marketingData: Record<string, any> = {
   "Unit R": {
-    headline: "Flagship Corporate Suite",
     images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"],
-    narrative: "An expansive flagship unit designed for large-scale operations and departmental headquarters within the Facilities Centre complex.",
     specs: [{ label: "Access", value: "Main Lobby" }, { label: "Condition", value: "Fitted" }]
   },
   "FCB-D Mezz": {
-    headline: "Podium Level Operations Hub",
     images: ["https://images.unsplash.com/photo-1604328698692-f76ea9498e76?q=80&w=1200&auto=format&fit=crop"],
-    narrative: "Optimized for high-density administrative functions or technical support teams requiring quick access to the building's core services.",
     specs: [{ label: "Level", value: "Mezzanine" }]
   },
   "701": {
-    headline: "Executive Command Node",
     images: ["https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop"],
-    narrative: "Designed for high-level management operations, featuring premium acoustic isolation and expansive views of the city skyline.",
     specs: [{ label: "Orientation", value: "Corner Unit" }]
   },
   "703": {
-    headline: "Strategic Operations Floor",
     images: ["https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop"],
-    narrative: "A sprawling floor plate designed for rapid deployment of workstations. Ideal for BPO or large-scale administrative functions.",
     specs: [{ label: "Capacity", value: "High-Density Ready" }]
   },
-  "24C": { headline: "Mid-Rise Logic Suite", images: ["https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"], narrative: "Balanced collaborative and focus zones.", specs: [] },
-  "24I": { headline: "Institutional Core Unit", images: ["https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200&auto=format&fit=crop"], narrative: "Standardized corporate efficiency.", specs: [] },
-  "24K": { headline: "Compact Management Office", images: ["https://images.unsplash.com/photo-1600508774444-466ba7ad9436?q=80&w=1200&auto=format&fit=crop"], narrative: "Ideal for boutique firms or focused satellite offices.", specs: [] },
-  "3602": { headline: "High-Altitude Vantage Suite", images: ["https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop"], narrative: "Premium positioning on the 36th floor with unparalleled views.", specs: [] },
-  "3604": { headline: "Skyline Leadership Hub", images: ["https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1200&auto=format&fit=crop"], narrative: "Our highest available unit, offering maximum prestige and privacy.", specs: [] }
+  "24C": { images: ["https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"], specs: [] },
+  "24I": { images: ["https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200&auto=format&fit=crop"], specs: [] },
+  "24K": { images: ["https://images.unsplash.com/photo-1600508774444-466ba7ad9436?q=80&w=1200&auto=format&fit=crop"], specs: [] },
+  "3602": { images: ["https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop"], specs: [] },
+  "3604": { images: ["https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1200&auto=format&fit=crop"], specs: [] }
 };
+
+const DEFAULT_HEADLINE = "Commercial Office Suite";
+const DEFAULT_NARRATIVE = "An institutional-grade commercial unit optimized for modern operational requirements.";
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop";
 
 interface PropertyUnit {
   id: string;
@@ -703,29 +699,35 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    async function fetchUnits() {
-      const { data, error } = await supabase
-        .from('units')
-        .select('*')
-        .order('unit_number', { ascending: true });
-      if (error) console.error("Database Error:", error);
-      else setLiveUnits(data || []);
-      setLoading(false);
-    }
-    fetchUnits();
+  const fetchUnits = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('units')
+      .select('*')
+      .order('unit_number', { ascending: true });
+    if (error) console.error("Database Error:", error);
+    else setLiveUnits(data || []);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchUnits();
+  }, [fetchUnits]);
 
   const getProcessedUnits = (building: string): PropertyUnit[] => {
     return liveUnits
       .filter(u => u.building_name === building)
       .map(u => {
-        const marketing = marketingData[u.unit_number] || {
-          headline: "Commercial Office Suite",
-          images: ["https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop"],
-          narrative: "An institutional-grade commercial unit optimized for modern operational requirements.",
-          specs: []
-        };
+        // Fallback Chain: 
+        // 1. Live Supabase field
+        // 2. Local hardcoded marketing mapping (if unit matches)
+        // 3. Global professional defaults
+        const localMeta = marketingData[u.unit_number] || {};
+        
+        const headline = u.headline || localMeta.headline || DEFAULT_HEADLINE;
+        const narrative = u.narrative || localMeta.narrative || DEFAULT_NARRATIVE;
+        const images = localMeta.images || [DEFAULT_IMAGE];
+        const specs = localMeta.specs || [];
+
         return {
           id: u.id,
           unit_number: u.unit_number,
@@ -734,9 +736,12 @@ export default function App() {
           area: u.net_area,
           status: u.status,
           dues: u.assoc_dues,
-          condition: u.condition,
+          condition: u.handover_condition || u.condition || 'Fitted',
           available_date: u.availability_date,
-          ...marketing
+          headline,
+          narrative,
+          images,
+          specs
         };
       });
   };
@@ -764,6 +769,7 @@ export default function App() {
           <AdminDashboard
             onLogout={() => {
               setUser(null);
+              fetchUnits(); // Ensure data is fresh when returning to public view
               setViewState({ type: 'landing' });
             }}
           />

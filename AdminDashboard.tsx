@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X } from 'lucide-react';
+import { Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, Type, AlignLeft } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -13,7 +13,9 @@ const INITIAL_FORM_STATE = {
   assoc_dues: '',
   net_area: '',
   status: 'Available',
-  handover_condition: 'Fitted'
+  handover_condition: 'Fitted',
+  headline: '',
+  narrative: ''
 };
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
@@ -21,7 +23,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   
-  // New State for Adding Units
+  // State for Adding Units
   const [isAdding, setIsAdding] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newUnit, setNewUnit] = useState(INITIAL_FORM_STATE);
@@ -62,7 +64,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       status: newUnit.status,
       handover_condition: newUnit.handover_condition,
       availability_date: new Date().toISOString().split('T')[0],
-      listing_type: 'Office'
+      listing_type: 'Office',
+      headline: newUnit.headline,
+      narrative: newUnit.narrative
     };
 
     console.log('Inserting unit:', unitData);
@@ -112,6 +116,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <div className="mb-12 bg-white p-8 rounded-xl border border-corporate-200 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
             <h2 className="text-xl font-serif text-corporate-900 mb-6">Register New Inventory</h2>
             <form onSubmit={handleCreateUnit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Basic Fields */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Unit Number</label>
                 <input 
@@ -185,6 +190,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 />
               </div>
 
+              {/* Marketing Fields */}
+              <div className="md:col-span-3 space-y-2">
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Marketing Headline</label>
+                <input 
+                  type="text" 
+                  value={newUnit.headline}
+                  onChange={(e) => setNewUnit({...newUnit, headline: e.target.value})}
+                  className="w-full px-4 py-3 bg-corporate-50 border border-corporate-200 rounded outline-none focus:ring-1 focus:ring-corporate-900"
+                  placeholder="e.g. Flagship Corporate Suite with Panorama Views"
+                />
+              </div>
+
+              <div className="md:col-span-3 space-y-2">
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Narrative (About this Unit)</label>
+                <textarea 
+                  value={newUnit.narrative}
+                  onChange={(e) => setNewUnit({...newUnit, narrative: e.target.value})}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-corporate-50 border border-corporate-200 rounded outline-none focus:ring-1 focus:ring-corporate-900 resize-none"
+                  placeholder="Describe the unit's unique features, orientation, and potential uses..."
+                />
+              </div>
+
               <div className="md:col-span-3 pt-4">
                 <button 
                   type="submit"
@@ -205,8 +233,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               <tr className="bg-corporate-50 border-b border-corporate-200">
                 <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest">Unit</th>
                 <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest">Building</th>
+                <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest">Marketing Headline</th>
                 <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest text-right">Area & Rent</th>
-                <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest">Current Status</th>
+                <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest">Status</th>
                 <th className="px-8 py-5 text-xs font-bold text-corporate-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
@@ -214,7 +243,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               {units.map((unit) => (
                 <tr key={unit.id} className="hover:bg-corporate-50/50 transition-colors">
                   <td className="px-8 py-6 font-bold text-corporate-900">{unit.unit_number}</td>
-                  <td className="px-8 py-6 text-corporate-600 text-sm">{unit.building_name}</td>
+                  <td className="px-8 py-6 text-corporate-600 text-sm whitespace-nowrap">{unit.building_name}</td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-medium text-corporate-900 max-w-xs truncate" title={unit.headline}>
+                      {unit.headline || <span className="text-corporate-300 italic">No headline set</span>}
+                    </div>
+                  </td>
                   <td className="px-8 py-6 text-right">
                     <div className="text-sm font-bold text-corporate-900">{unit.net_area} sqm</div>
                     <div className="text-xs text-corporate-400">₱{unit.monthly_rent?.toLocaleString()} / mo</div>
@@ -233,7 +267,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     <button 
                       onClick={() => toggleStatus(unit.id, unit.status)}
                       disabled={updatingId === unit.id}
-                      className="px-6 py-2 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-corporate-800 disabled:opacity-50 transition-all"
+                      className="px-6 py-2 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-corporate-800 disabled:opacity-50 transition-all whitespace-nowrap"
                     >
                       {updatingId === unit.id ? <Loader2 className="animate-spin" size={16}/> : 'Toggle Status'}
                     </button>
@@ -242,7 +276,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               ))}
               {units.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-8 py-12 text-center text-corporate-400 italic">
+                  <td colSpan={6} className="px-8 py-12 text-center text-corporate-400 italic">
                     No units found in the inventory database.
                   </td>
                 </tr>
