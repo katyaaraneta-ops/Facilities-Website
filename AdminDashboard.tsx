@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, Type, AlignLeft } from 'lucide-react';
+import { Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, Type, AlignLeft, Edit3, Trash2 } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -23,8 +23,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   
-  // State for Adding Units
+  // State for Form Management
   const [isAdding, setIsAdding] = useState(false);
+  const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newUnit, setNewUnit] = useState(INITIAL_FORM_STATE);
 
@@ -33,7 +34,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   }, []);
 
   const fetchUnits = async () => {
-    const { data } = await supabase.from('units').select('*').order('unit_number');
+    const { data } = await supabase
+      .from('units')
+      .select('*')
+      .order('unit_number', { ascending: true });
+    
     setUnits(data || []);
     setLoading(false);
   };
@@ -51,7 +56,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     setUpdatingId(null);
   };
 
-  const handleCreateUnit = async (e: React.FormEvent) => {
+  const handleModify = (unit: any) => {
+    setNewUnit({
+      unit_number: unit.unit_number || '',
+      building_name: unit.building_name || 'Summit One Tower',
+      monthly_rent: unit.monthly_rent?.toString() || '',
+      assoc_dues: unit.assoc_dues?.toString() || '',
+      net_area: unit.net_area?.toString() || '',
+      status: unit.status || 'Available',
+      handover_condition: unit.handover_condition || 'Fitted',
+      headline: unit.headline || '',
+      narrative: unit.narrative || ''
+    });
+    setEditingUnitId(unit.id);
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteUnit = async (id: string) => {
+    // 1. Add Debug Alert
+    alert('Attempting to delete unit: ' + id);
+    
+    setUpdatingId(id);
+    
+    try {
+      // 2. Explicit Delete Call using .match()
+      const { error } = await supabase
+        .from('units')
+        .delete()
+        .match({ id: id });
+
+      // 3. Error Handling
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        alert('Deleted!');
+        // 4. Refresh State
+        await fetchUnits();
+      }
+    } catch (error: any) {
+      console.error('Catch block error:', error);
+      alert('System Error: ' + error.message);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const resetForm = () => {
+    setNewUnit(INITIAL_FORM_STATE);
+    setEditingUnitId(null);
+    setIsAdding(false);
+  };
+
+  const handleCreateOrUpdateUnit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -69,20 +126,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       narrative: newUnit.narrative
     };
 
-    console.log('Inserting unit:', unitData);
+    if (editingUnitId) {
+      const { error } = await supabase
+        .from('units')
+        .update(unitData)
+        .eq('id', editingUnitId);
 
-    const { error } = await supabase
-      .from('units')
-      .insert([unitData]);
-
-    if (!error) {
-      alert('Unit Added Successfully!');
-      await fetchUnits();
-      setNewUnit(INITIAL_FORM_STATE);
-      setIsAdding(false);
+      if (!error) {
+        alert('Unit Updated Successfully!');
+        await fetchUnits();
+        resetForm();
+      } else {
+        alert('Database Error (Update): ' + error.message);
+      }
     } else {
-      console.log('Error details:', error);
-      alert('Database Error: ' + error.message + ' (' + (error.details || 'No details') + ')');
+      const { error } = await supabase
+        .from('units')
+        .insert([unitData]);
+
+      if (!error) {
+        alert('Unit Added Successfully!');
+        await fetchUnits();
+        resetForm();
+      } else {
+        alert('Database Error (Insert): ' + error.message);
+      }
     }
     setIsSubmitting(false);
   };
@@ -99,7 +167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
           <div className="flex items-center gap-6">
             <button 
-              onClick={() => setIsAdding(!isAdding)}
+              onClick={() => isAdding ? resetForm() : setIsAdding(true)}
               className="flex items-center gap-2 px-6 py-3 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded shadow-sm hover:bg-corporate-800 transition-all"
             >
               {isAdding ? <X size={16} /> : <Plus size={16} />}
@@ -111,12 +179,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         </div>
 
-        {/* Add New Unit Form */}
+        {/* Form Section (Add or Edit) */}
         {isAdding && (
           <div className="mb-12 bg-white p-8 rounded-xl border border-corporate-200 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
-            <h2 className="text-xl font-serif text-corporate-900 mb-6">Register New Inventory</h2>
-            <form onSubmit={handleCreateUnit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Basic Fields */}
+            <h2 className="text-xl font-serif text-corporate-900 mb-6">
+              {editingUnitId ? 'Edit Inventory' : 'Register New Inventory'}
+            </h2>
+            <form onSubmit={handleCreateOrUpdateUnit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Unit Number</label>
                 <input 
@@ -190,7 +259,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 />
               </div>
 
-              {/* Marketing Fields */}
               <div className="md:col-span-3 space-y-2">
                 <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Marketing Headline</label>
                 <input 
@@ -220,7 +288,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   className="w-full md:w-auto px-12 py-4 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-corporate-800 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-                  Complete Registration
+                  {editingUnitId ? 'Save Changes' : 'Complete Registration'}
                 </button>
               </div>
             </form>
@@ -264,13 +332,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     </span>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <button 
-                      onClick={() => toggleStatus(unit.id, unit.status)}
-                      disabled={updatingId === unit.id}
-                      className="px-6 py-2 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-corporate-800 disabled:opacity-50 transition-all whitespace-nowrap"
-                    >
-                      {updatingId === unit.id ? <Loader2 className="animate-spin" size={16}/> : 'Toggle Status'}
-                    </button>
+                    <div className="flex items-center justify-end gap-1 md:gap-3">
+                      {/* Button Connection: explicitly stopPropagation and call handleDeleteUnit */}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteUnit(unit.id); }}
+                        disabled={updatingId === unit.id}
+                        className="p-2 text-corporate-300 hover:text-red-600 transition-colors disabled:opacity-30"
+                        title="Delete unit permanently"
+                      >
+                        {updatingId === unit.id ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+                      </button>
+                      <button 
+                        onClick={() => handleModify(unit)}
+                        className="p-2 text-corporate-400 hover:text-corporate-900 transition-colors"
+                        title="Edit marketing details"
+                      >
+                        <Edit3 size={18} />
+                      </button>
+                      <button 
+                        onClick={() => toggleStatus(unit.id, unit.status)}
+                        disabled={updatingId === unit.id}
+                        className="ml-2 px-4 py-2 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-corporate-800 disabled:opacity-50 transition-all whitespace-nowrap"
+                      >
+                        {updatingId === unit.id ? <Loader2 className="animate-spin" size={16}/> : 'Toggle'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
