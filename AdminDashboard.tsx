@@ -4,7 +4,7 @@ import {
   Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, 
   Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, 
   Image as ImageIcon, Trash, HelpCircle, FileText, BookOpen, 
-  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History
+  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck
 } from 'lucide-react';
 
 // Access global PostHog safely
@@ -394,7 +394,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     posthog?.capture('admin_leads_exported', { count: leads.length });
   };
 
-  // KPI Counter: Count leads that are NEW and NOT archived.
+  // --- Dynamic Count Logic ---
+  const activeCount = leads.filter(l => (l.status || 'NEW').toUpperCase() !== 'RESOLVED' && !l.archived).length;
+  const resolvedCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED' && !l.archived).length;
+  const archivedCount = leads.filter(l => l.archived).length;
+  
+  // "Total New Leads" specifically: 'NEW' leads in the Active set.
   const newLeadsCount = leads.filter(l => {
     const status = (l.status || 'NEW').toUpperCase();
     return status === 'NEW' && !l.archived;
@@ -482,6 +487,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 animate-in fade-in duration-500">
         {activeTab === 'inventory' ? (
           <div>
+            {/* Inventory Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 border-b border-corporate-100 pb-8">
               <div>
                 <h2 className="text-3xl font-serif text-corporate-900">Portfolio Management</h2>
@@ -496,6 +502,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </button>
             </div>
 
+            {/* Registration Form */}
             {isAdding && (
               <div className="mb-12 bg-white p-10 rounded-xl border border-corporate-200 shadow-xl animate-in slide-in-from-top-4">
                 <h2 className="text-xl font-serif text-corporate-900 mb-8">{editingUnitId ? 'Modify Asset Record' : 'Register New Commercial Asset'}</h2>
@@ -577,6 +584,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </div>
             )}
 
+            {/* Inventory Table */}
             <div className="bg-white rounded-xl border border-corporate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-left min-w-[1000px]">
                 <thead>
@@ -629,17 +637,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* KPI Card */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-in slide-in-from-top-4 duration-500">
-              <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Inbox className="text-white" size={18} />
+            {/* KPI Metric Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
+              {/* New Leads Tile */}
+              <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Inbox className="text-white" size={20} />
                 </div>
                 <div className="flex flex-col">
-                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1">Total New Leads</p>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total New Leads</p>
                   <div className="flex flex-col">
                     <span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{newLeadsCount}</span>
-                    <span className="text-[11px] text-slate-400 font-medium">Requires Processing</span>
+                    <span className="text-[11px] text-slate-400 font-medium">Requiring Action</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resolved Leads Tile */}
+              <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <ClipboardCheck className="text-white" size={20} />
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total Resolved</p>
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{resolvedCount}</span>
+                    <span className="text-[11px] text-slate-400 font-medium">Successfully Processed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Archived Leads Tile */}
+              <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Archive className="text-white" size={20} />
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total Archived</p>
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{archivedCount}</span>
+                    <span className="text-[11px] text-slate-400 font-medium">Historical Repository</span>
                   </div>
                 </div>
               </div>
@@ -661,28 +698,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 </button>
               </div>
 
-              {/* Sub-navigation Tabs */}
+              {/* Sub-navigation Tabs with Dynamic Counts */}
               <div className="flex gap-1 bg-white p-1 rounded-lg border border-corporate-100 w-fit">
                 {[
-                  { id: 'active', label: 'Active Inquiries' },
-                  { id: 'resolved', label: 'Resolved' },
-                  { id: 'archived', label: 'Archived' }
+                  { id: 'active', label: 'Active Inquiries', count: activeCount },
+                  { id: 'resolved', label: 'Resolved', count: resolvedCount },
+                  { id: 'archived', label: 'Archived', count: archivedCount }
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setLeadsSubTab(tab.id as any)}
-                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${
+                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all flex items-center gap-2 ${
                       leadsSubTab === tab.id 
                       ? 'bg-corporate-900 text-white shadow-md' 
                       : 'text-corporate-400 hover:text-corporate-700 hover:bg-corporate-50'
                     }`}
                   >
-                    {tab.label}
+                    <span>{tab.label}</span>
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${leadsSubTab === tab.id ? 'bg-white/20 text-white' : 'bg-corporate-100 text-corporate-500'}`}>
+                      {tab.count}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Leads Table Content */}
             {loadingLeads ? (
               <div className="flex flex-col items-center justify-center py-32 text-corporate-400">
                 <Loader2 className="animate-spin mb-6" size={48} />
