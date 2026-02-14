@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
-import { Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, Type, AlignLeft, Edit3, Trash2 } from 'lucide-react';
+import { Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, Image as ImageIcon, Trash } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -15,7 +15,8 @@ const INITIAL_FORM_STATE = {
   status: 'Available',
   handover_condition: 'Fitted',
   headline: '',
-  narrative: ''
+  narrative: '',
+  image_urls: [] as string[]
 };
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
@@ -28,6 +29,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newUnit, setNewUnit] = useState(INITIAL_FORM_STATE);
+  const [uploading, setUploading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // State for Custom Confirmation Modal
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUnits();
@@ -66,32 +73,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       status: unit.status || 'Available',
       handover_condition: unit.handover_condition || 'Fitted',
       headline: unit.headline || '',
-      narrative: unit.narrative || ''
+      narrative: unit.narrative || '',
+      image_urls: unit.image_urls || []
     });
     setEditingUnitId(unit.id);
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDeleteUnit = async (id: string) => {
-    // 1. Add Debug Alert
-    alert('Attempting to delete unit: ' + id);
-    
+  const executeDelete = async (id: string) => {
+    setDeleteConfirmationId(null);
     setUpdatingId(id);
     
     try {
-      // 2. Explicit Delete Call using .match()
       const { error } = await supabase
         .from('units')
         .delete()
         .match({ id: id });
 
-      // 3. Error Handling
       if (error) {
         alert('Error: ' + error.message);
       } else {
         alert('Deleted!');
-        // 4. Refresh State
         await fetchUnits();
       }
     } catch (error: any) {
@@ -100,6 +103,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const newUrls = [...newUnit.image_urls];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `unit-uploads/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('unit-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        alert('Upload failed: ' + uploadError.message);
+        continue;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('unit-images')
+        .getPublicUrl(filePath);
+
+      newUrls.push(publicUrl);
+    }
+
+    setNewUnit({ ...newUnit, image_urls: newUrls });
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeImage = (urlToRemove: string) => {
+    setNewUnit({
+      ...newUnit,
+      image_urls: newUnit.image_urls.filter(url => url !== urlToRemove)
+    });
   };
 
   const resetForm = () => {
@@ -123,7 +167,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       availability_date: new Date().toISOString().split('T')[0],
       listing_type: 'Office',
       headline: newUnit.headline,
-      narrative: newUnit.narrative
+      narrative: newUnit.narrative,
+      image_urls: newUnit.image_urls
     };
 
     if (editingUnitId) {
@@ -158,7 +203,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   if (loading) return <div className="h-screen flex items-center justify-center font-serif italic text-corporate-500">Loading Management Console...</div>;
 
   return (
-    <div className="min-h-screen bg-corporate-50 pt-32 pb-24 px-6">
+    <div className="min-h-screen bg-corporate-50 pt-32 pb-24 px-6 relative">
+      {/* Custom Confirmation Modal */}
+      {deleteConfirmationId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-corporate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white max-w-md w-full p-8 rounded-xl shadow-2xl border border-corporate-200 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 bg-red-50 text-red-600 rounded-full">
+                <AlertTriangle size={24} />
+              </div>
+              <h3 className="text-xl font-serif text-corporate-900">Permanent Deletion</h3>
+            </div>
+            <p className="text-corporate-600 mb-8 leading-relaxed">
+              Are you sure you want to delete <span className="font-bold text-corporate-900">Unit {units.find(u => u.id === deleteConfirmationId)?.unit_number}</span>? This action will remove the record from the database and cannot be undone.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={() => setDeleteConfirmationId(null)}
+                className="flex-1 px-6 py-3 border border-corporate-200 text-corporate-600 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => executeDelete(deleteConfirmationId)}
+                className="flex-1 px-6 py-3 bg-red-600 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
+              >
+                Permanently Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-end mb-12 border-b border-corporate-200 pb-8">
           <div>
@@ -185,6 +261,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <h2 className="text-xl font-serif text-corporate-900 mb-6">
               {editingUnitId ? 'Edit Inventory' : 'Register New Inventory'}
             </h2>
+
+            {/* Upload Area */}
+            <div className="mb-8">
+              <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest block mb-3">Asset Gallery (Images)</label>
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-corporate-200 rounded-xl p-8 text-center cursor-pointer hover:border-corporate-900 hover:bg-corporate-50 transition-all group"
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*" 
+                  multiple 
+                  onChange={handleFileUpload}
+                />
+                <div className="flex flex-col items-center gap-2">
+                  {uploading ? (
+                    <Loader2 className="animate-spin text-corporate-900" size={32} />
+                  ) : (
+                    <Upload className="text-corporate-300 group-hover:text-corporate-900 transition-colors" size={32} />
+                  )}
+                  <p className="text-sm text-corporate-600 font-medium">Click or drag images to upload</p>
+                  <p className="text-xs text-corporate-400">High-resolution PNG or JPG preferred</p>
+                </div>
+              </div>
+
+              {/* Preview Thumbnails */}
+              {newUnit.image_urls.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-6">
+                  {newUnit.image_urls.map((url, idx) => (
+                    <div key={idx} className="relative aspect-square group rounded-lg overflow-hidden border border-corporate-100 bg-corporate-50">
+                      <img src={url} alt={`Upload ${idx}`} className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => removeImage(url)}
+                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <form onSubmit={handleCreateOrUpdateUnit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Unit Number</label>
@@ -284,7 +406,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               <div className="md:col-span-3 pt-4">
                 <button 
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploading}
                   className="w-full md:w-auto px-12 py-4 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-corporate-800 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
@@ -310,7 +432,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <tbody className="divide-y divide-corporate-100">
               {units.map((unit) => (
                 <tr key={unit.id} className="hover:bg-corporate-50/50 transition-colors">
-                  <td className="px-8 py-6 font-bold text-corporate-900">{unit.unit_number}</td>
+                  <td className="px-8 py-6 font-bold text-corporate-900">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded bg-corporate-100 overflow-hidden flex-shrink-0">
+                        {unit.image_urls?.[0] ? (
+                          <img src={unit.image_urls[0]} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-corporate-300">
+                            <ImageIcon size={16} />
+                          </div>
+                        )}
+                      </div>
+                      {unit.unit_number}
+                    </div>
+                  </td>
                   <td className="px-8 py-6 text-corporate-600 text-sm whitespace-nowrap">{unit.building_name}</td>
                   <td className="px-8 py-6">
                     <div className="text-sm font-medium text-corporate-900 max-w-xs truncate" title={unit.headline}>
@@ -333,9 +468,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex items-center justify-end gap-1 md:gap-3">
-                      {/* Button Connection: explicitly stopPropagation and call handleDeleteUnit */}
                       <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteUnit(unit.id); }}
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirmationId(unit.id); }}
                         disabled={updatingId === unit.id}
                         className="p-2 text-corporate-300 hover:text-red-600 transition-colors disabled:opacity-30"
                         title="Delete unit permanently"

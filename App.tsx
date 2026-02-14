@@ -407,12 +407,16 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
         <div className="absolute bottom-6 left-6 bg-corporate-900/90 backdrop-blur-md px-4 py-2 rounded-lg z-10">
           <span className="text-white text-sm font-medium tracking-wide uppercase">{status}</span>
         </div>
-        <button onClick={prevImage} className="absolute top-1/2 left-4 -translate-y-1/2 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all">
-          <ChevronLeft size={24} />
-        </button>
-        <button onClick={nextImage} className="absolute top-1/2 right-4 -translate-y-1/2 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all">
-          <ChevronRight size={24} />
-        </button>
+        {images.length > 1 && (
+          <>
+            <button onClick={prevImage} className="absolute top-1/2 left-4 -translate-y-1/2 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all">
+              <ChevronLeft size={24} />
+            </button>
+            <button onClick={nextImage} className="absolute top-1/2 right-4 -translate-y-1/2 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-all">
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
       </div>
       {isLightboxOpen && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4">
@@ -718,14 +722,19 @@ export default function App() {
       .filter(u => u.building_name === building)
       .map(u => {
         // Fallback Chain: 
-        // 1. Live Supabase field
+        // 1. Live Supabase image_urls (text array)
         // 2. Local hardcoded marketing mapping (if unit matches)
         // 3. Global professional defaults
         const localMeta = marketingData[u.unit_number] || {};
         
         const headline = u.headline || localMeta.headline || DEFAULT_HEADLINE;
         const narrative = u.narrative || localMeta.narrative || DEFAULT_NARRATIVE;
-        const images = localMeta.images || [DEFAULT_IMAGE];
+        
+        // Use DB image_urls if they exist, otherwise fallback
+        const images = (u.image_urls && u.image_urls.length > 0) 
+          ? u.image_urls 
+          : (localMeta.images || [DEFAULT_IMAGE]);
+
         const specs = localMeta.specs || [];
 
         return {
