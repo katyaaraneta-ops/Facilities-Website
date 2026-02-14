@@ -4,7 +4,7 @@ import {
   Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, 
   Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, 
   Image as ImageIcon, Trash, HelpCircle, FileText, BookOpen, 
-  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp
+  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History
 } from 'lucide-react';
 
 // Access global PostHog safely
@@ -111,6 +111,7 @@ const AdminDocsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState<'inventory' | 'leads'>('inventory');
+  const [leadsSubTab, setLeadsSubTab] = useState<'active' | 'resolved' | 'archived'>('active');
   const [units, setUnits] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,7 +131,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   useEffect(() => {
     fetchUnits();
-    fetchLeads();
+    fetchLeads(false);
   }, []);
 
   const fetchUnits = async () => {
@@ -143,48 +144,108 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     setLoading(false);
   };
 
-  const fetchLeads = async () => {
-    setLoadingLeads(true);
-    // Filter for only non-archived leads
-    const { data } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('archived', false)
-      .order('created_at', { ascending: false });
-    setLeads(data || []);
-    setLoadingLeads(false);
+  /**
+   * Fetches leads from the database.
+   * @param silent - If true, prevents the full-table loading spinner from showing.
+   */
+  const fetchLeads = async (silent = false) => {
+    if (!silent) setLoadingLeads(true);
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setLeads(data || []);
+    } catch (err) {
+      console.error('Fetch Leads Error:', err);
+    } finally {
+      if (!silent) setLoadingLeads(false);
+    }
   };
 
   const handleResolveLead = async (id: string) => {
     setUpdatingId(id);
-    const { error } = await supabase
-      .from('leads')
-      .update({ status: 'RESOLVED' })
-      .eq('id', id);
-    if (!error) {
+    try {
+      // Optimistic update
+      setLeads(prev => prev.map(l => l.id === id ? { ...l, status: 'RESOLVED' } : l));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ status: 'RESOLVED' })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Supabase Error (handleResolveLead):', error);
+        throw error;
+      }
+      
       posthog?.capture('admin_lead_resolved', { lead_id: id });
-      await fetchLeads(); // Immediate re-fetch to reflect change
-    } else {
-      console.error('Lead Resolve Error:', error);
+      // Show main loader for visual confirmation as requested
+      await fetchLeads(false); 
+    } catch (error: any) {
+      console.error('Lead Resolve Error Details:', error);
       alert('Error resolving lead: ' + error.message);
+      // Revert optimistic update on failure
+      await fetchLeads(true);
+    } finally {
+      setUpdatingId(null);
     }
-    setUpdatingId(null);
   };
 
-  const handleArchiveLead = async (id: string) => {
+  const handleReopenLead = async (id: string) => {
     setUpdatingId(id);
-    const { error } = await supabase
-      .from('leads')
-      .update({ archived: true })
-      .eq('id', id);
-    if (!error) {
-      posthog?.capture('admin_lead_archived', { lead_id: id });
-      await fetchLeads(); // Immediate re-fetch to reflect change
-    } else {
-      console.error('Lead Archive Error:', error);
-      alert('Error archiving lead: ' + error.message);
+    try {
+      // Optimistic update
+      setLeads(prev => prev.map(l => l.id === id ? { ...l, status: 'NEW' } : l));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ status: 'NEW' })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Supabase Error (handleReopenLead):', error);
+        throw error;
+      }
+      
+      posthog?.capture('admin_lead_reopened', { lead_id: id });
+      await fetchLeads(false); 
+    } catch (error: any) {
+      console.error('Lead Reopen Error Details:', error);
+      alert('Error re-opening lead: ' + error.message);
+      await fetchLeads(true);
+    } finally {
+      setUpdatingId(null);
     }
-    setUpdatingId(null);
+  };
+
+  const handleArchiveLead = async (id: string, archiveState: boolean = true) => {
+    setUpdatingId(id);
+    try {
+      // Optimistic update
+      setLeads(prev => prev.map(l => l.id === id ? { ...l, archived: archiveState } : l));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ archived: archiveState })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Supabase Error (handleArchiveLead):', error);
+        throw error;
+      }
+      
+      posthog?.capture(archiveState ? 'admin_lead_archived' : 'admin_lead_unarchived', { lead_id: id });
+      await fetchLeads(false); 
+    } catch (error: any) {
+      console.error('Lead Archive Action Error Details:', error);
+      alert('Error updating archive status: ' + error.message);
+      await fetchLeads(true);
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const toggleStatus = async (id: string, currentStatus: string) => {
@@ -298,11 +359,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       return;
     }
     
-    const headers = ["Inquirer", "Email", "Phone", "Unit Interest", "Narrative", "Timestamp"];
+    const headers = ["Inquirer", "Email", "Phone", "Unit Interest", "Narrative", "Timestamp", "Status"];
     
     const sanitize = (val: string | number | null | undefined) => {
       const strValue = val === null || val === undefined ? "" : String(val);
-      // Double quotes are escaped as two double quotes in CSV
       return `"${strValue.replace(/"/g, '""')}"`;
     };
 
@@ -312,14 +372,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       sanitize(lead.phone || "N/A"),
       sanitize(lead.unit_number || lead.unit_interest || "General Inquiry"),
       sanitize(lead.message || ""),
-      sanitize(new Date(lead.created_at).toLocaleString())
+      sanitize(new Date(lead.created_at).toLocaleString()),
+      sanitize(lead.status || 'NEW')
     ]);
     
     const csvContent = [headers.map(sanitize), ...rows].map(e => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     
-    // Using a hidden <a> tag approach to force the browser to start the download
     const link = document.createElement("a");
     const dateStamp = new Date().toISOString().split('T')[0];
     link.setAttribute("href", url);
@@ -334,14 +394,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     posthog?.capture('admin_leads_exported', { count: leads.length });
   };
 
-  // KPI Counter: Leads with 'NEW' status (or no status) that are not archived
-  const newLeadsCount = leads.filter(l => 
-    (!l.status || l.status.toUpperCase() === 'NEW') && l.archived === false
-  ).length;
+  // KPI Counter: Count leads that are NEW and NOT archived.
+  const newLeadsCount = leads.filter(l => {
+    const status = (l.status || 'NEW').toUpperCase();
+    return status === 'NEW' && !l.archived;
+  }).length;
+
+  // Filtered Leads based on Sub-Tabs - CASE INSENSITIVE
+  const filteredLeads = leads.filter(l => {
+    const status = (l.status || 'NEW').toUpperCase();
+    if (leadsSubTab === 'archived') return l.archived;
+    if (leadsSubTab === 'resolved') return status === 'RESOLVED' && !l.archived;
+    return status !== 'RESOLVED' && !l.archived; // 'active'
+  });
 
   return (
     <div className="min-h-screen bg-corporate-50 flex flex-col relative">
-      {/* Sticky Header with Institutional Branding */}
+      {/* Sticky Header */}
       <header className="sticky top-0 left-0 right-0 bg-corporate-900 border-b border-corporate-800 z-50 h-20 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -349,7 +418,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               Management Console
             </h1>
             
-            {/* Desktop Tabs */}
             <nav className="hidden lg:flex items-center h-full gap-4 pt-1">
               <button 
                 onClick={() => setActiveTab('inventory')}
@@ -373,7 +441,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </button>
             </nav>
 
-            {/* Mobile Toggle */}
             <div className="lg:hidden flex items-center">
               <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-corporate-50 p-2">
                 <Menu size={24} />
@@ -412,7 +479,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
       {showDocs && <AdminDocsModal onClose={() => setShowDocs(false)} />}
       
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 pt-12 animate-in fade-in duration-500">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 animate-in fade-in duration-500">
         {activeTab === 'inventory' ? (
           <div>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 border-b border-corporate-100 pb-8">
@@ -430,7 +497,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </div>
 
             {isAdding && (
-              <div className="mb-12 bg-white p-10 rounded-xl border border-corporate-200 shadow-xl">
+              <div className="mb-12 bg-white p-10 rounded-xl border border-corporate-200 shadow-xl animate-in slide-in-from-top-4">
                 <h2 className="text-xl font-serif text-corporate-900 mb-8">{editingUnitId ? 'Modify Asset Record' : 'Register New Commercial Asset'}</h2>
                 <form onSubmit={handleCreateOrUpdateUnit} className="space-y-8">
                   <div className="space-y-4">
@@ -502,7 +569,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     <textarea value={newUnit.narrative} onChange={e => setNewUnit({...newUnit, narrative: e.target.value})} rows={4} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 resize-none" />
                   </div>
 
-                  <button type="submit" disabled={isSubmitting || uploading} className="w-full py-5 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 disabled:opacity-50 flex items-center justify-center gap-3">
+                  <button type="submit" disabled={isSubmitting || uploading} className="w-full py-5 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 disabled:opacity-50 flex items-center justify-center gap-3 transition-all">
                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
                     {editingUnitId ? 'Finalize Modifications' : 'Complete Asset Registration'}
                   </button>
@@ -549,7 +616,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         <div className="flex items-center justify-end gap-3">
                           <button onClick={() => setDeleteConfirmationId(unit.id)} className="p-2 text-corporate-200 hover:text-red-600 transition-colors"><Trash2 size={20} /></button>
                           <button onClick={() => handleModify(unit)} className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"><Edit3 size={20} /></button>
-                          <button onClick={() => toggleStatus(unit.id, unit.status)} className="px-4 py-2 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-md hover:bg-corporate-800">
+                          <button onClick={() => toggleStatus(unit.id, unit.status)} className="px-4 py-2 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-md hover:bg-corporate-800 transition-colors">
                             Toggle
                           </button>
                         </div>
@@ -561,11 +628,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </div>
           </div>
         ) : (
-          <div>
-            {/* KPI Section - Minimalist Redesign */}
-            <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6 animate-in slide-in-from-top-4 duration-500">
+          <div className="space-y-8">
+            {/* KPI Card */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-in slide-in-from-top-4 duration-500">
               <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm flex items-center gap-4">
-                {/* Visual Indicator: Small solid indigo circle anchor */}
                 <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Inbox className="text-white" size={18} />
                 </div>
@@ -579,31 +645,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 border-b border-corporate-100 pb-8 gap-6">
-              <div>
-                <h2 className="text-3xl font-serif text-corporate-900">Incoming Leads</h2>
-                <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Tenant Inquiries & Growth Pipeline</p>
+            {/* Leads Section Header & Navigation */}
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-corporate-100 pb-8 gap-6">
+                <div>
+                  <h2 className="text-3xl font-serif text-corporate-900">Incoming Leads</h2>
+                  <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Tenant Inquiries & Growth Pipeline</p>
+                </div>
+                <button 
+                  onClick={downloadLeadsCSV}
+                  className="flex items-center gap-2 px-6 py-3 border border-corporate-200 text-corporate-700 text-[10px] font-bold uppercase tracking-widest rounded hover:bg-corporate-50 transition-all shadow-sm"
+                >
+                  <Download size={16} />
+                  Download CSV
+                </button>
               </div>
-              <button 
-                onClick={downloadLeadsCSV}
-                className="flex items-center gap-2 px-6 py-3 border border-corporate-200 text-corporate-700 text-[10px] font-bold uppercase tracking-widest rounded hover:bg-corporate-50 transition-all shadow-sm"
-              >
-                <Download size={16} />
-                Download CSV
-              </button>
+
+              {/* Sub-navigation Tabs */}
+              <div className="flex gap-1 bg-white p-1 rounded-lg border border-corporate-100 w-fit">
+                {[
+                  { id: 'active', label: 'Active Inquiries' },
+                  { id: 'resolved', label: 'Resolved' },
+                  { id: 'archived', label: 'Archived' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setLeadsSubTab(tab.id as any)}
+                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${
+                      leadsSubTab === tab.id 
+                      ? 'bg-corporate-900 text-white shadow-md' 
+                      : 'text-corporate-400 hover:text-corporate-700 hover:bg-corporate-50'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {loadingLeads ? (
               <div className="flex flex-col items-center justify-center py-32 text-corporate-400">
                 <Loader2 className="animate-spin mb-6" size={48} />
-                <p className="font-serif italic text-lg">Synchronizing inquiry database...</p>
+                <p className="font-serif italic text-lg text-center">Synchronizing lead repository...</p>
               </div>
-            ) : leads.length === 0 ? (
+            ) : filteredLeads.length === 0 ? (
               <div className="bg-white rounded-xl border border-corporate-200 border-dashed py-40 text-center animate-in zoom-in-95 duration-500">
                 <div className="max-w-md mx-auto space-y-6">
                   <Inbox size={64} className="mx-auto text-corporate-100" />
-                  <p className="text-corporate-400 font-serif italic text-2xl">Waiting for your first inquiry!</p>
-                  <p className="text-xs text-corporate-300 font-bold uppercase tracking-[0.2em]">Inquiries from the public site will appear here.</p>
+                  <p className="text-corporate-400 font-serif italic text-2xl">No inquiries found in this category.</p>
+                  <p className="text-xs text-corporate-300 font-bold uppercase tracking-[0.2em]">Incoming data will populate here automatically.</p>
                 </div>
               </div>
             ) : (
@@ -621,20 +711,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-corporate-100">
-                    {leads.map(lead => (
-                      <tr key={lead.id} className="hover:bg-corporate-50/30 transition-colors">
+                    {filteredLeads.map(lead => (
+                      <tr key={lead.id} className="hover:bg-corporate-50/30 transition-colors animate-in fade-in duration-300">
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-corporate-100 flex items-center justify-center text-corporate-400">
                               <User size={20} />
                             </div>
-                            <span className="font-bold text-corporate-900">{lead.full_name || lead.name}</span>
+                            <span className="font-bold text-corporate-900">{lead.full_name || lead.name || 'Inquirer'}</span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex flex-col gap-1.5 text-sm">
-                            <div className="flex items-center gap-2 text-corporate-700 font-medium leading-none"><Mail size={14} className="text-corporate-300"/> {lead.email}</div>
-                            {lead.phone && <div className="flex items-center gap-2 text-corporate-500 leading-none"><Phone size={14} className="text-corporate-300"/> {lead.phone}</div>}
+                            <div className="flex items-center gap-2 text-corporate-700 font-medium leading-none truncate max-w-[200px]" title={lead.email}>
+                              <Mail size={14} className="text-corporate-300 flex-shrink-0"/> {lead.email}
+                            </div>
+                            {lead.phone && (
+                              <div className="flex items-center gap-2 text-corporate-500 leading-none">
+                                <Phone size={14} className="text-corporate-300 flex-shrink-0"/> {lead.phone}
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="px-8 py-6">
@@ -644,7 +740,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         </td>
                         <td className="px-8 py-6">
                           <div className="max-w-xs text-sm text-corporate-600 leading-relaxed italic line-clamp-2" title={lead.message}>
-                            "{lead.message}"
+                            "{lead.message || 'No narrative provided.'}"
                           </div>
                         </td>
                         <td className="px-8 py-6">
@@ -655,16 +751,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         </td>
                         <td className="px-8 py-6">
                           <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-sm ${
-                            lead.status === 'RESOLVED' ? 'bg-green-100 text-green-700' : 
-                            lead.status === 'Archived' ? 'bg-corporate-100 text-corporate-400' :
-                            lead.status === 'Contacted' ? 'bg-blue-50 text-blue-700' : 'bg-corporate-900 text-white'
+                            (lead.status || 'NEW').toUpperCase() === 'RESOLVED' ? 'bg-green-100 text-green-700' : 
+                            lead.archived ? 'bg-corporate-100 text-corporate-400' :
+                            'bg-corporate-900 text-white'
                           }`}>
-                            {lead.status || 'NEW'}
+                            {lead.archived ? 'Archived' : (lead.status || 'NEW').toUpperCase()}
                           </span>
                         </td>
                         <td className="px-8 py-6 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {lead.status !== 'RESOLVED' && (
+                            {/* Resolve/Re-open Action */}
+                            {leadsSubTab === 'active' && (
                               <button 
                                 onClick={() => handleResolveLead(lead.id)}
                                 disabled={updatingId === lead.id}
@@ -674,13 +771,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                                 {updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <Check size={20} />}
                               </button>
                             )}
+                            {leadsSubTab === 'resolved' && (
+                              <button 
+                                onClick={() => handleReopenLead(lead.id)}
+                                disabled={updatingId === lead.id}
+                                className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"
+                                title="Re-open Inquiry"
+                              >
+                                {updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <RotateCcw size={20} />}
+                              </button>
+                            )}
+
+                            {/* Archive/Restore Action */}
                             <button 
-                              onClick={() => handleArchiveLead(lead.id)}
+                              onClick={() => handleArchiveLead(lead.id, !lead.archived)}
                               disabled={updatingId === lead.id}
-                              className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"
-                              title="Archive Lead"
+                              className={`p-2 transition-colors ${lead.archived ? 'text-indigo-600 hover:text-indigo-800' : 'text-corporate-200 hover:text-corporate-900'}`}
+                              title={lead.archived ? "Restore to Inbox" : "Move to Archive"}
                             >
-                              {updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <Archive size={20} />}
+                              {updatingId === lead.id ? (
+                                <Loader2 size={18} className="animate-spin" />
+                              ) : lead.archived ? (
+                                <History size={20} />
+                              ) : (
+                                <Archive size={20} />
+                              )}
                             </button>
                           </div>
                         </td>
@@ -706,7 +821,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               Confirm deletion of <span className="font-bold text-corporate-900">Unit {units.find(u => u.id === deleteConfirmationId)?.unit_number}</span>? This action is irreversible.
             </p>
             <div className="flex gap-4">
-              <button onClick={() => setDeleteConfirmationId(null)} className="flex-1 py-4 border border-corporate-200 text-corporate-500 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-all">Cancel</button>
+              <button onClick={() => setDeleteConfirmationId(null)} className="flex-1 py-4 border border-corporate-200 text-corporate-50 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-all">Cancel</button>
               <button onClick={() => executeDelete(deleteConfirmationId)} className="flex-1 py-4 bg-red-600 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-red-700 transition-all shadow-lg">Permanently Delete</button>
             </div>
           </div>
