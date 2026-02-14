@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar, FileText, Info, BookOpen, ExternalLink, HelpCircle } from 'lucide-react';
+import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar, FileText, Info, BookOpen, ExternalLink, HelpCircle, Send } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
@@ -182,6 +182,168 @@ type ViewState =
   | { type: 'detail'; unit: PropertyUnit; source: string }
   | { type: 'login' }
   | { type: 'admin' };
+
+// --- Lead Capture Modal Component ---
+
+const LeadInquiryModal: React.FC<{ 
+  unit: PropertyUnit; 
+  onClose: () => void;
+}> = ({ unit, onClose }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: 'I am interested in viewing this unit. Please provide more details.'
+  });
+
+  const encode = (data: any) => Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const unitInfo = `Unit ${unit.unit_number} - ${unit.building_name}`;
+
+    try {
+      const { error } = await supabase.from('leads').insert([{
+        full_name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        unit_number: unitInfo,
+        status: 'New'
+      }]);
+
+      if (error) {
+        console.log('Lead Error:', error.message);
+        alert('There was an issue submitting your inquiry. Please try again.');
+      } else {
+        // Trigger Netlify Submission for Email Alerts
+        fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: encode({ 
+            "form-name": "leads",
+            "full_name": formData.name,
+            "email": formData.email,
+            "phone": formData.phone,
+            "unit_number": unitInfo,
+            "message": formData.message 
+          })
+        }).catch(err => console.error("Netlify Submission Error:", err));
+
+        (window as any).posthog?.capture('unit_specific_inquiry_submitted', {
+          unit_number: unit.unit_number,
+          building: unit.building_name,
+          source: 'unit_detail_modal'
+        });
+        setIsSuccess(true);
+      }
+    } catch (err) {
+      console.log('Catch Error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] bg-corporate-900/60 backdrop-blur-md flex items-center justify-center p-6">
+      <div className="bg-white max-w-lg w-full rounded-2xl shadow-2xl border border-corporate-200 overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="bg-corporate-50 p-6 border-b border-corporate-100 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-serif text-corporate-900">Inquiry for Unit {unit.unit_number}</h2>
+            <p className="text-xs text-corporate-400 font-bold uppercase tracking-widest mt-1">{unit.building_name}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-corporate-100 rounded-full transition-colors text-corporate-400">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-8">
+          {isSuccess ? (
+            <div className="text-center py-12 space-y-6 animate-in fade-in zoom-in-95">
+              <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                <Check size={32} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-serif text-corporate-900">Email Sent to Leasing</h3>
+                <p className="text-corporate-600">Thank you! Our leasing coordinator, Mercy Laurenciano, will review your inquiry and contact you shortly.</p>
+              </div>
+              <button 
+                onClick={onClose}
+                className="px-8 py-3 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 transition-all"
+              >
+                Close Window
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Full Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors"
+                  placeholder="Juan Dela Cruz"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Email Address</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={formData.email}
+                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors"
+                    placeholder="juan@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    required
+                    value={formData.phone}
+                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors"
+                    placeholder="+63 9XX XXX XXXX"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Message</label>
+                <textarea 
+                  required
+                  value={formData.message}
+                  onChange={e => setFormData({...formData, message: e.target.value})}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors resize-none text-sm"
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full py-4 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+                Submit Formal Inquiry
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Loader2 = ({ className, size }: { className?: string, size?: number }) => (
+  <svg className={`animate-spin ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+);
 
 // --- Components ---
 
@@ -500,15 +662,12 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
 };
 
 const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propertyName: string }> = ({ unit, onBack, propertyName }) => {
+  const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
+  
   useEffect(() => window.scrollTo(0, 0), []);
   
-  const handleEmailInquiry = () => {
-    posthog?.capture('unit_inquiry_attempt', { 
-      type: 'email', 
-      unit_number: unit.unit_number, 
-      building: unit.building_name 
-    });
-    window.location.href = `mailto:mercy.laurenciano@gmail.com?subject=${encodeURIComponent(`Rent Inquiry for Unit ${unit.unit_number} - ${propertyName}`)}`;
+  const handleEmailInquiryTrigger = () => {
+    setIsLeadFormOpen(true);
   };
 
   const handleCallInquiry = () => {
@@ -520,13 +679,12 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
     window.location.href = "tel:+639335383815";
   };
 
-  // Formatting for association dues as currency with two decimal places
   const formattedDues = unit.dues
     ? `₱${Number(unit.dues).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
     : "Included";
 
   return (
-    <div className="min-h-screen bg-corporate-50 pt-20 pb-24">
+    <div className="min-h-screen bg-corporate-50 pt-20 pb-24 relative">
       <div className="max-w-7xl mx-auto px-6 pt-12">
         <button onClick={onBack} className="flex items-center text-corporate-500 hover:text-corporate-900 transition-colors text-sm font-medium tracking-wide uppercase group mb-8">
           <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
@@ -580,7 +738,7 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
               <h3 className="text-2xl font-serif text-corporate-900 mb-6">Interested in this property?</h3>
               <p className="text-corporate-600 mb-8 leading-relaxed">Our leasing team is ready to schedule a viewing or provide a detailed floor plan for Unit {unit.unit_number}.</p>
               <div className="space-y-4">
-                <button onClick={handleEmailInquiry} className="w-full py-4 bg-corporate-900 text-white font-medium hover:bg-corporate-800 transition-colors rounded-lg flex items-center justify-center gap-2">
+                <button onClick={handleEmailInquiryTrigger} className="w-full py-4 bg-corporate-900 text-white font-medium hover:bg-corporate-800 transition-colors rounded-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
                   <Mail size={18} /> Inquire via Email
                 </button>
                 <button onClick={handleCallInquiry} className="w-full py-3 border border-corporate-300 text-corporate-700 font-medium hover:border-corporate-900 hover:text-corporate-900 transition-colors rounded-lg flex items-center justify-center gap-2">
@@ -594,6 +752,10 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
           </div>
         </div>
       </div>
+
+      {isLeadFormOpen && (
+        <LeadInquiryModal unit={unit} onClose={() => setIsLeadFormOpen(false)} />
+      )}
     </div>
   );
 };
@@ -701,7 +863,7 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
         </div>
         <figcaption className="space-y-2">
           <h3 className="text-3xl font-serif text-corporate-900">Facilities Centre</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed">A premier commercial hub featuring the longest street frontage along the Shaw Boulevard corridor. This PEZA-accredited complex is home to anchor banking tenants and major corporate offices, providing exceptional accessibility and high-visibility ground-floor retail units.</p>
+          <p className="text-lg text-corporate-600 leading-relaxed"> A premier commercial hub featuring the longest street frontage along the Shaw Boulevard corridor. This PEZA-accredited complex is home to anchor banking tenants and major corporate offices, providing exceptional accessibility and high-visibility ground-floor retail units.</p>
         </figcaption>
       </figure>
 
@@ -740,28 +902,45 @@ const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
 
+  const encode = (data: any) => Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSending(true);
 
     try {
       const { error } = await supabase.from('leads').insert([{
-        name: formData.name,
+        full_name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        message: formData.message
+        message: formData.message,
+        unit_number: "General Inquiry"
       }]);
 
       if (error) {
-        console.error('Supabase Lead Insert Error:', error);
+        console.log('Detailed Error:', error.message, error.details);
         alert('Could not send message. Please try again or call us directly.');
       } else {
-        posthog?.capture('lead_form_submitted');
+        // Trigger Netlify Submission for Email Alerts
+        fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: encode({ 
+            "form-name": "leads",
+            "full_name": formData.name,
+            "email": formData.email,
+            "phone": formData.phone,
+            "unit_number": "General Inquiry",
+            "message": formData.message 
+          })
+        }).catch(err => console.error("Netlify Submission Error:", err));
+
+        (window as any).posthog?.capture('lead_form_submitted');
         alert('Message Sent!');
         setFormData({ name: '', email: '', phone: '', message: '' });
       }
-    } catch (err) {
-      console.error('Lead Submission Catch:', err);
+    } catch (err: any) {
+      console.log('Lead Submission Catch:', err.message);
       alert('System Error. Please try again later.');
     } finally {
       setIsSending(false);
