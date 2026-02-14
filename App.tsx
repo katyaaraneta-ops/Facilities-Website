@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar, FileText, Info, BookOpen, ExternalLink, HelpCircle } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
 import { AdminDashboard } from './AdminDashboard';
+
+// Access the global PostHog instance safely
+const posthog = (window as any).posthog;
 
 // --- Data Definitions ---
 
@@ -181,6 +184,74 @@ type ViewState =
   | { type: 'admin' };
 
 // --- Components ---
+
+const UserGuideModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+  <div className="fixed inset-0 z-[100] bg-corporate-900/40 backdrop-blur-md flex items-center justify-center p-6">
+    <div className="bg-white max-w-3xl w-full max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl border border-corporate-200 animate-in zoom-in-95 duration-200">
+      <div className="sticky top-0 bg-white border-b border-corporate-100 p-6 flex justify-between items-center z-10">
+        <h2 className="text-2xl font-serif text-corporate-900">Tenant Resource Center</h2>
+        <button onClick={onClose} className="p-2 hover:bg-corporate-50 rounded-full transition-colors">
+          <X size={24} />
+        </button>
+      </div>
+      
+      <div className="p-8 space-y-12">
+        {/* Product Report */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3 text-corporate-900">
+            <div className="p-2 bg-corporate-900 text-white rounded-lg">
+              <FileText size={20} />
+            </div>
+            <h3 className="text-xl font-bold uppercase tracking-tight">Portfolio Product Report</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-5 bg-corporate-50 rounded-xl border border-corporate-100">
+              <h4 className="font-bold text-corporate-900 mb-2">Institutional Standards</h4>
+              <p className="text-sm text-corporate-600 leading-relaxed">
+                All managed assets feature PEZA accreditation (where applicable), 100% backup power systems, and multi-carrier fiber optic availability.
+              </p>
+            </div>
+            <div className="p-5 bg-corporate-50 rounded-xl border border-corporate-100">
+              <h4 className="font-bold text-corporate-900 mb-2">Location Strategy</h4>
+              <p className="text-sm text-corporate-600 leading-relaxed">
+                Primary assets are situated on the Shaw Boulevard corridor, providing high-visibility frontage and direct access to the Ortigas Central Business District.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Walkthrough */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3 text-corporate-900">
+            <div className="p-2 bg-corporate-100 text-corporate-900 rounded-lg">
+              <BookOpen size={20} />
+            </div>
+            <h3 className="text-xl font-bold uppercase tracking-tight">Leasing Walkthrough</h3>
+          </div>
+          <div className="space-y-4">
+            {[
+              { title: "Browse Inventory", desc: "Select a project from the 'Projects' menu to view live availability. Use sorting filters to find units matching your floor area or budget requirements." },
+              { title: "Review Details", desc: "Click any unit to view high-resolution photos, marketing narratives, and 'Live Facts' including association dues and availability dates." },
+              { title: "Direct Inquiry", desc: "Use the built-in email or phone triggers to reach Mercy Laurenciano, our primary leasing coordinator, directly." }
+            ].map((step, i) => (
+              <div key={i} className="flex gap-4">
+                <span className="text-corporate-300 font-serif text-xl italic pt-1">{i + 1}.</span>
+                <div>
+                  <p className="font-bold text-corporate-900">{step.title}</p>
+                  <p className="text-sm text-corporate-600 leading-relaxed">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="pt-8 border-t border-corporate-100 text-center">
+          <p className="text-xs text-corporate-400 font-medium uppercase tracking-[0.2em]">Quality Has No Substitute — Est. 1960</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 interface HeaderProps {
   onNavigateHome: () => void;
@@ -430,7 +501,24 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
 
 const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propertyName: string }> = ({ unit, onBack, propertyName }) => {
   useEffect(() => window.scrollTo(0, 0), []);
-  const mailtoLink = `mailto:mercy.laurenciano@gmail.com?subject=${encodeURIComponent(`Rent Inquiry for Unit ${unit.unit_number} - ${propertyName}`)}`;
+  
+  const handleEmailInquiry = () => {
+    posthog?.capture('unit_inquiry_attempt', { 
+      type: 'email', 
+      unit_number: unit.unit_number, 
+      building: unit.building_name 
+    });
+    window.location.href = `mailto:mercy.laurenciano@gmail.com?subject=${encodeURIComponent(`Rent Inquiry for Unit ${unit.unit_number} - ${propertyName}`)}`;
+  };
+
+  const handleCallInquiry = () => {
+    posthog?.capture('unit_inquiry_attempt', { 
+      type: 'call', 
+      unit_number: unit.unit_number, 
+      building: unit.building_name 
+    });
+    window.location.href = "tel:+639335383815";
+  };
 
   // Formatting for association dues as currency with two decimal places
   const formattedDues = unit.dues
@@ -492,12 +580,12 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
               <h3 className="text-2xl font-serif text-corporate-900 mb-6">Interested in this property?</h3>
               <p className="text-corporate-600 mb-8 leading-relaxed">Our leasing team is ready to schedule a viewing or provide a detailed floor plan for Unit {unit.unit_number}.</p>
               <div className="space-y-4">
-                <a href={mailtoLink} className="w-full py-4 bg-corporate-900 text-white font-medium hover:bg-corporate-800 transition-colors rounded-lg flex items-center justify-center gap-2">
+                <button onClick={handleEmailInquiry} className="w-full py-4 bg-corporate-900 text-white font-medium hover:bg-corporate-800 transition-colors rounded-lg flex items-center justify-center gap-2">
                   <Mail size={18} /> Inquire via Email
-                </a>
-                <a href="tel:+639335383815" className="w-full py-3 border border-corporate-300 text-corporate-700 font-medium hover:border-corporate-900 hover:text-corporate-900 transition-colors rounded-lg flex items-center justify-center gap-2">
+                </button>
+                <button onClick={handleCallInquiry} className="w-full py-3 border border-corporate-300 text-corporate-700 font-medium hover:border-corporate-900 hover:text-corporate-900 transition-colors rounded-lg flex items-center justify-center gap-2">
                   <Phone size={18} /> Call Mercy
-                </a>
+                </button>
               </div>
               <div className="mt-8 pt-6 border-t border-corporate-100 text-sm text-corporate-500 text-center">
                 Ref ID: <span className="font-mono text-corporate-700">{unit.id.split('-')[0]}</span>
@@ -650,23 +738,92 @@ const FAQ: React.FC = () => {
 
 const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSending(true);
-    // Simulate Netlify Form Submit
-    setTimeout(() => { alert('Inquiry sent.'); setIsSending(false); e.currentTarget.reset(); }, 1000);
+
+    try {
+      const { error } = await supabase.from('leads').insert([{
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message
+      }]);
+
+      if (error) {
+        console.error('Supabase Lead Insert Error:', error);
+        alert('Could not send message. Please try again or call us directly.');
+      } else {
+        posthog?.capture('lead_form_submitted');
+        alert('Message Sent!');
+        setFormData({ name: '', email: '', phone: '', message: '' });
+      }
+    } catch (err) {
+      console.error('Lead Submission Catch:', err);
+      alert('System Error. Please try again later.');
+    } finally {
+      setIsSending(false);
+    }
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleDirectClick = (channel: 'email' | 'phone') => {
+    posthog?.capture('direct_contact_click', { channel });
+  };
+
   return (
     <Section id="contact" className="bg-white border-t border-corporate-200">
       <div className="border-b border-corporate-200 mb-16 pb-4"><h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Contact</h2></div>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div className="lg:col-span-8 lg:col-start-5 space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <input type="text" placeholder="Full Name" required className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" />
-            <input type="email" placeholder="Email" required className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" />
+            <input 
+              type="text" 
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Full Name" 
+              required 
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" 
+            />
+            <input 
+              type="email" 
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Email" 
+              required 
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" 
+            />
           </div>
-          <textarea placeholder="Your Inquiry" required rows={6} className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300 resize-none" />
-          <button disabled={isSending} className="px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 font-medium hover:border-corporate-900 transition-colors disabled:opacity-50">{isSending ? 'Sending...' : 'Submit Inquiry'}</button>
+          <div className="grid grid-cols-1 gap-12">
+            <input 
+              type="tel" 
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              placeholder="Phone Number (Optional)" 
+              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" 
+            />
+          </div>
+          <textarea 
+            name="message"
+            value={formData.message}
+            onChange={handleInputChange}
+            placeholder="Your Inquiry" 
+            required 
+            rows={6} 
+            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300 resize-none" 
+          />
+          <button disabled={isSending} className="px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 font-medium hover:border-corporate-900 transition-colors disabled:opacity-50">
+            {isSending ? 'Sending...' : 'Submit Inquiry'}
+          </button>
         </div>
         <div className="lg:col-span-4 lg:col-start-1 lg:row-start-1 space-y-8">
           <div className="space-y-2">
@@ -675,7 +832,23 @@ const Contact: React.FC = () => {
           </div>
           <div className="space-y-2">
             <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email</h3>
-            <a href="mailto:mercy.laurenciano@gmail.com" className="text-lg text-corporate-700 font-serif underline decoration-corporate-200">mercy.laurenciano@gmail.com</a>
+            <a 
+              href="mailto:mercy.laurenciano@gmail.com" 
+              onClick={() => handleDirectClick('email')}
+              className="text-lg text-corporate-700 font-serif underline decoration-corporate-200"
+            >
+              mercy.laurenciano@gmail.com
+            </a>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Leasing Hotline</h3>
+            <a 
+              href="tel:+639335383815" 
+              onClick={() => handleDirectClick('phone')}
+              className="text-lg text-corporate-700 font-serif underline decoration-corporate-200"
+            >
+              +63 933 538 3815
+            </a>
           </div>
         </div>
       </form>
@@ -683,15 +856,21 @@ const Contact: React.FC = () => {
   );
 };
 
-const Footer: React.FC<{ onAdminClick: () => void }> = ({ onAdminClick }) => (
+const Footer: React.FC<{ onAdminClick: () => void; onShowGuide: () => void }> = ({ onAdminClick, onShowGuide }) => (
   <footer className="bg-[#181852] text-[#C9D2E3] py-12">
-    <div className="max-w-7xl mx-auto px-6 flex justify-between items-center opacity-80 text-xs tracking-widest uppercase">
-      <button
-        onClick={onAdminClick}
-        className="hover:text-white transition-colors text-left"
-      >
-        &copy; {new Date().getFullYear()} Facilities, Incorporated.
-      </button>
+    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 opacity-80 text-xs tracking-widest uppercase">
+      <div className="flex flex-col md:flex-row gap-6 items-center">
+        <button
+          onClick={onAdminClick}
+          className="hover:text-white transition-colors text-left"
+        >
+          &copy; {new Date().getFullYear()} Facilities, Incorporated.
+        </button>
+        <button onClick={onShowGuide} className="flex items-center gap-2 hover:text-white transition-colors group">
+          <HelpCircle size={14} className="group-hover:animate-pulse" />
+          Renter's Guide & Product Report
+        </button>
+      </div>
       <p>Est. 1960</p>
     </div>
   </footer>
@@ -702,6 +881,7 @@ export default function App() {
   const [liveUnits, setLiveUnits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   const fetchUnits = useCallback(async () => {
     const { data, error } = await supabase
@@ -717,24 +897,26 @@ export default function App() {
     fetchUnits();
   }, [fetchUnits]);
 
+  const handleUnitClick = (u: PropertyUnit, source: string) => {
+    posthog?.capture('unit_viewed', { unit_id: u.id, unit_number: u.unit_number, property: source });
+    setViewState({ type: 'detail', unit: u, source: source });
+  };
+
+  const toggleGuide = (show: boolean) => {
+    if (show) posthog?.capture('user_guide_opened');
+    setShowGuide(show);
+  };
+
   const getProcessedUnits = (building: string): PropertyUnit[] => {
     return liveUnits
       .filter(u => u.building_name === building)
       .map(u => {
-        // Fallback Chain: 
-        // 1. Live Supabase image_urls (text array)
-        // 2. Local hardcoded marketing mapping (if unit matches)
-        // 3. Global professional defaults
         const localMeta = marketingData[u.unit_number] || {};
-        
         const headline = u.headline || localMeta.headline || DEFAULT_HEADLINE;
         const narrative = u.narrative || localMeta.narrative || DEFAULT_NARRATIVE;
-        
-        // Use DB image_urls if they exist, otherwise fallback
         const images = (u.image_urls && u.image_urls.length > 0) 
           ? u.image_urls 
           : (localMeta.images || [DEFAULT_IMAGE]);
-
         const specs = localMeta.specs || [];
 
         return {
@@ -765,10 +947,14 @@ export default function App() {
         onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
         currentPage={viewState.type}
       />
+      
+      {showGuide && <UserGuideModal onClose={() => toggleGuide(false)} />}
+
       <main>
         {viewState.type === 'login' ? (
           <LoginPage
             onLoginSuccess={(loggedInUser) => {
+              posthog?.capture('admin_login_success');
               setUser(loggedInUser);
               setViewState({ type: 'admin' });
             }}
@@ -777,8 +963,9 @@ export default function App() {
         ) : viewState.type === 'admin' ? (
           <AdminDashboard
             onLogout={() => {
+              posthog?.capture('admin_logout');
               setUser(null);
-              fetchUnits(); // Ensure data is fresh when returning to public view
+              fetchUnits();
               setViewState({ type: 'landing' });
             }}
           />
@@ -787,7 +974,7 @@ export default function App() {
             propertyName={viewState.property}
             units={getProcessedUnits(viewState.property)}
             onBack={() => setViewState({ type: 'landing' })}
-            onUnitClick={(u) => setViewState({ type: 'detail', unit: u, source: viewState.property })}
+            onUnitClick={(u) => handleUnitClick(u, viewState.property)}
           />
         ) : viewState.type === 'detail' ? (
           <UnitDetailPage
@@ -809,7 +996,10 @@ export default function App() {
           </>
         )}
       </main>
-      <Footer onAdminClick={() => setViewState({ type: 'login' })} />
+      <Footer 
+        onAdminClick={() => setViewState({ type: 'login' })} 
+        onShowGuide={() => toggleGuide(true)}
+      />
     </div>
   );
 }
