@@ -19,6 +19,48 @@ const INITIAL_FORM_STATE = {
   image_urls: [] as string[]
 };
 
+/**
+ * Helper to compress images before upload.
+ * Resizes to max 1200px width and sets quality to 0.8.
+ */
+const compressImage = (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Canvas to Blob conversion failed'));
+          },
+          'image/jpeg',
+          0.8
+        );
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [units, setUnits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,29 +151,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // Multi-photo support: limit 3
+    if (newUnit.image_urls.length + files.length > 3) {
+      alert('Mercy, you can only store up to 3 photos per unit. Please remove existing ones first.');
+      return;
+    }
+
     setUploading(true);
     const newUrls = [...newUnit.image_urls];
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `unit-uploads/${fileName}`;
+      try {
+        const file = files[i];
+        
+        // On-the-fly compression
+        const compressedBlob = await compressImage(file);
+        
+        // Institutional Naming Convention
+        const unitNum = newUnit.unit_number || 'TBD';
+        const timestamp = Date.now();
+        const fileName = `unit-${unitNum}-${timestamp}.jpg`;
+        const filePath = `unit-uploads/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('unit-images')
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from('unit-images')
+          .upload(filePath, compressedBlob, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
 
-      if (uploadError) {
-        alert('Upload failed: ' + uploadError.message);
-        continue;
+        if (uploadError) {
+          alert('Upload failed: ' + uploadError.message);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('unit-images')
+          .getPublicUrl(filePath);
+
+        newUrls.push(publicUrl);
+      } catch (err) {
+        console.error('Asset processing error:', err);
+        alert('Could not process one of the images.');
       }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('unit-images')
-        .getPublicUrl(filePath);
-
-      newUrls.push(publicUrl);
     }
 
     setNewUnit({ ...newUnit, image_urls: newUrls });
@@ -264,10 +326,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
             {/* Upload Area */}
             <div className="mb-8">
-              <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest block mb-3">Asset Gallery (Images)</label>
+              <div className="flex justify-between items-end mb-3">
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest block">Asset Gallery (Max 3 Images)</label>
+                <span className="text-xs font-bold text-corporate-300">{newUnit.image_urls.length} / 3</span>
+              </div>
               <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-corporate-200 rounded-xl p-8 text-center cursor-pointer hover:border-corporate-900 hover:bg-corporate-50 transition-all group"
+                onClick={() => !uploading && newUnit.image_urls.length < 3 && fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all group ${
+                  newUnit.image_urls.length >= 3 
+                    ? 'border-corporate-100 bg-corporate-50 cursor-not-allowed opacity-60' 
+                    : 'border-corporate-200 cursor-pointer hover:border-corporate-900 hover:bg-corporate-50'
+                }`}
               >
                 <input 
                   type="file" 
@@ -276,31 +345,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   accept="image/*" 
                   multiple 
                   onChange={handleFileUpload}
+                  disabled={uploading || newUnit.image_urls.length >= 3}
                 />
                 <div className="flex flex-col items-center gap-2">
                   {uploading ? (
-                    <Loader2 className="animate-spin text-corporate-900" size={32} />
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="animate-spin text-corporate-900" size={32} />
+                      <p className="text-sm text-corporate-900 font-bold animate-pulse">Compressing & Uploading...</p>
+                    </div>
                   ) : (
-                    <Upload className="text-corporate-300 group-hover:text-corporate-900 transition-colors" size={32} />
+                    <>
+                      <Upload className={`${newUnit.image_urls.length >= 3 ? 'text-corporate-100' : 'text-corporate-300 group-hover:text-corporate-900'} transition-colors`} size={32} />
+                      <p className="text-sm text-corporate-600 font-medium">
+                        {newUnit.image_urls.length >= 3 ? 'Capacity Reached' : 'Click or drag images to upload'}
+                      </p>
+                      <p className="text-xs text-corporate-400">Auto-compressed to 1200px width</p>
+                    </>
                   )}
-                  <p className="text-sm text-corporate-600 font-medium">Click or drag images to upload</p>
-                  <p className="text-xs text-corporate-400">High-resolution PNG or JPG preferred</p>
                 </div>
               </div>
 
-              {/* Preview Thumbnails */}
+              {/* Horizontal Preview Thumbnails */}
               {newUnit.image_urls.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-6">
+                <div className="flex flex-wrap gap-4 mt-6">
                   {newUnit.image_urls.map((url, idx) => (
-                    <div key={idx} className="relative aspect-square group rounded-lg overflow-hidden border border-corporate-100 bg-corporate-50">
+                    <div key={idx} className="relative w-24 h-24 md:w-32 md:h-32 group rounded-lg overflow-hidden border border-corporate-100 bg-corporate-50 shadow-sm">
                       <img src={url} alt={`Upload ${idx}`} className="w-full h-full object-cover" />
                       <button 
                         type="button"
                         onClick={() => removeImage(url)}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                       >
-                        <Trash size={14} />
+                        <Trash size={12} />
                       </button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-corporate-900/60 text-[10px] text-white py-0.5 text-center font-bold uppercase">
+                        Slot {idx + 1}
+                      </div>
+                    </div>
+                  ))}
+                  {Array.from({ length: 3 - newUnit.image_urls.length }).map((_, i) => (
+                    <div key={`empty-${i}`} className="w-24 h-24 md:w-32 md:h-32 rounded-lg border border-dashed border-corporate-100 flex items-center justify-center text-corporate-200">
+                      <ImageIcon size={20} className="opacity-40" />
                     </div>
                   ))}
                 </div>
@@ -443,7 +528,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                           </div>
                         )}
                       </div>
-                      {unit.unit_number}
+                      <div className="flex flex-col">
+                        <span>{unit.unit_number}</span>
+                        <span className="text-[10px] font-bold text-corporate-400 uppercase tracking-tighter">
+                          {unit.image_urls?.length || 0} / 3 Photos
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-8 py-6 text-corporate-600 text-sm whitespace-nowrap">{unit.building_name}</td>
