@@ -4,7 +4,7 @@ import {
   Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, 
   Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, 
   Image as ImageIcon, Trash, HelpCircle, FileText, BookOpen, 
-  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter, DollarSign
+  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter, DollarSign, Ban
 } from 'lucide-react';
 
 // Access global PostHog safely
@@ -128,10 +128,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [newUnit, setNewUnit] = useState(INITIAL_FORM_STATE);
   const [uploading, setUploading] = useState(false);
 
-  // Mark Rented States
+  // Mark Rented / Lease States
   const [rentConfirmationUnit, setRentConfirmationUnit] = useState<any>(null);
   const [rentPrice, setRentPrice] = useState<number>(0);
   const [contractLength, setContractLength] = useState<number>(12);
+  const [isEditingLease, setIsEditingLease] = useState(false);
+
+  // Cancellation / Proration States
+  const [cancelConfirmationUnit, setCancelConfirmationUnit] = useState<any>(null);
+  const [monthsCompleted, setMonthsCompleted] = useState<number>(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
@@ -238,11 +243,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       setRentConfirmationUnit(unit);
       setRentPrice(unit.monthly_rent || 0);
       setContractLength(12);
+      setIsEditingLease(false);
     } else {
-      // Re-opening to Available
-      setUpdatingId(id);
-      const { error } = await supabase.from('units').update({ status: 'Available' }).eq('id', id);
-      if (!error) await fetchUnits();
+      // Prompt for cancellation with proration
+      setCancelConfirmationUnit(unit);
+      setMonthsCompleted(0);
+    }
+  };
+
+  const handleConfirmCancellation = async () => {
+    if (!cancelConfirmationUnit) return;
+    
+    const originalLength = cancelConfirmationUnit.contract_length || 0;
+    if (monthsCompleted > originalLength) {
+      alert(`Cannot exceed original contract of ${originalLength} months.`);
+      return;
+    }
+
+    setUpdatingId(cancelConfirmationUnit.id);
+    const monthlyRent = cancelConfirmationUnit.monthly_rent || 0;
+    const totalValue = monthlyRent * originalLength;
+    const earnedValue = monthlyRent * monthsCompleted;
+    const lostRevenue = totalValue - earnedValue;
+
+    try {
+      const { error } = await supabase.from('units').update({ 
+        status: 'Available',
+        contract_length: null 
+      }).eq('id', cancelConfirmationUnit.id);
+      
+      if (error) throw error;
+
+      posthog?.capture('lease_cancelled', {
+        unit_id: cancelConfirmationUnit.id,
+        lost_revenue_value: lostRevenue,
+        months_stayed: monthsCompleted
+      });
+
+      await fetchUnits();
+      setCancelConfirmationUnit(null);
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
       setUpdatingId(null);
     }
   };
@@ -254,11 +296,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     const totalContractValue = rentPrice * contractLength;
 
     try {
-      const { error } = await supabase.from('units').update({ status: 'Rented' }).eq('id', id);
+      const { error } = await supabase.from('units').update({ 
+        status: 'Rented',
+        monthly_rent: rentPrice, // Update the rent in the DB to the negotiated price
+        contract_length: contractLength 
+      }).eq('id', id);
+
       if (error) throw error;
 
       // Analytics Capture
-      posthog?.capture('unit_rented_out', {
+      posthog?.capture(isEditingLease ? 'lease_modified' : 'unit_rented_out', {
         unit_id: id,
         unit_number: rentConfirmationUnit.unit_number,
         building: rentConfirmationUnit.building_name,
@@ -277,6 +324,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleModify = (unit: any) => {
+    // Always populate the main form so Mercy can edit photos, headlines, etc.
     setNewUnit({
       unit_number: unit.unit_number || '',
       building_name: unit.building_name || 'Summit One Tower',
@@ -289,8 +337,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       narrative: unit.narrative || '',
       image_urls: unit.image_urls || []
     });
+
+    setContractLength(unit.contract_length || 12);
     setEditingUnitId(unit.id);
-    setIsAdding(true);
+    setIsAdding(true); // Open the edit panel at the top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -360,6 +410,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       headline: newUnit.headline,
       narrative: newUnit.narrative,
       image_urls: newUnit.image_urls,
+      contract_length: newUnit.status === 'Rented' ? contractLength : null,
       listing_type: 'Office',
       availability_date: new Date().toISOString().split('T')[0]
     };
@@ -379,7 +430,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       return;
     }
     
-    // Export entire database contents
     const headers = ["Inquirer", "Email", "Phone", "Unit Interest", "Narrative", "Timestamp", "Status", "Is Archived"];
     
     const sanitize = (val: string | number | null | undefined) => {
@@ -428,7 +478,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     posthog?.capture('admin_filter_used', { building: val });
   };
 
-  // --- Filter Logic ---
   const applyBuildingFilter = (l: any) => {
     if (selectedBuilding === 'All Buildings') return true;
     const unitInfo = (l.unit_number || l.unit_interest || '').toUpperCase();
@@ -436,7 +485,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     return unitInfo.includes(selectedBuilding.toUpperCase());
   };
 
-  // --- Unified Count Logic (Filtered by Building) ---
   const filteredSet = leads.filter(applyBuildingFilter);
   
   const activeCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() === 'NEW' && !l.archived).length;
@@ -451,7 +499,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   });
 
   return (
-    <div className="min-h-screen bg-corporate-50 flex flex-col relative">
+    <div className="min-h-screen bg-corporate-50 flex flex-col relative text-corporate-900">
       <header className="sticky top-0 left-0 right-0 bg-corporate-900 border-b border-corporate-800 z-50 h-20 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -523,6 +571,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Monthly Rent (PHP)</label><input type="number" value={newUnit.monthly_rent} onChange={e => setNewUnit({...newUnit, monthly_rent: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required /></div>
                     <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Assoc. Dues (PHP)</label><input type="number" value={newUnit.assoc_dues} onChange={e => setNewUnit({...newUnit, assoc_dues: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required /></div>
                     <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Area (sqm)</label><input type="number" value={newUnit.net_area} onChange={e => setNewUnit({...newUnit, net_area: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required /></div>
+                    
+                    {newUnit.status === 'Rented' && (
+                      <div className="col-span-full mt-4 p-8 bg-indigo-50/50 rounded-xl border border-indigo-100 animate-in slide-in-from-top-2">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-indigo-600 text-white rounded-lg"><DollarSign size={18} /></div>
+                          <div>
+                            <h3 className="text-sm font-bold text-corporate-900 uppercase tracking-widest">Active Lease Metadata</h3>
+                            <p className="text-[10px] text-corporate-400 font-bold uppercase">Financial terms for the current tenant</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Contracted Monthly Rent (PHP)</label>
+                            <input type="number" value={newUnit.monthly_rent} onChange={e => setNewUnit({...newUnit, monthly_rent: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Contract Duration (Months)</label>
+                            <select value={contractLength} onChange={e => setContractLength(parseInt(e.target.value))} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 font-bold">
+                              {[6, 12, 18, 24, 36, 48, 60].map(m => <option key={m} value={m}>{m} Months</option>)}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Marketing Headline</label><input type="text" value={newUnit.headline} onChange={e => setNewUnit({...newUnit, headline: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900" placeholder="Institutional grade corporate suite..." /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Asset Narrative</label><textarea value={newUnit.narrative} onChange={e => setNewUnit({...newUnit, narrative: e.target.value})} rows={4} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 resize-none" /></div>
@@ -547,8 +619,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       <td className="px-8 py-6"><div className="flex items-center gap-4"><div className="w-12 h-12 bg-corporate-100 rounded overflow-hidden flex-shrink-0">{unit.image_urls?.[0] ? <img src={unit.image_urls[0]} className="w-full h-full object-cover" /> : <ImageIcon className="m-auto mt-3.5 text-corporate-200" size={20} />}</div><div className="flex flex-col"><span className="font-bold text-corporate-900">Unit {unit.unit_number}</span><span className="text-[10px] text-corporate-400 font-bold uppercase tracking-widest">{unit.image_urls?.length || 0} Assets Attached</span></div></div></td>
                       <td className="px-8 py-6 text-sm text-corporate-600">{unit.building_name}</td>
                       <td className="px-8 py-6 text-right"><div className="text-sm font-bold text-corporate-900">₱{unit.monthly_rent?.toLocaleString()}</div><div className="text-[10px] text-corporate-400 font-bold uppercase">{unit.net_area} sqm</div></td>
-                      <td className="px-8 py-6"><span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${unit.status.toLowerCase().includes('available') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{unit.status}</span></td>
-                      <td className="px-8 py-6 text-right"><div className="flex items-center justify-end gap-3"><button onClick={() => setDeleteConfirmationId(unit.id)} className="p-2 text-corporate-200 hover:text-red-600 transition-colors"><Trash2 size={20} /></button><button onClick={() => handleModify(unit)} className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"><Edit3 size={20} /></button><button onClick={() => toggleStatus(unit.id, unit.status)} className="px-4 py-2 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-md hover:bg-corporate-800 transition-colors">Toggle</button></div></td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className={`w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm ${unit.status.toLowerCase().includes('available') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                            {unit.status}
+                          </span>
+                          {unit.status.toLowerCase() === 'rented' && unit.contract_length && (
+                            <div className="mt-1.5 px-1">
+                              <p className="text-[10px] text-corporate-500 font-medium">₱{unit.monthly_rent?.toLocaleString()}/mo</p>
+                              <p className="text-[9px] text-corporate-400 font-bold uppercase tracking-tighter">{unit.contract_length} Month Duration</p>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-right"><div className="flex items-center justify-end gap-3"><button onClick={() => setDeleteConfirmationId(unit.id)} className="p-2 text-corporate-200 hover:text-red-600 transition-colors" title="Delete Asset"><Trash2 size={20} /></button><button onClick={() => handleModify(unit)} className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors" title={unit.status.toLowerCase() === 'rented' ? "Edit Lease Metadata" : "Edit Asset Details"}><Edit3 size={20} /></button><button onClick={() => toggleStatus(unit.id, unit.status)} className={`px-4 py-2 text-white text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors ${unit.status.toLowerCase() === 'rented' ? 'bg-red-600 hover:bg-red-700' : 'bg-corporate-900 hover:bg-corporate-800'}`}>{unit.status.toLowerCase() === 'rented' ? 'End Lease' : 'Toggle'}</button></div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -557,7 +641,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* KPI Metric Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
                 <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm"><Inbox className="text-white" size={20} /></div>
@@ -692,23 +775,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         )}
       </main>
 
-      {/* Mark Rented Financial Confirmation Modal */}
+      {/* Mark Rented / Edit Lease Modal */}
       {rentConfirmationUnit && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-corporate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white max-w-lg w-full p-10 rounded-xl shadow-2xl border border-corporate-200">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-4 bg-indigo-50 text-indigo-600 rounded-full">
-                <DollarSign size={28} />
+                {isEditingLease ? <Edit3 size={28} /> : <DollarSign size={28} />}
               </div>
               <div>
-                <h3 className="text-2xl font-serif text-corporate-900 leading-tight">Lease Registration</h3>
+                <h3 className="text-2xl font-serif text-corporate-900 leading-tight">{isEditingLease ? 'Edit Lease Terms' : 'Lease Registration'}</h3>
                 <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Registering Unit {rentConfirmationUnit.unit_number}</p>
               </div>
             </div>
             
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Monthly Rent (PHP)</label>
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Negotiated Monthly Rent (PHP)</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-corporate-400 font-bold">₱</span>
                   <input 
@@ -751,7 +834,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 className="flex-1 py-4 bg-corporate-900 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-800 transition-all shadow-lg flex items-center justify-center gap-2"
               >
                 {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                Finalize Lease
+                {isEditingLease ? 'Update Lease' : 'Finalize Lease'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prorated Lease Cancellation Modal */}
+      {cancelConfirmationUnit && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-corporate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white max-w-md w-full p-10 rounded-xl shadow-2xl border border-corporate-200">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-4 bg-red-50 text-red-600 rounded-full">
+                <Ban size={28} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-serif text-corporate-900 leading-tight">Prorated Cancellation</h3>
+                <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Unit {cancelConfirmationUnit.unit_number}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">How many months were actually completed?</label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="number" 
+                    min="0"
+                    max={cancelConfirmationUnit.contract_length || 0}
+                    value={monthsCompleted} 
+                    onChange={e => setMonthsCompleted(e.target.value === '' ? 0 : Number(e.target.value))}
+                    className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 font-bold text-lg" 
+                  />
+                  <span className="text-sm text-corporate-400 whitespace-nowrap font-medium">/ {cancelConfirmationUnit.contract_length || 0} mo</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                  <p className="text-[9px] font-bold text-green-600 uppercase tracking-widest mb-1">Earned Revenue</p>
+                  <p className="text-base font-bold text-green-700">₱{((cancelConfirmationUnit.monthly_rent || 0) * monthsCompleted).toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+                  <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest mb-1">Lost Pipeline</p>
+                  <p className="text-base font-bold text-red-700">₱{((cancelConfirmationUnit.monthly_rent || 0) * ((cancelConfirmationUnit.contract_length || 0) - monthsCompleted)).toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={() => setCancelConfirmationUnit(null)} className="flex-1 py-4 border border-corporate-200 text-corporate-500 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-all">Go Back</button>
+              <button 
+                onClick={handleConfirmCancellation} 
+                className="flex-1 py-4 bg-red-600 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                {updatingId === cancelConfirmationUnit.id && <Loader2 size={16} className="animate-spin" />}
+                Confirm Cancellation
               </button>
             </div>
           </div>
