@@ -4,7 +4,7 @@ import {
   Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, 
   Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, 
   Image as ImageIcon, Trash, HelpCircle, FileText, BookOpen, 
-  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck
+  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter
 } from 'lucide-react';
 
 // Access global PostHog safely
@@ -112,6 +112,7 @@ const AdminDocsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState<'inventory' | 'leads'>('inventory');
   const [leadsSubTab, setLeadsSubTab] = useState<'active' | 'resolved' | 'archived'>('active');
+  const [selectedBuilding, setSelectedBuilding] = useState('All Buildings');
   const [units, setUnits] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,6 +120,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [showDocs, setShowDocs] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<string | null>(null);
   
   const [isAdding, setIsAdding] = useState(false);
   const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
@@ -370,17 +372,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     posthog?.capture('admin_leads_exported', { count: leads.length });
   };
 
-  // --- Dynamic Count Logic ---
-  const activeCount = leads.filter(l => (l.status || 'NEW').toUpperCase() !== 'RESOLVED' && !l.archived).length;
-  const resolvedCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED' && !l.archived).length;
-  const archivedCount = leads.filter(l => l.archived).length;
+  const handleCopyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopyStatus(id);
+    setTimeout(() => setCopyStatus(null), 2000);
+    posthog?.capture('admin_copy_to_clipboard', { type: id.includes('email') ? 'email' : 'phone' });
+  };
+
+  const handleBuildingFilterChange = (val: string) => {
+    setSelectedBuilding(val);
+    posthog?.capture('admin_filter_used', { building: val });
+  };
+
+  // --- Filter Logic ---
+  const applyBuildingFilter = (l: any) => {
+    if (selectedBuilding === 'All Buildings') return true;
+    const unitInfo = (l.unit_number || l.unit_interest || '').toUpperCase();
+    if (selectedBuilding === 'General Inquiry') return unitInfo === 'GENERAL INQUIRY';
+    return unitInfo.includes(selectedBuilding.toUpperCase());
+  };
+
+  // --- Dynamic Count Logic (Filtered by Building) ---
+  const filteredSet = leads.filter(applyBuildingFilter);
+  const activeCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() !== 'RESOLVED' && !l.archived).length;
+  const resolvedCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED' && !l.archived).length;
+  const archivedCount = filteredSet.filter(l => l.archived).length;
   
-  // Total stats across database
+  // Total stats across database (Regardless of filteredSet)
   const totalNewCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'NEW').length;
   const totalResolvedCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED').length;
   const totalArchivedCount = leads.filter(l => l.archived).length;
 
-  const filteredLeads = leads.filter(l => {
+  const filteredLeads = filteredSet.filter(l => {
     const status = (l.status || 'NEW').toUpperCase();
     if (leadsSubTab === 'archived') return l.archived;
     if (leadsSubTab === 'resolved') return status === 'RESOLVED' && !l.archived;
@@ -525,7 +548,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   <h2 className="text-3xl font-serif text-corporate-900">Incoming Leads</h2>
                   <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Tenant Inquiries & Growth Pipeline</p>
                 </div>
-                <button onClick={downloadLeadsCSV} className="flex items-center gap-2 px-6 py-3 border border-corporate-200 text-corporate-700 text-[10px] font-bold uppercase tracking-widest rounded hover:bg-corporate-50 transition-all shadow-sm"><Download size={16} />Download CSV</button>
+                <div className="flex items-center gap-4">
+                  {/* Building Filter Dropdown */}
+                  <div className="relative group">
+                    <div className="flex items-center gap-2 px-4 py-3 border border-corporate-200 rounded bg-white hover:bg-corporate-50 transition-colors cursor-pointer">
+                      <Filter size={16} className="text-corporate-400" />
+                      <select 
+                        value={selectedBuilding} 
+                        onChange={(e) => handleBuildingFilterChange(e.target.value)}
+                        className="bg-transparent border-none outline-none text-[10px] font-bold uppercase tracking-widest text-corporate-700 cursor-pointer pr-4"
+                      >
+                        <option value="All Buildings">All Buildings</option>
+                        <option value="Summit One Tower">Summit One Tower</option>
+                        <option value="Facilities Centre">Facilities Centre</option>
+                        <option value="General Inquiry">General Inquiries</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button onClick={downloadLeadsCSV} className="flex items-center gap-2 px-6 py-3 border border-corporate-200 text-corporate-700 text-[10px] font-bold uppercase tracking-widest rounded hover:bg-corporate-50 transition-all shadow-sm"><Download size={16} />Download CSV</button>
+                </div>
               </div>
               
               {/* Dynamic Sub-navigation Tabs with Badge Counts */}
@@ -568,7 +609,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     {filteredLeads.map(lead => (
                       <tr key={lead.id} className="hover:bg-corporate-50/30 transition-colors animate-in fade-in duration-300">
                         <td className="px-8 py-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-corporate-100 flex items-center justify-center text-corporate-400"><User size={20} /></div><span className="font-bold text-corporate-900">{lead.full_name || lead.name || 'Inquirer'}</span></div></td>
-                        <td className="px-8 py-6"><div className="flex flex-col gap-1.5 text-sm"><div className="flex items-center gap-2 text-corporate-700 font-medium leading-none truncate max-w-[200px]" title={lead.email}><Mail size={14} className="text-corporate-300 flex-shrink-0"/> {lead.email}</div>{lead.phone && <div className="flex items-center gap-2 text-corporate-500 leading-none"><Phone size={14} className="text-corporate-300 flex-shrink-0"/> {lead.phone}</div>}</div></td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col gap-1.5 text-sm">
+                            <div className="flex items-center gap-2 text-corporate-700 font-medium leading-none truncate max-w-[200px]" title={lead.email}>
+                              <Mail size={14} className="text-corporate-300 flex-shrink-0"/> 
+                              {lead.email}
+                              <button 
+                                onClick={() => handleCopyToClipboard(lead.email, `email-${lead.id}`)} 
+                                className="ml-1 text-corporate-300 hover:text-corporate-900 transition-colors relative"
+                                title="Copy Email"
+                              >
+                                {copyStatus === `email-${lead.id}` ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                                {copyStatus === `email-${lead.id}` && <span className="absolute -top-6 left-0 bg-corporate-900 text-white text-[8px] px-1.5 py-0.5 rounded shadow-lg animate-in fade-in slide-in-from-bottom-1">Copied!</span>}
+                              </button>
+                            </div>
+                            {lead.phone && (
+                              <div className="flex items-center gap-2 text-corporate-500 leading-none">
+                                <Phone size={14} className="text-corporate-300 flex-shrink-0"/> 
+                                {lead.phone}
+                                <button 
+                                  onClick={() => handleCopyToClipboard(lead.phone, `phone-${lead.id}`)} 
+                                  className="ml-1 text-corporate-300 hover:text-corporate-900 transition-colors relative"
+                                  title="Copy Phone"
+                                >
+                                  {copyStatus === `phone-${lead.id}` ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                                  {copyStatus === `phone-${lead.id}` && <span className="absolute -top-6 left-0 bg-corporate-900 text-white text-[8px] px-1.5 py-0.5 rounded shadow-lg animate-in fade-in slide-in-from-bottom-1">Copied!</span>}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-8 py-6"><div className="text-sm font-bold text-corporate-800">{lead.unit_number || lead.unit_interest || 'General Inquiry'}</div></td>
                         <td className="px-8 py-6"><div className="max-w-xs text-sm text-corporate-600 leading-relaxed italic line-clamp-2" title={lead.message}>"{lead.message || 'No narrative provided.'}"</div></td>
                         <td className="px-8 py-6"><div className="flex items-center gap-2 text-[10px] text-corporate-400 font-bold uppercase tracking-widest"><Clock size={12} />{new Date(lead.created_at).toLocaleDateString()}</div></td>
