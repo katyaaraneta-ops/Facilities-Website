@@ -144,10 +144,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     setLoading(false);
   };
 
-  /**
-   * Fetches leads from the database.
-   * @param silent - If true, prevents the full-table loading spinner from showing.
-   */
   const fetchLeads = async (silent = false) => {
     if (!silent) setLoadingLeads(true);
     try {
@@ -166,28 +162,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleResolveLead = async (id: string) => {
+    const lead = leads.find(l => l.id === id);
     setUpdatingId(id);
     try {
-      // Optimistic update
       setLeads(prev => prev.map(l => l.id === id ? { ...l, status: 'RESOLVED' } : l));
-
-      const { error } = await supabase
-        .from('leads')
-        .update({ status: 'RESOLVED' })
-        .eq('id', id);
+      const { error } = await supabase.from('leads').update({ status: 'RESOLVED' }).eq('id', id);
+      if (error) throw error;
       
-      if (error) {
-        console.error('Supabase Error (handleResolveLead):', error);
-        throw error;
-      }
+      posthog?.capture('admin_lead_resolved', { 
+        lead_id: id, 
+        building: lead?.unit_number || lead?.unit_interest || 'Unknown'
+      });
       
-      posthog?.capture('admin_lead_resolved', { lead_id: id });
-      // Show main loader for visual confirmation as requested
       await fetchLeads(false); 
     } catch (error: any) {
       console.error('Lead Resolve Error Details:', error);
       alert('Error resolving lead: ' + error.message);
-      // Revert optimistic update on failure
       await fetchLeads(true);
     } finally {
       setUpdatingId(null);
@@ -197,19 +187,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const handleReopenLead = async (id: string) => {
     setUpdatingId(id);
     try {
-      // Optimistic update
       setLeads(prev => prev.map(l => l.id === id ? { ...l, status: 'NEW' } : l));
-
-      const { error } = await supabase
-        .from('leads')
-        .update({ status: 'NEW' })
-        .eq('id', id);
-      
-      if (error) {
-        console.error('Supabase Error (handleReopenLead):', error);
-        throw error;
-      }
-      
+      const { error } = await supabase.from('leads').update({ status: 'NEW' }).eq('id', id);
+      if (error) throw error;
       posthog?.capture('admin_lead_reopened', { lead_id: id });
       await fetchLeads(false); 
     } catch (error: any) {
@@ -224,20 +204,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const handleArchiveLead = async (id: string, archiveState: boolean = true) => {
     setUpdatingId(id);
     try {
-      // Optimistic update
       setLeads(prev => prev.map(l => l.id === id ? { ...l, archived: archiveState } : l));
-
-      const { error } = await supabase
-        .from('leads')
-        .update({ archived: archiveState })
-        .eq('id', id);
+      const { error } = await supabase.from('leads').update({ archived: archiveState }).eq('id', id);
+      if (error) throw error;
       
-      if (error) {
-        console.error('Supabase Error (handleArchiveLead):', error);
-        throw error;
-      }
+      posthog?.capture(archiveState ? 'admin_lead_archived' : 'admin_lead_unarchived', { 
+        lead_id: id 
+      });
       
-      posthog?.capture(archiveState ? 'admin_lead_archived' : 'admin_lead_unarchived', { lead_id: id });
       await fetchLeads(false); 
     } catch (error: any) {
       console.error('Lead Archive Action Error Details:', error);
@@ -359,7 +333,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       return;
     }
     
-    const headers = ["Inquirer", "Email", "Phone", "Unit Interest", "Narrative", "Timestamp", "Status"];
+    // Export entire database contents
+    const headers = ["Inquirer", "Email", "Phone", "Unit Interest", "Narrative", "Timestamp", "Status", "Is Archived"];
     
     const sanitize = (val: string | number | null | undefined) => {
       const strValue = val === null || val === undefined ? "" : String(val);
@@ -373,7 +348,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       sanitize(lead.unit_number || lead.unit_interest || "General Inquiry"),
       sanitize(lead.message || ""),
       sanitize(new Date(lead.created_at).toLocaleString()),
-      sanitize(lead.status || 'NEW')
+      sanitize((lead.status || 'NEW').toUpperCase()),
+      sanitize(lead.archived ? 'YES' : 'NO')
     ]);
     
     const csvContent = [headers.map(sanitize), ...rows].map(e => e.join(",")).join("\n");
@@ -399,85 +375,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const resolvedCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED' && !l.archived).length;
   const archivedCount = leads.filter(l => l.archived).length;
   
-  // "Total New Leads" specifically: 'NEW' leads in the Active set.
-  const newLeadsCount = leads.filter(l => {
-    const status = (l.status || 'NEW').toUpperCase();
-    return status === 'NEW' && !l.archived;
-  }).length;
+  // Total stats across database
+  const totalNewCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'NEW').length;
+  const totalResolvedCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED').length;
+  const totalArchivedCount = leads.filter(l => l.archived).length;
 
-  // Filtered Leads based on Sub-Tabs - CASE INSENSITIVE
   const filteredLeads = leads.filter(l => {
     const status = (l.status || 'NEW').toUpperCase();
     if (leadsSubTab === 'archived') return l.archived;
     if (leadsSubTab === 'resolved') return status === 'RESOLVED' && !l.archived;
-    return status !== 'RESOLVED' && !l.archived; // 'active'
+    return status !== 'RESOLVED' && !l.archived;
   });
 
   return (
     <div className="min-h-screen bg-corporate-50 flex flex-col relative">
-      {/* Sticky Header */}
       <header className="sticky top-0 left-0 right-0 bg-corporate-900 border-b border-corporate-800 z-50 h-20 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="font-serif text-2xl text-corporate-50 font-medium tracking-tight">
-              Management Console
-            </h1>
-            
+            <h1 className="font-serif text-2xl text-corporate-50 font-medium tracking-tight">Management Console</h1>
             <nav className="hidden lg:flex items-center h-full gap-4 pt-1">
-              <button 
-                onClick={() => setActiveTab('inventory')}
-                className={`h-20 px-4 text-xs font-sans font-bold uppercase tracking-widest transition-all border-b-2 ${
-                  activeTab === 'inventory' 
-                  ? 'text-corporate-50 border-corporate-200' 
-                  : 'text-corporate-400 border-transparent hover:text-corporate-50'
-                }`}
-              >
-                Inventory
-              </button>
-              <button 
-                onClick={() => setActiveTab('leads')}
-                className={`h-20 px-4 text-xs font-sans font-bold uppercase tracking-widest transition-all border-b-2 ${
-                  activeTab === 'leads' 
-                  ? 'text-corporate-50 border-corporate-200' 
-                  : 'text-corporate-400 border-transparent hover:text-corporate-50'
-                }`}
-              >
-                Leads Inquiries
-              </button>
+              <button onClick={() => setActiveTab('inventory')} className={`h-20 px-4 text-xs font-sans font-bold uppercase tracking-widest transition-all border-b-2 ${activeTab === 'inventory' ? 'text-corporate-50 border-corporate-200' : 'text-corporate-400 border-transparent hover:text-corporate-50'}`}>Inventory</button>
+              <button onClick={() => setActiveTab('leads')} className={`h-20 px-4 text-xs font-sans font-bold uppercase tracking-widest transition-all border-b-2 ${activeTab === 'leads' ? 'text-corporate-50 border-corporate-200' : 'text-corporate-400 border-transparent hover:text-corporate-50'}`}>Leads Inquiries</button>
             </nav>
-
             <div className="lg:hidden flex items-center">
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-corporate-50 p-2">
-                <Menu size={24} />
-              </button>
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-corporate-50 p-2"><Menu size={24} /></button>
             </div>
           </div>
-
           <div className="flex items-center gap-6">
-            <button onClick={() => setShowDocs(true)} className="text-corporate-400 hover:text-corporate-50 transition-colors">
-              <HelpCircle size={20} />
-            </button>
-            <button onClick={onLogout} className="text-corporate-400 hover:text-red-400 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-              <LogOut size={18} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+            <button onClick={() => setShowDocs(true)} className="text-corporate-400 hover:text-corporate-50 transition-colors"><HelpCircle size={20} /></button>
+            <button onClick={onLogout} className="text-corporate-400 hover:text-red-400 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"><LogOut size={18} /><span className="hidden sm:inline">Logout</span></button>
           </div>
         </div>
-
         {isMobileMenuOpen && (
           <div className="lg:hidden absolute top-20 left-0 right-0 bg-corporate-900 border-b border-corporate-800 shadow-2xl p-6 flex flex-col gap-4 animate-in slide-in-from-top-4 duration-200">
-            <button 
-              onClick={() => { setActiveTab('inventory'); setIsMobileMenuOpen(false); }} 
-              className={`text-left py-3 px-4 rounded text-xs font-bold uppercase tracking-widest ${activeTab === 'inventory' ? 'bg-corporate-800 text-corporate-50' : 'text-corporate-400'}`}
-            >
-              Inventory
-            </button>
-            <button 
-              onClick={() => { setActiveTab('leads'); setIsMobileMenuOpen(false); }} 
-              className={`text-left py-3 px-4 rounded text-xs font-bold uppercase tracking-widest ${activeTab === 'leads' ? 'bg-corporate-800 text-corporate-50' : 'text-corporate-400'}`}
-            >
-              Leads Inquiries
-            </button>
+            <button onClick={() => { setActiveTab('inventory'); setIsMobileMenuOpen(false); }} className={`text-left py-3 px-4 rounded text-xs font-bold uppercase tracking-widest ${activeTab === 'inventory' ? 'bg-corporate-800 text-corporate-50' : 'text-corporate-400'}`}>Inventory</button>
+            <button onClick={() => { setActiveTab('leads'); setIsMobileMenuOpen(false); }} className={`text-left py-3 px-4 rounded text-xs font-bold uppercase tracking-widest ${activeTab === 'leads' ? 'bg-corporate-800 text-corporate-50' : 'text-corporate-400'}`}>Leads Inquiries</button>
           </div>
         )}
       </header>
@@ -487,32 +419,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 animate-in fade-in duration-500">
         {activeTab === 'inventory' ? (
           <div>
-            {/* Inventory Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 border-b border-corporate-100 pb-8">
               <div>
                 <h2 className="text-3xl font-serif text-corporate-900">Portfolio Management</h2>
                 <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Institutional Assets & Metadata</p>
               </div>
-              <button 
-                onClick={() => isAdding ? resetForm() : setIsAdding(true)}
-                className="flex items-center gap-2 px-8 py-4 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded shadow-xl hover:bg-corporate-800 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-              >
+              <button onClick={() => isAdding ? resetForm() : setIsAdding(true)} className="flex items-center gap-2 px-8 py-4 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded shadow-xl hover:bg-corporate-800 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
                 {isAdding ? <X size={16} /> : <Plus size={16} />}
                 {isAdding ? 'Cancel Registration' : 'Add New Asset'}
               </button>
             </div>
-
-            {/* Registration Form */}
             {isAdding && (
               <div className="mb-12 bg-white p-10 rounded-xl border border-corporate-200 shadow-xl animate-in slide-in-from-top-4">
                 <h2 className="text-xl font-serif text-corporate-900 mb-8">{editingUnitId ? 'Modify Asset Record' : 'Register New Commercial Asset'}</h2>
                 <form onSubmit={handleCreateOrUpdateUnit} className="space-y-8">
                   <div className="space-y-4">
                     <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest block">Asset Gallery (Max 3)</label>
-                    <div 
-                      onClick={() => !uploading && newUnit.image_urls.length < 3 && fileInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer hover:border-corporate-900 hover:bg-corporate-50 ${newUnit.image_urls.length >= 3 ? 'opacity-40 cursor-not-allowed' : 'border-corporate-200'}`}
-                    >
+                    <div onClick={() => !uploading && newUnit.image_urls.length < 3 && fileInputRef.current?.click()} className={`border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer hover:border-corporate-900 hover:bg-corporate-50 ${newUnit.image_urls.length >= 3 ? 'opacity-40 cursor-not-allowed' : 'border-corporate-200'}`}>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" multiple onChange={(e) => processFiles(e.target.files)} />
                       <div className="flex flex-col items-center gap-4">
                         {uploading ? <Loader2 className="animate-spin text-corporate-900" size={40} /> : <Upload className="text-corporate-300" size={40} />}
@@ -524,67 +447,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         {newUnit.image_urls.map((url, i) => (
                           <div key={i} className="relative w-32 h-32 rounded-lg overflow-hidden border border-corporate-100 shadow-md group">
                             <img src={url} className="w-full h-full object-cover" />
-                            <button type="button" onClick={() => removeImage(url)} className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Trash size={14} />
-                            </button>
+                            <button type="button" onClick={() => removeImage(url)} className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><Trash size={14} /></button>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Unit Number</label>
-                      <input type="text" value={newUnit.unit_number} onChange={e => setNewUnit({...newUnit, unit_number: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Building</label>
-                      <select value={newUnit.building_name} onChange={e => setNewUnit({...newUnit, building_name: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none">
-                        <option value="Summit One Tower">Summit One Tower</option>
-                        <option value="Facilities Centre">Facilities Centre</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Status</label>
-                      <select value={newUnit.status} onChange={e => setNewUnit({...newUnit, status: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none">
-                        <option value="Available">Available</option>
-                        <option value="Rented">Rented</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Monthly Rent (PHP)</label>
-                      <input type="number" value={newUnit.monthly_rent} onChange={e => setNewUnit({...newUnit, monthly_rent: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Assoc. Dues (PHP)</label>
-                      <input type="number" value={newUnit.assoc_dues} onChange={e => setNewUnit({...newUnit, assoc_dues: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Area (sqm)</label>
-                      <input type="number" value={newUnit.net_area} onChange={e => setNewUnit({...newUnit, net_area: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required />
-                    </div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Unit Number</label><input type="text" value={newUnit.unit_number} onChange={e => setNewUnit({...newUnit, unit_number: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900" required /></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Building</label><select value={newUnit.building_name} onChange={e => setNewUnit({...newUnit, building_name: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none"><option value="Summit One Tower">Summit One Tower</option><option value="Facilities Centre">Facilities Centre</option></select></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Status</label><select value={newUnit.status} onChange={e => setNewUnit({...newUnit, status: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none"><option value="Available">Available</option><option value="Rented">Rented</option></select></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Monthly Rent (PHP)</label><input type="number" value={newUnit.monthly_rent} onChange={e => setNewUnit({...newUnit, monthly_rent: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required /></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Assoc. Dues (PHP)</label><input type="number" value={newUnit.assoc_dues} onChange={e => setNewUnit({...newUnit, assoc_dues: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required /></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Area (sqm)</label><input type="number" value={newUnit.net_area} onChange={e => setNewUnit({...newUnit, net_area: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none" required /></div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Marketing Headline</label>
-                    <input type="text" value={newUnit.headline} onChange={e => setNewUnit({...newUnit, headline: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900" placeholder="Institutional grade corporate suite..." />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Asset Narrative</label>
-                    <textarea value={newUnit.narrative} onChange={e => setNewUnit({...newUnit, narrative: e.target.value})} rows={4} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 resize-none" />
-                  </div>
-
-                  <button type="submit" disabled={isSubmitting || uploading} className="w-full py-5 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 disabled:opacity-50 flex items-center justify-center gap-3 transition-all">
-                    {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                    {editingUnitId ? 'Finalize Modifications' : 'Complete Asset Registration'}
-                  </button>
+                  <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Marketing Headline</label><input type="text" value={newUnit.headline} onChange={e => setNewUnit({...newUnit, headline: e.target.value})} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900" placeholder="Institutional grade corporate suite..." /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Asset Narrative</label><textarea value={newUnit.narrative} onChange={e => setNewUnit({...newUnit, narrative: e.target.value})} rows={4} className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 resize-none" /></div>
+                  <button type="submit" disabled={isSubmitting || uploading} className="w-full py-5 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 disabled:opacity-50 flex items-center justify-center gap-3 transition-all">{isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}{editingUnitId ? 'Finalize Modifications' : 'Complete Asset Registration'}</button>
                 </form>
               </div>
             )}
-
-            {/* Inventory Table */}
             <div className="bg-white rounded-xl border border-corporate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-left min-w-[1000px]">
                 <thead>
@@ -599,36 +481,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 <tbody className="divide-y divide-corporate-100">
                   {units.map(unit => (
                     <tr key={unit.id} className="hover:bg-corporate-50/50 transition-colors">
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-corporate-100 rounded overflow-hidden flex-shrink-0">
-                            {unit.image_urls?.[0] ? <img src={unit.image_urls[0]} className="w-full h-full object-cover" /> : <ImageIcon className="m-auto mt-3.5 text-corporate-200" size={20} />}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-bold text-corporate-900">Unit {unit.unit_number}</span>
-                            <span className="text-[10px] text-corporate-400 font-bold uppercase tracking-widest">{unit.image_urls?.length || 0} Assets Attached</span>
-                          </div>
-                        </div>
-                      </td>
+                      <td className="px-8 py-6"><div className="flex items-center gap-4"><div className="w-12 h-12 bg-corporate-100 rounded overflow-hidden flex-shrink-0">{unit.image_urls?.[0] ? <img src={unit.image_urls[0]} className="w-full h-full object-cover" /> : <ImageIcon className="m-auto mt-3.5 text-corporate-200" size={20} />}</div><div className="flex flex-col"><span className="font-bold text-corporate-900">Unit {unit.unit_number}</span><span className="text-[10px] text-corporate-400 font-bold uppercase tracking-widest">{unit.image_urls?.length || 0} Assets Attached</span></div></div></td>
                       <td className="px-8 py-6 text-sm text-corporate-600">{unit.building_name}</td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="text-sm font-bold text-corporate-900">₱{unit.monthly_rent?.toLocaleString()}</div>
-                        <div className="text-[10px] text-corporate-400 font-bold uppercase">{unit.net_area} sqm</div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${unit.status.toLowerCase().includes('available') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                          {unit.status}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <button onClick={() => setDeleteConfirmationId(unit.id)} className="p-2 text-corporate-200 hover:text-red-600 transition-colors"><Trash2 size={20} /></button>
-                          <button onClick={() => handleModify(unit)} className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"><Edit3 size={20} /></button>
-                          <button onClick={() => toggleStatus(unit.id, unit.status)} className="px-4 py-2 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-md hover:bg-corporate-800 transition-colors">
-                            Toggle
-                          </button>
-                        </div>
-                      </td>
+                      <td className="px-8 py-6 text-right"><div className="text-sm font-bold text-corporate-900">₱{unit.monthly_rent?.toLocaleString()}</div><div className="text-[10px] text-corporate-400 font-bold uppercase">{unit.net_area} sqm</div></td>
+                      <td className="px-8 py-6"><span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${unit.status.toLowerCase().includes('available') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{unit.status}</span></td>
+                      <td className="px-8 py-6 text-right"><div className="flex items-center justify-end gap-3"><button onClick={() => setDeleteConfirmationId(unit.id)} className="p-2 text-corporate-200 hover:text-red-600 transition-colors"><Trash2 size={20} /></button><button onClick={() => handleModify(unit)} className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"><Edit3 size={20} /></button><button onClick={() => toggleStatus(unit.id, unit.status)} className="px-4 py-2 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-md hover:bg-corporate-800 transition-colors">Toggle</button></div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -639,104 +496,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <div className="space-y-8">
             {/* KPI Metric Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
-              {/* New Leads Tile */}
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
-                <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Inbox className="text-white" size={20} />
-                </div>
+                <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm"><Inbox className="text-white" size={20} /></div>
                 <div className="flex flex-col">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total New Leads</p>
-                  <div className="flex flex-col">
-                    <span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{newLeadsCount}</span>
-                    <span className="text-[11px] text-slate-400 font-medium">Requiring Action</span>
-                  </div>
+                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{totalNewCount}</span><span className="text-[11px] text-slate-400 font-medium">In the Database</span></div>
                 </div>
               </div>
-
-              {/* Resolved Leads Tile */}
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
-                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <ClipboardCheck className="text-white" size={20} />
-                </div>
+                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 shadow-sm"><ClipboardCheck className="text-white" size={20} /></div>
                 <div className="flex flex-col">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total Resolved</p>
-                  <div className="flex flex-col">
-                    <span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{resolvedCount}</span>
-                    <span className="text-[11px] text-slate-400 font-medium">Successfully Processed</span>
-                  </div>
+                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{totalResolvedCount}</span><span className="text-[11px] text-slate-400 font-medium">Success Rate</span></div>
                 </div>
               </div>
-
-              {/* Archived Leads Tile */}
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
-                <div className="w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Archive className="text-white" size={20} />
-                </div>
+                <div className="w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0 shadow-sm"><Archive className="text-white" size={20} /></div>
                 <div className="flex flex-col">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total Archived</p>
-                  <div className="flex flex-col">
-                    <span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{archivedCount}</span>
-                    <span className="text-[11px] text-slate-400 font-medium">Historical Repository</span>
-                  </div>
+                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{totalArchivedCount}</span><span className="text-[11px] text-slate-400 font-medium">Data Storage</span></div>
                 </div>
               </div>
             </div>
 
-            {/* Leads Section Header & Navigation */}
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-corporate-100 pb-8 gap-6">
                 <div>
                   <h2 className="text-3xl font-serif text-corporate-900">Incoming Leads</h2>
                   <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Tenant Inquiries & Growth Pipeline</p>
                 </div>
-                <button 
-                  onClick={downloadLeadsCSV}
-                  className="flex items-center gap-2 px-6 py-3 border border-corporate-200 text-corporate-700 text-[10px] font-bold uppercase tracking-widest rounded hover:bg-corporate-50 transition-all shadow-sm"
-                >
-                  <Download size={16} />
-                  Download CSV
-                </button>
+                <button onClick={downloadLeadsCSV} className="flex items-center gap-2 px-6 py-3 border border-corporate-200 text-corporate-700 text-[10px] font-bold uppercase tracking-widest rounded hover:bg-corporate-50 transition-all shadow-sm"><Download size={16} />Download CSV</button>
               </div>
-
-              {/* Sub-navigation Tabs with Dynamic Counts */}
+              
+              {/* Dynamic Sub-navigation Tabs with Badge Counts */}
               <div className="flex gap-1 bg-white p-1 rounded-lg border border-corporate-100 w-fit">
                 {[
                   { id: 'active', label: 'Active Inquiries', count: activeCount },
                   { id: 'resolved', label: 'Resolved', count: resolvedCount },
                   { id: 'archived', label: 'Archived', count: archivedCount }
                 ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setLeadsSubTab(tab.id as any)}
-                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all flex items-center gap-2 ${
-                      leadsSubTab === tab.id 
-                      ? 'bg-corporate-900 text-white shadow-md' 
-                      : 'text-corporate-400 hover:text-corporate-700 hover:bg-corporate-50'
-                    }`}
+                  <button 
+                    key={tab.id} 
+                    onClick={() => setLeadsSubTab(tab.id as any)} 
+                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all flex items-center gap-2 ${leadsSubTab === tab.id ? 'bg-corporate-900 text-white shadow-md' : 'text-corporate-400 hover:text-corporate-700 hover:bg-corporate-50'}`}
                   >
-                    <span>{tab.label}</span>
-                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${leadsSubTab === tab.id ? 'bg-white/20 text-white' : 'bg-corporate-100 text-corporate-500'}`}>
-                      {tab.count}
-                    </span>
+                    <span>{tab.label} ({tab.count})</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Leads Table Content */}
             {loadingLeads ? (
-              <div className="flex flex-col items-center justify-center py-32 text-corporate-400">
-                <Loader2 className="animate-spin mb-6" size={48} />
-                <p className="font-serif italic text-lg text-center">Synchronizing lead repository...</p>
-              </div>
+              <div className="flex flex-col items-center justify-center py-32 text-corporate-400"><Loader2 className="animate-spin mb-6" size={48} /><p className="font-serif italic text-lg text-center">Synchronizing lead repository...</p></div>
             ) : filteredLeads.length === 0 ? (
-              <div className="bg-white rounded-xl border border-corporate-200 border-dashed py-40 text-center animate-in zoom-in-95 duration-500">
-                <div className="max-w-md mx-auto space-y-6">
-                  <Inbox size={64} className="mx-auto text-corporate-100" />
-                  <p className="text-corporate-400 font-serif italic text-2xl">No inquiries found in this category.</p>
-                  <p className="text-xs text-corporate-300 font-bold uppercase tracking-[0.2em]">Incoming data will populate here automatically.</p>
-                </div>
-              </div>
+              <div className="bg-white rounded-xl border border-corporate-200 border-dashed py-40 text-center animate-in zoom-in-95 duration-500"><div className="max-w-md mx-auto space-y-6"><Inbox size={64} className="mx-auto text-corporate-100" /><p className="text-corporate-400 font-serif italic text-2xl">No inquiries found in this category.</p><p className="text-xs text-corporate-300 font-bold uppercase tracking-[0.2em]">Incoming data will populate here automatically.</p></div></div>
             ) : (
               <div className="bg-white rounded-xl border border-corporate-200 shadow-sm overflow-x-auto">
                 <table className="w-full text-left min-w-[1100px]">
@@ -754,92 +567,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   <tbody className="divide-y divide-corporate-100">
                     {filteredLeads.map(lead => (
                       <tr key={lead.id} className="hover:bg-corporate-50/30 transition-colors animate-in fade-in duration-300">
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-corporate-100 flex items-center justify-center text-corporate-400">
-                              <User size={20} />
-                            </div>
-                            <span className="font-bold text-corporate-900">{lead.full_name || lead.name || 'Inquirer'}</span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="flex flex-col gap-1.5 text-sm">
-                            <div className="flex items-center gap-2 text-corporate-700 font-medium leading-none truncate max-w-[200px]" title={lead.email}>
-                              <Mail size={14} className="text-corporate-300 flex-shrink-0"/> {lead.email}
-                            </div>
-                            {lead.phone && (
-                              <div className="flex items-center gap-2 text-corporate-500 leading-none">
-                                <Phone size={14} className="text-corporate-300 flex-shrink-0"/> {lead.phone}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="text-sm font-bold text-corporate-800">
-                            {lead.unit_number || lead.unit_interest || 'General Inquiry'}
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="max-w-xs text-sm text-corporate-600 leading-relaxed italic line-clamp-2" title={lead.message}>
-                            "{lead.message || 'No narrative provided.'}"
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-2 text-[10px] text-corporate-400 font-bold uppercase tracking-widest">
-                            <Clock size={12} />
-                            {new Date(lead.created_at).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-sm ${
-                            (lead.status || 'NEW').toUpperCase() === 'RESOLVED' ? 'bg-green-100 text-green-700' : 
-                            lead.archived ? 'bg-corporate-100 text-corporate-400' :
-                            'bg-corporate-900 text-white'
-                          }`}>
-                            {lead.archived ? 'Archived' : (lead.status || 'NEW').toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-8 py-6 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* Resolve/Re-open Action */}
-                            {leadsSubTab === 'active' && (
-                              <button 
-                                onClick={() => handleResolveLead(lead.id)}
-                                disabled={updatingId === lead.id}
-                                className="p-2 text-corporate-200 hover:text-green-600 transition-colors"
-                                title="Mark Resolved"
-                              >
-                                {updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <Check size={20} />}
-                              </button>
-                            )}
-                            {leadsSubTab === 'resolved' && (
-                              <button 
-                                onClick={() => handleReopenLead(lead.id)}
-                                disabled={updatingId === lead.id}
-                                className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors"
-                                title="Re-open Inquiry"
-                              >
-                                {updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <RotateCcw size={20} />}
-                              </button>
-                            )}
-
-                            {/* Archive/Restore Action */}
-                            <button 
-                              onClick={() => handleArchiveLead(lead.id, !lead.archived)}
-                              disabled={updatingId === lead.id}
-                              className={`p-2 transition-colors ${lead.archived ? 'text-indigo-600 hover:text-indigo-800' : 'text-corporate-200 hover:text-corporate-900'}`}
-                              title={lead.archived ? "Restore to Inbox" : "Move to Archive"}
-                            >
-                              {updatingId === lead.id ? (
-                                <Loader2 size={18} className="animate-spin" />
-                              ) : lead.archived ? (
-                                <History size={20} />
-                              ) : (
-                                <Archive size={20} />
-                              )}
-                            </button>
-                          </div>
-                        </td>
+                        <td className="px-8 py-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-corporate-100 flex items-center justify-center text-corporate-400"><User size={20} /></div><span className="font-bold text-corporate-900">{lead.full_name || lead.name || 'Inquirer'}</span></div></td>
+                        <td className="px-8 py-6"><div className="flex flex-col gap-1.5 text-sm"><div className="flex items-center gap-2 text-corporate-700 font-medium leading-none truncate max-w-[200px]" title={lead.email}><Mail size={14} className="text-corporate-300 flex-shrink-0"/> {lead.email}</div>{lead.phone && <div className="flex items-center gap-2 text-corporate-500 leading-none"><Phone size={14} className="text-corporate-300 flex-shrink-0"/> {lead.phone}</div>}</div></td>
+                        <td className="px-8 py-6"><div className="text-sm font-bold text-corporate-800">{lead.unit_number || lead.unit_interest || 'General Inquiry'}</div></td>
+                        <td className="px-8 py-6"><div className="max-w-xs text-sm text-corporate-600 leading-relaxed italic line-clamp-2" title={lead.message}>"{lead.message || 'No narrative provided.'}"</div></td>
+                        <td className="px-8 py-6"><div className="flex items-center gap-2 text-[10px] text-corporate-400 font-bold uppercase tracking-widest"><Clock size={12} />{new Date(lead.created_at).toLocaleDateString()}</div></td>
+                        <td className="px-8 py-6"><span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-sm ${(lead.status || 'NEW').toUpperCase() === 'RESOLVED' ? 'bg-green-100 text-green-700' : lead.archived ? 'bg-corporate-100 text-corporate-400' : 'bg-corporate-900 text-white'}`}>{lead.archived ? 'Archived' : (lead.status || 'NEW').toUpperCase()}</span></td>
+                        <td className="px-8 py-6 text-right"><div className="flex items-center justify-end gap-2">{leadsSubTab === 'active' && <button onClick={() => handleResolveLead(lead.id)} disabled={updatingId === lead.id} className="p-2 text-corporate-200 hover:text-green-600 transition-colors" title="Mark Resolved">{updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <Check size={20} />}</button>}{leadsSubTab === 'resolved' && <button onClick={() => handleReopenLead(lead.id)} disabled={updatingId === lead.id} className="p-2 text-corporate-200 hover:text-corporate-900 transition-colors" title="Re-open Inquiry">{updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : <RotateCcw size={20} />}</button>}<button onClick={() => handleArchiveLead(lead.id, !lead.archived)} disabled={updatingId === lead.id} className={`p-2 transition-colors ${lead.archived ? 'text-indigo-600 hover:text-indigo-800' : 'text-corporate-200 hover:text-corporate-900'}`} title={lead.archived ? "Restore to Inbox" : "Move to Archive"}>{updatingId === lead.id ? <Loader2 size={18} className="animate-spin" /> : lead.archived ? <History size={20} /> : <Archive size={20} />}</button></div></td>
                       </tr>
                     ))}
                   </tbody>
@@ -850,22 +584,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         )}
       </main>
 
-      {/* Delete Confirmation Modal - ONLY FOR INVENTORY */}
       {deleteConfirmationId && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-corporate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white max-w-md w-full p-10 rounded-xl shadow-2xl border border-corporate-200">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-4 bg-red-50 text-red-600 rounded-full"><AlertTriangle size={28} /></div>
-              <h3 className="text-2xl font-serif text-corporate-900 leading-tight">Permanent Database Wipe</h3>
-            </div>
-            <p className="text-corporate-600 mb-10 leading-relaxed text-lg">
-              Confirm deletion of <span className="font-bold text-corporate-900">Unit {units.find(u => u.id === deleteConfirmationId)?.unit_number}</span>? This action is irreversible.
-            </p>
-            <div className="flex gap-4">
-              <button onClick={() => setDeleteConfirmationId(null)} className="flex-1 py-4 border border-corporate-200 text-corporate-50 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-all">Cancel</button>
-              <button onClick={() => executeDelete(deleteConfirmationId)} className="flex-1 py-4 bg-red-600 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-red-700 transition-all shadow-lg">Permanently Delete</button>
-            </div>
-          </div>
+          <div className="bg-white max-w-md w-full p-10 rounded-xl shadow-2xl border border-corporate-200"><div className="flex items-center gap-4 mb-8"><div className="p-4 bg-red-50 text-red-600 rounded-full"><AlertTriangle size={28} /></div><h3 className="text-2xl font-serif text-corporate-900 leading-tight">Permanent Database Wipe</h3></div><p className="text-corporate-600 mb-10 leading-relaxed text-lg">Confirm deletion of <span className="font-bold text-corporate-900">Unit {units.find(u => u.id === deleteConfirmationId)?.unit_number}</span>? This action is irreversible.</p><div className="flex gap-4"><button onClick={() => setDeleteConfirmationId(null)} className="flex-1 py-4 border border-corporate-200 text-corporate-50 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-all">Cancel</button><button onClick={() => executeDelete(deleteConfirmationId)} className="flex-1 py-4 bg-red-600 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-red-700 transition-all shadow-lg">Permanently Delete</button></div></div>
         </div>
       )}
     </div>

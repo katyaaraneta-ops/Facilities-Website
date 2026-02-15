@@ -621,6 +621,11 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
+  // Reset index if images change
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [images]);
+
   const nextImage = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -661,10 +666,17 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
   );
 };
 
-const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propertyName: string }> = ({ unit, onBack, propertyName }) => {
+const UnitDetailPage: React.FC<{ 
+  unit: PropertyUnit; 
+  onBack: () => void; 
+  propertyName: string;
+  onNavigate: (direction: 'prev' | 'next') => void;
+  hasPrev: boolean;
+  hasNext: boolean;
+}> = ({ unit, onBack, propertyName, onNavigate, hasPrev, hasNext }) => {
   const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
   
-  useEffect(() => window.scrollTo(0, 0), []);
+  useEffect(() => window.scrollTo({ top: 0, behavior: 'smooth' }), [unit.id]);
   
   const handleEmailInquiryTrigger = () => {
     setIsLeadFormOpen(true);
@@ -686,10 +698,33 @@ const UnitDetailPage: React.FC<{ unit: PropertyUnit; onBack: () => void; propert
   return (
     <div className="min-h-screen bg-corporate-50 pt-20 pb-24 relative">
       <div className="max-w-7xl mx-auto px-6 pt-12">
-        <button onClick={onBack} className="flex items-center text-corporate-500 hover:text-corporate-900 transition-colors text-sm font-medium tracking-wide uppercase group mb-8">
-          <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-          Back to {propertyName}
-        </button>
+        <div className="flex items-center justify-between mb-8">
+          <button onClick={onBack} className="flex items-center text-corporate-500 hover:text-corporate-900 transition-colors text-sm font-medium tracking-wide uppercase group">
+            <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to {propertyName}
+          </button>
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => onNavigate('prev')} 
+                disabled={!hasPrev}
+                className={`p-2 rounded-full border border-corporate-200 transition-all ${!hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-corporate-100 hover:border-corporate-300 text-corporate-700'}`}
+                title="Previous Unit"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button 
+                onClick={() => onNavigate('next')} 
+                disabled={!hasNext}
+                className={`p-2 rounded-full border border-corporate-200 transition-all ${!hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-corporate-100 hover:border-corporate-300 text-corporate-700'}`}
+                title="Next Unit"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-8 space-y-8">
@@ -1116,6 +1151,24 @@ export default function App() {
       });
   };
 
+  const handleUnitNavigation = (direction: 'prev' | 'next') => {
+    if (viewState.type !== 'detail') return;
+
+    const unitsInBuilding = getProcessedUnits(viewState.source);
+    const currentIndex = unitsInBuilding.findIndex(u => u.id === viewState.unit.id);
+    const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    if (newIndex >= 0 && newIndex < unitsInBuilding.length) {
+      const nextUnit = unitsInBuilding[newIndex];
+      posthog?.capture('unit_browsed_via_nav', { 
+        direction, 
+        unit_id: nextUnit.id, 
+        unit_number: nextUnit.unit_number 
+      });
+      setViewState({ ...viewState, unit: nextUnit });
+    }
+  };
+
   if (loading) return <div className="h-screen flex items-center justify-center font-serif text-corporate-400 italic">Connecting to Facilities Database...</div>;
 
   return (
@@ -1160,6 +1213,9 @@ export default function App() {
             unit={viewState.unit}
             onBack={() => setViewState({ type: 'listing', property: viewState.source })}
             propertyName={viewState.source}
+            onNavigate={handleUnitNavigation}
+            hasPrev={getProcessedUnits(viewState.source).findIndex(u => u.id === viewState.unit.id) > 0}
+            hasNext={getProcessedUnits(viewState.source).findIndex(u => u.id === viewState.unit.id) < getProcessedUnits(viewState.source).length - 1}
           />
         ) : (
           <>
