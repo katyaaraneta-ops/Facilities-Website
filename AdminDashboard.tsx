@@ -4,7 +4,7 @@ import {
   Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, 
   Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, 
   Image as ImageIcon, Trash, HelpCircle, FileText, BookOpen, 
-  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter
+  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter, DollarSign
 } from 'lucide-react';
 
 // Access global PostHog safely
@@ -128,6 +128,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [newUnit, setNewUnit] = useState(INITIAL_FORM_STATE);
   const [uploading, setUploading] = useState(false);
 
+  // Mark Rented States
+  const [rentConfirmationUnit, setRentConfirmationUnit] = useState<any>(null);
+  const [rentPrice, setRentPrice] = useState<number>(0);
+  const [contractLength, setContractLength] = useState<number>(12);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
 
@@ -225,11 +230,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const toggleStatus = async (id: string, currentStatus: string) => {
-    setUpdatingId(id);
-    const newStatus = currentStatus.toLowerCase().includes('available') ? 'Rented' : 'Available';
-    const { error } = await supabase.from('units').update({ status: newStatus }).eq('id', id);
-    if (!error) await fetchUnits();
-    setUpdatingId(null);
+    const unit = units.find(u => u.id === id);
+    if (!unit) return;
+
+    if (currentStatus.toLowerCase().includes('available')) {
+      // Opening Rent Confirmation Modal
+      setRentConfirmationUnit(unit);
+      setRentPrice(unit.monthly_rent || 0);
+      setContractLength(12);
+    } else {
+      // Re-opening to Available
+      setUpdatingId(id);
+      const { error } = await supabase.from('units').update({ status: 'Available' }).eq('id', id);
+      if (!error) await fetchUnits();
+      setUpdatingId(null);
+    }
+  };
+
+  const handleFinalizeRent = async () => {
+    if (!rentConfirmationUnit) return;
+    setIsSubmitting(true);
+    const id = rentConfirmationUnit.id;
+    const totalContractValue = rentPrice * contractLength;
+
+    try {
+      const { error } = await supabase.from('units').update({ status: 'Rented' }).eq('id', id);
+      if (error) throw error;
+
+      // Analytics Capture
+      posthog?.capture('unit_rented_out', {
+        unit_id: id,
+        unit_number: rentConfirmationUnit.unit_number,
+        building: rentConfirmationUnit.building_name,
+        monthly_rent: rentPrice,
+        contract_length: contractLength,
+        total_contract_value: totalContractValue
+      });
+
+      await fetchUnits();
+      setRentConfirmationUnit(null);
+    } catch (err: any) {
+      alert("Error finalizing lease: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleModify = (unit: any) => {
@@ -395,10 +439,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   // --- Unified Count Logic (Filtered by Building) ---
   const filteredSet = leads.filter(applyBuildingFilter);
   
-  // Strict unified logic as requested: 
-  // Active = 'NEW' & !archived
-  // Resolved = 'RESOLVED' & !archived
-  // Archived = archived (any status)
   const activeCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() === 'NEW' && !l.archived).length;
   const resolvedCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED' && !l.archived).length;
   const archivedCount = filteredSet.filter(l => l.archived).length;
@@ -407,7 +447,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     const status = (l.status || 'NEW').toUpperCase();
     if (leadsSubTab === 'archived') return l.archived;
     if (leadsSubTab === 'resolved') return status === 'RESOLVED' && !l.archived;
-    // 'active' tab now strictly shows 'NEW' to match user's unified request
     return status === 'NEW' && !l.archived;
   });
 
@@ -518,7 +557,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* KPI Metric Row - Now reflect unified and filtered logic */}
+            {/* KPI Metric Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
                 <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm"><Inbox className="text-white" size={20} /></div>
@@ -550,7 +589,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Tenant Inquiries & Growth Pipeline</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  {/* Building Filter Dropdown */}
                   <div className="relative group">
                     <div className="flex items-center gap-2 px-4 py-3 border border-corporate-200 rounded bg-white hover:bg-corporate-50 transition-colors cursor-pointer">
                       <Filter size={16} className="text-corporate-400" />
@@ -570,7 +608,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 </div>
               </div>
               
-              {/* Dynamic Sub-navigation Tabs with Badge Counts - Unified with Tiles */}
               <div className="flex gap-1 bg-white p-1 rounded-lg border border-corporate-100 w-fit">
                 {[
                   { id: 'active', label: 'Active Inquiries', count: activeCount },
@@ -654,6 +691,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         )}
       </main>
+
+      {/* Mark Rented Financial Confirmation Modal */}
+      {rentConfirmationUnit && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-corporate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white max-w-lg w-full p-10 rounded-xl shadow-2xl border border-corporate-200">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-4 bg-indigo-50 text-indigo-600 rounded-full">
+                <DollarSign size={28} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-serif text-corporate-900 leading-tight">Lease Registration</h3>
+                <p className="text-xs font-bold text-corporate-400 uppercase tracking-widest mt-1">Registering Unit {rentConfirmationUnit.unit_number}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Monthly Rent (PHP)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-corporate-400 font-bold">₱</span>
+                  <input 
+                    type="number" 
+                    value={rentPrice} 
+                    onChange={e => setRentPrice(parseFloat(e.target.value) || 0)}
+                    className="w-full pl-8 pr-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 font-bold text-lg" 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Contract Duration (Months)</label>
+                <select 
+                  value={contractLength} 
+                  onChange={e => setContractLength(parseInt(e.target.value))}
+                  className="w-full px-5 py-4 bg-corporate-50 border border-corporate-200 rounded-lg outline-none focus:border-corporate-900 font-bold"
+                >
+                  {[6, 12, 18, 24, 36, 48, 60].map(m => (
+                    <option key={m} value={m}>{m} Months {m === 12 ? '(Standard)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="p-6 bg-corporate-900 rounded-xl text-white">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Estimated Contract Value</p>
+                <p className="text-3xl font-sans font-bold">₱{(rentPrice * contractLength).toLocaleString()}</p>
+                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  <span>Duration: {contractLength}m</span>
+                  <span>Rate: ₱{rentPrice.toLocaleString()}/mo</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-10">
+              <button onClick={() => setRentConfirmationUnit(null)} className="flex-1 py-4 border border-corporate-200 text-corporate-500 font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-50 transition-all">Cancel</button>
+              <button 
+                onClick={handleFinalizeRent} 
+                disabled={isSubmitting}
+                className="flex-1 py-4 bg-corporate-900 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-corporate-800 transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                Finalize Lease
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteConfirmationId && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-corporate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
