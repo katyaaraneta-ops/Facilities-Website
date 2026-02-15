@@ -276,6 +276,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
       posthog?.capture('lease_cancelled', {
         unit_id: cancelConfirmationUnit.id,
+        unit_number: cancelConfirmationUnit.unit_number,
         lost_revenue_value: lostRevenue,
         months_stayed: monthsCompleted
       });
