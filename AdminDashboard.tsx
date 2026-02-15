@@ -392,22 +392,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     return unitInfo.includes(selectedBuilding.toUpperCase());
   };
 
-  // --- Dynamic Count Logic (Filtered by Building) ---
+  // --- Unified Count Logic (Filtered by Building) ---
   const filteredSet = leads.filter(applyBuildingFilter);
-  const activeCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() !== 'RESOLVED' && !l.archived).length;
+  
+  // Strict unified logic as requested: 
+  // Active = 'NEW' & !archived
+  // Resolved = 'RESOLVED' & !archived
+  // Archived = archived (any status)
+  const activeCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() === 'NEW' && !l.archived).length;
   const resolvedCount = filteredSet.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED' && !l.archived).length;
   const archivedCount = filteredSet.filter(l => l.archived).length;
   
-  // Total stats across database (Regardless of filteredSet)
-  const totalNewCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'NEW').length;
-  const totalResolvedCount = leads.filter(l => (l.status || 'NEW').toUpperCase() === 'RESOLVED').length;
-  const totalArchivedCount = leads.filter(l => l.archived).length;
-
   const filteredLeads = filteredSet.filter(l => {
     const status = (l.status || 'NEW').toUpperCase();
     if (leadsSubTab === 'archived') return l.archived;
     if (leadsSubTab === 'resolved') return status === 'RESOLVED' && !l.archived;
-    return status !== 'RESOLVED' && !l.archived;
+    // 'active' tab now strictly shows 'NEW' to match user's unified request
+    return status === 'NEW' && !l.archived;
   });
 
   return (
@@ -517,27 +518,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* KPI Metric Row */}
+            {/* KPI Metric Row - Now reflect unified and filtered logic */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
                 <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm"><Inbox className="text-white" size={20} /></div>
                 <div className="flex flex-col">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total New Leads</p>
-                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{totalNewCount}</span><span className="text-[11px] text-slate-400 font-medium">In the Database</span></div>
+                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{activeCount}</span><span className="text-[11px] text-slate-400 font-medium">Requires Action</span></div>
                 </div>
               </div>
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
                 <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 shadow-sm"><ClipboardCheck className="text-white" size={20} /></div>
                 <div className="flex flex-col">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total Resolved</p>
-                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{totalResolvedCount}</span><span className="text-[11px] text-slate-400 font-medium">Success Rate</span></div>
+                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{resolvedCount}</span><span className="text-[11px] text-slate-400 font-medium">Successfully Processed</span></div>
                 </div>
               </div>
               <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex items-center gap-5">
                 <div className="w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0 shadow-sm"><Archive className="text-white" size={20} /></div>
                 <div className="flex flex-col">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">Total Archived</p>
-                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{totalArchivedCount}</span><span className="text-[11px] text-slate-400 font-medium">Data Storage</span></div>
+                  <div className="flex flex-col"><span className="text-3xl font-sans font-bold text-slate-900 leading-tight">{archivedCount}</span><span className="text-[11px] text-slate-400 font-medium">Repository Storage</span></div>
                 </div>
               </div>
             </div>
@@ -569,7 +570,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 </div>
               </div>
               
-              {/* Dynamic Sub-navigation Tabs with Badge Counts */}
+              {/* Dynamic Sub-navigation Tabs with Badge Counts - Unified with Tiles */}
               <div className="flex gap-1 bg-white p-1 rounded-lg border border-corporate-100 w-fit">
                 {[
                   { id: 'active', label: 'Active Inquiries', count: activeCount },
