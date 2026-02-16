@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Maximize2, Layout, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Calendar, FileText, Info, BookOpen, ExternalLink, HelpCircle, Send } from 'lucide-react';
+import { Plus, Minus, Menu, X, Maximize2, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, FileText, BookOpen, HelpCircle, Send } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
 import { AdminDashboard } from './AdminDashboard';
+import { ResetPasswordPage } from './ResetPasswordPage';
 
 // Access the global PostHog instance safely
 const posthog = (window as any).posthog;
@@ -181,7 +182,8 @@ type ViewState =
   | { type: 'listing'; property: string }
   | { type: 'detail'; unit: PropertyUnit; source: string }
   | { type: 'login' }
-  | { type: 'admin' };
+  | { type: 'admin' }
+  | { type: 'reset-password' };
 
 // --- Lead Capture Modal Component ---
 
@@ -1107,8 +1109,34 @@ export default function App() {
     setLoading(false);
   }, []);
 
+  // Finalized Authentication and Recovery Listener
   useEffect(() => {
     fetchUnits();
+    
+    // Dual-Layer Detection: Phase 1 - Mount check for URL recovery parameters
+    // This ensures refreshes during recovery sessions correctly persist the Reset Password view.
+    if (window.location.hash.includes('type=recovery')) {
+      setViewState({ type: 'reset-password' });
+    }
+    
+    // Phase 2 - Real-time Supabase Auth State Change Listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Specifically trigger the Reset Password view for recovery flows
+      if (event === 'PASSWORD_RECOVERY') {
+        setViewState({ type: 'reset-password' });
+      } else if (event === 'SIGNED_IN' && session) {
+        setUser(session.user);
+        // If they just signed in and aren't in recovery, they might belong in admin view
+        // But we rely on LoginPage's callback for standard manual login
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
+
+    // Cleanup: Unsubscribe to prevent memory leaks and redundant state updates
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [fetchUnits]);
 
   const handleUnitClick = (u: PropertyUnit, source: string) => {
@@ -1191,6 +1219,11 @@ export default function App() {
               setViewState({ type: 'admin' });
             }}
             onBack={() => setViewState({ type: 'landing' })}
+          />
+        ) : viewState.type === 'reset-password' ? (
+          <ResetPasswordPage 
+            onSuccess={() => setViewState({ type: 'login' })}
+            onBack={() => setViewState({ type: 'login' })}
           />
         ) : viewState.type === 'admin' ? (
           <AdminDashboard

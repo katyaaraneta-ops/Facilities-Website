@@ -4,7 +4,7 @@ import {
   Layout, Building2, CheckCircle2, XCircle, LogOut, Loader2, Plus, X, 
   Type, AlignLeft, Edit3, Trash2, AlertTriangle, Upload, 
   Image as ImageIcon, Trash, HelpCircle, FileText, BookOpen, 
-  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter, DollarSign, Ban
+  ShieldCheck, Inbox, Phone, Mail, User, Clock, Archive, Check, Menu, Download, TrendingUp, RotateCcw, History, ClipboardCheck, Copy, Filter, DollarSign, Ban, Briefcase
 } from 'lucide-react';
 
 // Access global PostHog safely
@@ -80,22 +80,46 @@ const AdminDocsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
             <p><span className="font-bold text-corporate-900">Infrastructure:</span> Built on React 19 with a direct Supabase PostgREST interface.</p>
             <p><span className="font-bold text-corporate-900">Asset Management:</span> Images are compressed via Canvas API (1200px max width).</p>
             <p><span className="font-bold text-corporate-900">Leads Table:</span> Auto-populated from public site contact form with real-time state updates.</p>
+            <p><span className="font-bold text-corporate-900">Security:</span> Account recovery via secure tokenized password reset protocol.</p>
           </div>
         </section>
-        <section className="space-y-4">
+
+        <section className="space-y-6">
           <div className="flex items-center gap-2 text-corporate-900">
-            <BookOpen size={20} className="text-corporate-900" />
-            <h3 className="font-bold uppercase text-sm tracking-widest">Management Walkthrough</h3>
+            <Briefcase size={20} className="text-corporate-900" />
+            <h3 className="font-bold uppercase text-sm tracking-widest">Inventory & Lease Operations</h3>
           </div>
           <div className="space-y-4">
             {[
-              { step: "Adding Units", desc: "Use the 'Add New Asset' button in Inventory. High-quality photos recommended." },
-              { step: "Inquiry Management", desc: "The 'Leads Inquiries' section captures all potential tenant details." },
-              { step: "Status Transitions", desc: "Mark leads as 'Contacted' to filter out processed inquiries." },
-              { step: "Permanent Deletion", desc: "Deleting an asset removes all metadata and associated images from storage." }
+              { step: "Asset Registration", desc: "Use 'Add New Asset' to register commercial units. Metadata includes base rent and net area. Maximum 3 high-quality photos per unit." },
+              { step: "Lease Lifecycle", desc: "Click 'Toggle' on an available unit to trigger Rent Confirmation. Define negotiated monthly rates and contract duration (6-60 months)." },
+              { step: "Prorated Cancellation", desc: "When ending a lease, input the actual months completed. The system automatically calculates 'Earned Revenue' vs 'Lost Pipeline' for financial auditing." },
+              { step: "Active Metadata", desc: "Lease details (negotiated rent/length) are managed directly within the registration form when a unit is in 'Rented' status." }
             ].map((item, i) => (
               <div key={i} className="flex gap-4 p-4 border border-corporate-100 rounded-lg">
                 <div className="font-serif italic text-corporate-300 text-lg">{i+1}</div>
+                <div>
+                  <h4 className="font-bold text-corporate-900 text-sm mb-1">{item.step}</h4>
+                  <p className="text-xs text-corporate-500 leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 text-corporate-900">
+            <TrendingUp size={20} className="text-corporate-900" />
+            <h3 className="font-bold uppercase text-sm tracking-widest">Lead Intelligence</h3>
+          </div>
+          <div className="space-y-4">
+            {[
+              { step: "Advanced Filtering", desc: "Use the building filters to isolate inquiries for specific assets (Summit One vs Facilities Centre) or general site inquiries." },
+              { step: "Inquiry Processing", desc: "Mark leads as 'Resolved' upon lease signing. Use 'Archive' to clear non-responsive leads from the active growth pipeline." },
+              { step: "Institutional Reporting", desc: "Use 'Download CSV' to export all inquiry narratives and contact details for CRM integration or board reporting." }
+            ].map((item, i) => (
+              <div key={i} className="flex gap-4 p-4 border border-corporate-100 rounded-lg">
+                <div className="font-serif italic text-corporate-300 text-lg">{i+5}</div>
                 <div>
                   <h4 className="font-bold text-corporate-900 text-sm mb-1">{item.step}</h4>
                   <p className="text-xs text-corporate-500 leading-relaxed">{item.desc}</p>
