@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Maximize2, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, FileText, BookOpen, HelpCircle, Send } from 'lucide-react';
+import { Plus, Minus, Menu, X, Maximize2, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, FileText, BookOpen, HelpCircle, Send, ShieldCheck, Fingerprint, Gavel, Scale } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
@@ -349,73 +349,233 @@ const Loader2 = ({ className, size }: { className?: string, size?: number }) => 
 
 // --- Components ---
 
-const UserGuideModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <div className="fixed inset-0 z-[100] bg-corporate-900/40 backdrop-blur-md flex items-center justify-center p-6">
-    <div className="bg-white max-w-3xl w-full max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl border border-corporate-200 animate-in zoom-in-95 duration-200">
-      <div className="sticky top-0 bg-white border-b border-corporate-100 p-6 flex justify-between items-center z-10">
-        <h2 className="text-2xl font-serif text-corporate-900">Tenant Resource Center</h2>
-        <button onClick={onClose} className="p-2 hover:bg-corporate-50 rounded-full transition-colors">
-          <X size={24} />
-        </button>
-      </div>
-      
-      <div className="p-8 space-y-12">
-        {/* Product Report */}
-        <section className="space-y-6">
-          <div className="flex items-center gap-3 text-corporate-900">
-            <div className="p-2 bg-corporate-900 text-white rounded-lg">
-              <FileText size={20} />
-            </div>
-            <h3 className="text-xl font-bold uppercase tracking-tight">Portfolio Product Report</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-5 bg-corporate-50 rounded-xl border border-corporate-100">
-              <h4 className="font-bold text-corporate-900 mb-2">Institutional Standards</h4>
-              <p className="text-sm text-corporate-600 leading-relaxed">
-                All managed assets feature PEZA accreditation (where applicable), 100% backup power systems, and multi-carrier fiber optic availability.
-              </p>
-            </div>
-            <div className="p-5 bg-corporate-50 rounded-xl border border-corporate-100">
-              <h4 className="font-bold text-corporate-900 mb-2">Location Strategy</h4>
-              <p className="text-sm text-corporate-600 leading-relaxed">
-                Primary assets are situated on the Shaw Boulevard corridor, providing high-visibility frontage and direct access to the Ortigas Central Business District.
-              </p>
-            </div>
-          </div>
-        </section>
+const UserGuideModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [activeTab, setActiveTab] = useState<'product' | 'legal'>('product');
 
-        {/* Walkthrough */}
-        <section className="space-y-6">
-          <div className="flex items-center gap-3 text-corporate-900">
-            <div className="p-2 bg-corporate-100 text-corporate-900 rounded-lg">
-              <BookOpen size={20} />
+  return (
+    <div className="fixed inset-0 z-[100] bg-corporate-900/40 backdrop-blur-md flex items-center justify-center p-6">
+      <div className="bg-white max-w-4xl w-full max-h-[85vh] overflow-hidden rounded-2xl shadow-2xl border border-corporate-200 animate-in zoom-in-95 duration-200 flex flex-col">
+        {/* Modal Header */}
+        <div className="bg-white border-b border-corporate-100 z-10 flex flex-col">
+          <div className="p-6 flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-serif text-corporate-900">Tenant Resource Center</h2>
+              <p className="text-[10px] text-corporate-400 font-bold uppercase tracking-widest mt-1">Institutional Transparency & Compliance</p>
             </div>
-            <h3 className="text-xl font-bold uppercase tracking-tight">Leasing Walkthrough</h3>
+            <button onClick={onClose} className="p-2 hover:bg-corporate-50 rounded-full transition-colors text-corporate-400">
+              <X size={24} />
+            </button>
           </div>
-          <div className="space-y-4">
-            {[
-              { title: "Browse Inventory", desc: "Select a project from the 'Projects' menu to view live availability. Use sorting filters to find units matching your floor area or budget requirements." },
-              { title: "Review Details", desc: "Click any unit to view high-resolution photos, marketing narratives, and 'Live Facts' including association dues and availability dates." },
-              { title: "Direct Inquiry", desc: "Use the built-in email or phone triggers to reach Mercy Laurenciano, our primary leasing coordinator, directly." }
-            ].map((step, i) => (
-              <div key={i} className="flex gap-4">
-                <span className="text-corporate-300 font-serif text-xl italic pt-1">{i + 1}.</span>
-                <div>
-                  <p className="font-bold text-corporate-900">{step.title}</p>
-                  <p className="text-sm text-corporate-600 leading-relaxed">{step.desc}</p>
+          
+          {/* Tabs */}
+          <div className="flex px-6 border-b border-corporate-50">
+            <button 
+              onClick={() => setActiveTab('product')}
+              className={`pb-4 px-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 relative ${activeTab === 'product' ? 'text-corporate-900 border-corporate-900' : 'text-slate-400 border-transparent hover:text-corporate-600'}`}
+            >
+              Product Report
+            </button>
+            <button 
+              onClick={() => setActiveTab('legal')}
+              className={`pb-4 px-6 text-xs font-bold uppercase tracking-widest transition-all border-b-2 relative ${activeTab === 'legal' ? 'text-corporate-900 border-corporate-900' : 'text-slate-400 border-transparent hover:text-corporate-600'}`}
+            >
+              Legal & Privacy
+            </button>
+          </div>
+        </div>
+        
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-12">
+          {activeTab === 'product' ? (
+            <div className="space-y-12 animate-in fade-in duration-300">
+              {/* Product Report */}
+              <section className="space-y-6">
+                <div className="flex items-center gap-3 text-corporate-900">
+                  <div className="p-2 bg-corporate-900 text-white rounded-lg">
+                    <FileText size={20} />
+                  </div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Portfolio Product Report</h3>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-5 bg-corporate-50 rounded-xl border border-corporate-100">
+                    <h4 className="font-bold text-corporate-900 mb-2">Institutional Standards</h4>
+                    <p className="text-sm text-corporate-600 leading-relaxed">
+                      All managed assets feature PEZA accreditation (where applicable), 100% backup power systems, and multi-carrier fiber optic availability.
+                    </p>
+                  </div>
+                  <div className="p-5 bg-corporate-50 rounded-xl border border-corporate-100">
+                    <h4 className="font-bold text-corporate-900 mb-2">Location Strategy</h4>
+                    <p className="text-sm text-corporate-600 leading-relaxed">
+                      Primary assets are situated on the Shaw Boulevard corridor, providing high-visibility frontage and direct access to the Ortigas Central Business District.
+                    </p>
+                  </div>
+                </div>
+              </section>
 
-        <div className="pt-8 border-t border-corporate-100 text-center">
-          <p className="text-xs text-corporate-400 font-medium uppercase tracking-[0.2em]">Quality Has No Substitute — Est. 1960</p>
+              {/* Walkthrough */}
+              <section className="space-y-6">
+                <div className="flex items-center gap-3 text-corporate-900">
+                  <div className="p-2 bg-corporate-100 text-corporate-900 rounded-lg">
+                    <BookOpen size={20} />
+                  </div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Leasing Walkthrough</h3>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    { title: "Browse Inventory", desc: "Select a project from the 'Projects' menu to view live availability. Use sorting filters to find units matching your floor area or budget requirements." },
+                    { title: "Review Details", desc: "Click any unit to view high-resolution photos, marketing narratives, and 'Live Facts' including association dues and availability dates." },
+                    { title: "Direct Inquiry", desc: "Use the built-in email or phone triggers to reach Mercy Laurenciano, our primary leasing coordinator, directly." }
+                  ].map((step, i) => (
+                    <div key={i} className="flex gap-4">
+                      <span className="text-corporate-300 font-serif text-xl italic pt-1">{i + 1}.</span>
+                      <div>
+                        <p className="font-bold text-corporate-900">{step.title}</p>
+                        <p className="text-sm text-corporate-600 leading-relaxed">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          ) : (
+            <div className="space-y-12 animate-in fade-in duration-300">
+              {/* Privacy Policy */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-3 text-corporate-900 border-b border-corporate-100 pb-2">
+                  <Fingerprint size={20} className="text-corporate-500" />
+                  <h3 className="text-xl font-serif text-corporate-900">1. Privacy Policy</h3>
+                </div>
+                <p className="text-xs text-corporate-400 font-bold uppercase tracking-widest">Last Updated: February 18, 2026</p>
+                <div className="prose prose-sm max-w-none text-corporate-600 space-y-4">
+                  <p>Facilities, Incorporated (“the Company,” “we,” “us,” or “our”) is committed to protecting your personal data in compliance with the Philippine Data Privacy Act of 2012 (RA 10173).</p>
+                  
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">I. Information We Collect</h4>
+                    <p>When you use our website or inquiry forms, we collect:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li><strong>Personal Identification:</strong> Name, email address, and phone number.</li>
+                      <li><strong>Property Preferences:</strong> The specific units or buildings you inquire about.</li>
+                      <li><strong>Technical Data:</strong> IP address, browser type, and usage data via PostHog analytics.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">II. Purpose of Collection</h4>
+                    <p>We use your data strictly to:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Respond to your leasing inquiries.</li>
+                      <li>Schedule property viewings.</li>
+                      <li>Process lease applications and contracts.</li>
+                      <li>Improve our website performance and user experience.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">III. Data Storage and Retention</h4>
+                    <p>Your data is stored in secure databases (Supabase) and is only accessible by authorized leasing personnel (e.g., the Leasing Coordinator). We retain your data for a period of five (5) years after our last interaction, or as required by Philippine tax and real estate laws.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">IV. Disclosure of Information</h4>
+                    <p>We do not sell your data. We only share information with third-party service providers (such as hosting and analytics) who are contractually bound to protect your privacy.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">V. Your Rights</h4>
+                    <p>Under the Data Privacy Act, you have the right to access your personal data, object to processing, request correction or erasure, or file a complaint with the National Privacy Commission (NPC).</p>
+                  </div>
+
+                  <div className="bg-corporate-50 p-4 rounded-lg border border-corporate-100">
+                    <p className="font-bold text-corporate-900 text-xs uppercase tracking-widest mb-2">Contact Our Data Protection Officer:</p>
+                    <p className="text-xs">Email: <a href="mailto:mercy.laurenciano@gmail.com" className="underline decoration-corporate-200">mercy.laurenciano@gmail.com</a></p>
+                    <p className="text-xs">Address: 23/F Summit One Tower, Shaw Blvd, Mandaluyong City</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Terms of Service */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-3 text-corporate-900 border-b border-corporate-100 pb-2">
+                  <Gavel size={20} className="text-corporate-500" />
+                  <h3 className="text-xl font-serif text-corporate-900">2. Terms of Service</h3>
+                </div>
+                <p className="text-xs text-corporate-400 font-bold uppercase tracking-widest">Last Updated: February 18, 2026</p>
+                <div className="prose prose-sm max-w-none text-corporate-600 space-y-4">
+                  <p>By accessing this website, you agree to be bound by these Terms of Service and all applicable laws in the Philippines, including the Internet Transactions Act of 2023.</p>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">I. Use of the Website</h4>
+                    <p>The content on this website (photos, unit specs, and availability) is for informational purposes only. While we strive for accuracy, unit availability and pricing are subject to change without prior notice.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">II. No Binding Offer</h4>
+                    <p>The listing of a unit on this website does not constitute a legally binding offer to lease. A lease is only perfected upon the execution of a formal Lease Agreement signed by both Facilities, Incorporated and the Tenant.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">III. Intellectual Property</h4>
+                    <p>All content, including the "Facilities, Incorporated" logo, building photography, and the app interface, is the exclusive property of the Company. Unauthorized reproduction is prohibited.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">IV. Limitation of Liability</h4>
+                    <p>Facilities, Incorporated shall not be liable for any damages arising from the use or inability to use this website, including but not limited to technical errors or inaccuracies in unit listings.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">V. Dispute Resolution & Redress</h4>
+                    <p>In compliance with DTI regulations, any complaints regarding our digital services may be sent to mercy.laurenciano@gmail.com. We commit to acknowledging receipt of complaints within 48 hours. All disputes shall be governed by the laws of the Republic of the Philippines.</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Cookie Policy */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-3 text-corporate-900 border-b border-corporate-100 pb-2">
+                  <ShieldCheck size={20} className="text-corporate-500" />
+                  <h3 className="text-xl font-serif text-corporate-900">3. Cookie Policy</h3>
+                </div>
+                <p className="text-xs text-corporate-400 font-bold uppercase tracking-widest">Last Updated: February 18, 2026</p>
+                <div className="prose prose-sm max-w-none text-corporate-600 space-y-4">
+                  <p>This website uses cookies and similar tracking technologies to enhance your browsing experience.</p>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">I. What are Cookies?</h4>
+                    <p>Cookies are small text files stored on your device. We use them to remember your preferences and understand how you interact with our property listings.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">II. How We Use Cookies</h4>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li><strong>Essential Cookies:</strong> Required for the Admin Dashboard and login functions.</li>
+                      <li><strong>Analytics Cookies (PostHog):</strong> These help us track unit views, button clicks, and inquiry conversion rates. This data is anonymized and used to improve our leasing services.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">III. Managing Your Preferences</h4>
+                    <p>You can choose to disable cookies through your browser settings. However, doing so may prevent you from using certain features of the website, such as the unit sorting functions or admin login.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">IV. Consent</h4>
+                    <p>By continuing to browse our site or submitting an inquiry, you consent to our use of cookies as described in this policy, in accordance with the NPC Advisory on Cookies and Related Technologies.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {/* Persistent Footer */}
+          <div className="pt-8 mt-12 border-t border-corporate-100 text-center">
+            <p className="text-xs text-corporate-400 font-medium uppercase tracking-[0.2em]">Quality Has No Substitute — Est. 1960</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface HeaderProps {
   onNavigateHome: () => void;
