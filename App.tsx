@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Section } from './components/Section';
-import { Plus, Minus, Menu, X, Maximize2, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, FileText, BookOpen, HelpCircle, Send, ShieldCheck, Fingerprint, Gavel, Scale } from 'lucide-react';
+import { Plus, Minus, Menu, X, Maximize2, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, FileText, BookOpen, HelpCircle, Send, ShieldCheck, Fingerprint, Gavel, Scale, AlertCircle } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
@@ -190,9 +190,12 @@ type ViewState =
 const LeadInquiryModal: React.FC<{ 
   unit: PropertyUnit; 
   onClose: () => void;
-}> = ({ unit, onClose }) => {
+  onOpenLegal: () => void;
+}> = ({ unit, onClose, onOpenLegal }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -204,6 +207,10 @@ const LeadInquiryModal: React.FC<{
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAgreed) {
+      setShowError(true);
+      return;
+    }
     setIsSubmitting(true);
 
     const unitInfo = `Unit ${unit.unit_number} - ${unit.building_name}`;
@@ -327,10 +334,39 @@ const LeadInquiryModal: React.FC<{
                   className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors resize-none text-sm"
                 />
               </div>
+
+              {/* Legal Consent Checkbox */}
+              <div className="pt-2 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="legal-consent-modal"
+                      name="legal-consent-modal"
+                      type="checkbox"
+                      checked={isAgreed}
+                      onChange={(e) => {
+                        setIsAgreed(e.target.checked);
+                        if (e.target.checked) setShowError(false);
+                      }}
+                      tabIndex={0}
+                      className="h-4 w-4 rounded border-corporate-300 text-corporate-900 focus:ring-corporate-900 cursor-pointer"
+                    />
+                  </div>
+                  <label htmlFor="legal-consent-modal" className="text-xs text-corporate-600 leading-normal cursor-pointer select-none">
+                    I agree to the <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
+                  </label>
+                </div>
+                {showError && !isAgreed && (
+                  <p className="text-red-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2">
+                    <AlertCircle size={14} /> Please agree to the terms to continue.
+                  </p>
+                )}
+              </div>
+
               <button 
                 type="submit" 
-                disabled={isSubmitting}
-                className="w-full py-4 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={isSubmitting || !isAgreed}
+                className={`w-full py-4 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${!isAgreed ? 'bg-corporate-300 cursor-not-allowed opacity-70' : 'bg-corporate-900 hover:bg-corporate-800'}`}
               >
                 {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
                 Submit Formal Inquiry
@@ -349,11 +385,16 @@ const Loader2 = ({ className, size }: { className?: string, size?: number }) => 
 
 // --- Components ---
 
-const UserGuideModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState<'product' | 'legal'>('product');
+const UserGuideModal: React.FC<{ onClose: () => void; initialTab?: 'product' | 'legal' }> = ({ onClose, initialTab = 'product' }) => {
+  const [activeTab, setActiveTab] = useState<'product' | 'legal'>(initialTab);
+
+  // Sync active tab if initialTab changes while component is already mounted
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-corporate-900/40 backdrop-blur-md flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[130] bg-corporate-900/40 backdrop-blur-md flex items-center justify-center p-6">
       <div className="bg-white max-w-4xl w-full max-h-[85vh] overflow-hidden rounded-2xl shadow-2xl border border-corporate-200 animate-in zoom-in-95 duration-200 flex flex-col">
         {/* Modal Header */}
         <div className="bg-white border-b border-corporate-100 z-10 flex flex-col">
@@ -951,7 +992,7 @@ const UnitDetailPage: React.FC<{
       </div>
 
       {isLeadFormOpen && (
-        <LeadInquiryModal unit={unit} onClose={() => setIsLeadFormOpen(false)} />
+        <LeadInquiryModal unit={unit} onClose={() => setIsLeadFormOpen(false)} onOpenLegal={() => (window as any).openGuideAt?.('legal')} />
       )}
     </div>
   );
@@ -1095,14 +1136,20 @@ const FAQ: React.FC = () => {
   );
 };
 
-const Contact: React.FC = () => {
+const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
   const [isSending, setIsSending] = useState(false);
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
 
   const encode = (data: any) => Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!isAgreed) {
+      setShowError(true);
+      return;
+    }
     setIsSending(true);
 
     try {
@@ -1135,6 +1182,7 @@ const Contact: React.FC = () => {
         (window as any).posthog?.capture('lead_form_submitted');
         alert('Message Sent!');
         setFormData({ name: '', email: '', phone: '', message: '' });
+        setIsAgreed(false);
       }
     } catch (err: any) {
       console.log('Lead Submission Catch:', err.message);
@@ -1197,7 +1245,40 @@ const Contact: React.FC = () => {
             rows={6} 
             className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300 resize-none" 
           />
-          <button disabled={isSending} className="px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 font-medium hover:border-corporate-900 transition-colors disabled:opacity-50">
+
+          {/* Legal Consent Checkbox */}
+          <div className="pt-2 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="flex items-center h-5">
+                <input
+                  id="legal-consent-contact"
+                  name="legal-consent-contact"
+                  type="checkbox"
+                  checked={isAgreed}
+                  onChange={(e) => {
+                    setIsAgreed(e.target.checked);
+                    if (e.target.checked) setShowError(false);
+                  }}
+                  tabIndex={0}
+                  className="h-4 w-4 rounded border-corporate-300 text-corporate-900 focus:ring-corporate-900 cursor-pointer"
+                />
+              </div>
+              <label htmlFor="legal-consent-contact" className="text-xs text-corporate-600 leading-normal cursor-pointer select-none">
+                I agree to the <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
+              </label>
+            </div>
+            {showError && !isAgreed && (
+              <p className="text-red-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2">
+                <AlertCircle size={14} /> Please agree to the terms to continue.
+              </p>
+            )}
+          </div>
+
+          <button 
+            type="submit"
+            disabled={isSending || !isAgreed} 
+            className={`px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all border disabled:opacity-50 ${!isAgreed ? 'bg-corporate-50 border-corporate-200 text-corporate-300 cursor-not-allowed' : 'bg-transparent border-corporate-300 text-corporate-900 hover:border-corporate-900'}`}
+          >
             {isSending ? 'Sending...' : 'Submit Inquiry'}
           </button>
         </div>
@@ -1258,6 +1339,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [guideInitialTab, setGuideInitialTab] = useState<'product' | 'legal'>('product');
 
   const fetchUnits = useCallback(async () => {
     const { data, error } = await supabase
@@ -1267,6 +1349,14 @@ export default function App() {
     if (error) console.error("Database Error:", error);
     else setLiveUnits(data || []);
     setLoading(false);
+  }, []);
+
+  // Set up global triggers for opening the resource center
+  useEffect(() => {
+    (window as any).openGuideAt = (tab: 'product' | 'legal') => {
+      setGuideInitialTab(tab);
+      setShowGuide(true);
+    };
   }, []);
 
   // Finalized Authentication and Recovery Listener
@@ -1304,8 +1394,11 @@ export default function App() {
     setViewState({ type: 'detail', unit: u, source: source });
   };
 
-  const toggleGuide = (show: boolean) => {
-    if (show) posthog?.capture('user_guide_opened');
+  const toggleGuide = (show: boolean, tab: 'product' | 'legal' = 'product') => {
+    if (show) {
+      posthog?.capture('user_guide_opened', { tab });
+      setGuideInitialTab(tab);
+    }
     setShowGuide(show);
   };
 
@@ -1368,7 +1461,7 @@ export default function App() {
         currentPage={viewState.type}
       />
       
-      {showGuide && <UserGuideModal onClose={() => toggleGuide(false)} />}
+      {showGuide && <UserGuideModal initialTab={guideInitialTab} onClose={() => setShowGuide(false)} />}
 
       <main>
         {viewState.type === 'login' ? (
@@ -1420,13 +1513,13 @@ export default function App() {
               onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
             />
             <FAQ />
-            <Contact />
+            <Contact onOpenLegal={() => toggleGuide(true, 'legal')} />
           </>
         )}
       </main>
       <Footer 
         onAdminClick={() => setViewState({ type: 'login' })} 
-        onShowGuide={() => toggleGuide(true)}
+        onShowGuide={() => toggleGuide(true, 'product')}
       />
     </div>
   );
