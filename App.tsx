@@ -257,6 +257,12 @@ const LeadInquiryModal: React.FC<{
     }
   };
 
+  const handleLinkClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevents the label from toggling the checkbox
+    e.stopPropagation(); // Prevents event bubbling
+    onOpenLegal();
+  };
+
   return (
     <div className="fixed inset-0 z-[110] bg-corporate-900/60 backdrop-blur-md flex items-center justify-center p-6">
       <div className="bg-white max-w-lg w-full rounded-2xl shadow-2xl border border-corporate-200 overflow-hidden animate-in zoom-in-95 duration-200">
@@ -353,7 +359,7 @@ const LeadInquiryModal: React.FC<{
                     />
                   </div>
                   <label htmlFor="legal-consent-modal" className="text-xs text-corporate-600 leading-normal cursor-pointer select-none">
-                    I agree to the <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
+                    I agree to the <span onClick={handleLinkClick} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={handleLinkClick} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
                   </label>
                 </div>
                 {showError && !isAgreed && (
@@ -1201,6 +1207,12 @@ const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
     posthog?.capture('direct_contact_click', { channel });
   };
 
+  const handleLinkClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevents the label from toggling the checkbox
+    e.stopPropagation(); // Prevents event bubbling
+    onOpenLegal();
+  };
+
   return (
     <Section id="contact" className="bg-white border-t border-corporate-200">
       <div className="border-b border-corporate-200 mb-16 pb-4"><h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Contact</h2></div>
@@ -1264,7 +1276,7 @@ const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
                 />
               </div>
               <label htmlFor="legal-consent-contact" className="text-xs text-corporate-600 leading-normal cursor-pointer select-none">
-                I agree to the <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={(e) => { e.stopPropagation(); onOpenLegal(); }} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
+                I agree to the <span onClick={handleLinkClick} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={handleLinkClick} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
               </label>
             </div>
             {showError && !isAgreed && (
@@ -1339,7 +1351,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [showGuide, setShowGuide] = useState(false);
-  const [guideInitialTab, setGuideInitialTab] = useState<'product' | 'legal'>('product');
+  const [guideInitialTab, setGuideInitialTab] = useState<'product' | 'legal'>( 'product');
 
   const fetchUnits = useCallback(async () => {
     const { data, error } = await supabase
