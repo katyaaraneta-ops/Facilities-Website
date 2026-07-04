@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FI — Rainy Day Promo · 3 Placement Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            corporate: {
+              50: '#F9F9F7', 100: '#F0F0ED', 200: '#D3D7DD', 300: '#AAB4C0',
+              400: '#8590A0', 500: '#647082', 600: '#485466', 700: '#323C4A',
+              800: '#2A3B55', 900: '#1A293E',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { -webkit-font-smoothing: antialiased; }
+    .mock-frame { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.18); }
+    .version-panel { display: none; }
+    .version-panel.active { display: block; }
+    .tab-btn.active { background: #1A293E; color: #E6EAF2; border-color: #1A293E; }
+  </style>
+</head>
+<body class="bg-corporate-100 min-h-screen font-sans text-corporate-900">
+
+  <!-- Review chrome (not part of live site) -->
+  <div class="sticky top-0 z-[100] bg-white border-b border-corporate-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 py-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-corporate-400">Internal review only</p>
+          <h1 class="text-xl font-serif text-corporate-900">Rainy Day Promo — 3 placement options</h1>
+          <p class="text-sm text-corporate-500 mt-1">Copy locked: <em>“Please inquire about our rainy day promo.”</em> — no free-rent terms.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" data-tab="a" class="tab-btn active px-4 py-2 text-xs font-bold uppercase tracking-widest border border-corporate-300 rounded transition-colors">A · Listing banner</button>
+          <button type="button" data-tab="b" class="tab-btn px-4 py-2 text-xs font-bold uppercase tracking-widest border border-corporate-300 rounded transition-colors hover:bg-corporate-50">B · Unit sidebar</button>
+          <button type="button" data-tab="c" class="tab-btn px-4 py-2 text-xs font-bold uppercase tracking-widest border border-corporate-300 rounded transition-colors hover:bg-corporate-50">C · Homepage tease</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- VERSION A -->
+    <div id="panel-a" class="version-panel active">
+      <div class="grid md:grid-cols-3 gap-6 mb-6">
+        <div class="md:col-span-2">
+          <span class="inline-block px-3 py-1 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded mb-2">Version A — Recommended</span>
+          <h2 class="text-2xl font-serif">Summit One listing page banner</h2>
+          <p class="text-corporate-600 mt-2 leading-relaxed">Thin bar below the site header, only on <strong>/units/summit-one</strong>. Visible to people already browsing large space. Does not appear on Facilities Centre or homepage.</p>
+        </div>
+        <div class="bg-white border border-corporate-200 rounded-lg p-5 text-sm space-y-2">
+          <p><strong class="text-corporate-900">Visibility:</strong> Medium-high</p>
+          <p><strong class="text-corporate-900">Price-war risk:</strong> Low</p>
+          <p><strong class="text-corporate-900">Best for:</strong> Driving inquiries from Summit One browsers</p>
+        </div>
+      </div>
+
+      <div class="mock-frame rounded-xl overflow-hidden border border-corporate-200 bg-white">
+        <!-- Header -->
+        <header class="bg-[#181852] border-b border-[#E6EAF2]/10">
+          <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <span class="font-serif text-xl text-[#E6EAF2]">Facilities, Incorporated</span>
+            <nav class="hidden md:flex gap-6 text-sm text-[#E6EAF2]/90">
+              <span>Projects</span><span>Vision</span><span>Blog</span><span>Contact</span>
+            </nav>
+          </div>
+        </header>
+
+        <!-- PROMO A -->
+        <div class="bg-corporate-900 text-[#E6EAF2] border-b border-corporate-800">
+          <div class="max-w-7xl mx-auto px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p class="text-sm font-medium">
+              <span class="text-corporate-300 mr-2">●</span>
+              Please inquire about our <span class="font-semibold text-white">rainy day promo</span> — for select large office spaces at Summit One Tower.
+            </p>
+            <a href="#contact" class="text-[11px] font-bold uppercase tracking-widest text-white/90 hover:text-white underline underline-offset-4 shrink-0">Contact leasing →</a>
+          </div>
+        </div>
+
+        <!-- Listing content -->
+        <div class="px-6 pt-10 pb-12 max-w-7xl mx-auto">
+          <p class="text-xs uppercase tracking-widest text-corporate-400 mb-4">← Back to Overview</p>
+          <h3 class="text-3xl font-serif text-corporate-900">Office Space for Rent in Mandaluyong — Summit One Tower</h3>
+          <p class="text-corporate-500 mt-2">We found <strong class="text-corporate-900">7</strong> units in our database.</p>
+          <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="border border-corporate-200 rounded-lg overflow-hidden">
+              <div class="aspect-video bg-corporate-100"></div>
+              <div class="p-4">
+                <p class="font-serif text-lg">Unit 2301</p>
+                <p class="text-sm text-corporate-500">350 sqm · ₱210,000 / mo</p>
+              </div>
+            </div>
+            <div class="border border-corporate-200 rounded-lg overflow-hidden ring-2 ring-corporate-900/20">
+              <div class="aspect-video bg-corporate-100 relative">
+                <span class="absolute top-2 left-2 bg-corporate-900 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">150 sqm+</span>
+              </div>
+              <div class="p-4">
+                <p class="font-serif text-lg">Unit 1805</p>
+                <p class="text-sm text-corporate-500">590 sqm · ₱354,000 / mo</p>
+              </div>
+            </div>
+            <div class="border border-corporate-200 rounded-lg overflow-hidden">
+              <div class="aspect-video bg-corporate-100"></div>
+              <div class="p-4">
+                <p class="font-serif text-lg">Unit 1202</p>
+                <p class="text-sm text-corporate-500">140 sqm · ₱84,000 / mo</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSION B -->
+    <div id="panel-b" class="version-panel">
+      <div class="grid md:grid-cols-3 gap-6 mb-6">
+        <div class="md:col-span-2">
+          <span class="inline-block px-3 py-1 bg-corporate-200 text-corporate-800 text-[10px] font-bold uppercase tracking-widest rounded mb-2">Version B — Most controlled</span>
+          <h2 class="text-2xl font-serif">Large-unit detail sidebar only</h2>
+          <p class="text-corporate-600 mt-2 leading-relaxed">One line inside the inquiry box on unit pages where <strong>area ≥ 150 sqm</strong> and building is Summit One. Small units and Facilities Centre never show it.</p>
+        </div>
+        <div class="bg-white border border-corporate-200 rounded-lg p-5 text-sm space-y-2">
+          <p><strong class="text-corporate-900">Visibility:</strong> Low (intentional)</p>
+          <p><strong class="text-corporate-900">Price-war risk:</strong> Lowest</p>
+          <p><strong class="text-corporate-900">Best for:</strong> Serious prospects on big units only</p>
+        </div>
+      </div>
+
+      <div class="mock-frame rounded-xl overflow-hidden border border-corporate-200 bg-white">
+        <header class="bg-[#181852]">
+          <div class="max-w-7xl mx-auto px-6 h-16 flex items-center">
+            <span class="font-serif text-xl text-[#E6EAF2]">Facilities, Incorporated</span>
+          </div>
+        </header>
+
+        <div class="px-6 py-10 max-w-7xl mx-auto grid lg:grid-cols-12 gap-10">
+          <div class="lg:col-span-8 space-y-6">
+            <div class="aspect-[16/10] bg-corporate-100 rounded-lg"></div>
+            <div>
+              <p class="text-xs uppercase tracking-widest text-corporate-400">Summit One Tower</p>
+              <h3 class="text-3xl font-serif mt-1">Premium corner office with golf course views</h3>
+              <p class="text-corporate-500">Unit 1805</p>
+              <p class="text-2xl font-bold mt-4">₱354,000 / mo</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-sm border-t border-corporate-200 pt-6">
+              <div class="flex justify-between border-b border-corporate-100 py-2"><span class="text-corporate-500">Floor Area</span><span class="font-semibold">590 sqm</span></div>
+              <div class="flex justify-between border-b border-corporate-100 py-2"><span class="text-corporate-500">Availability</span><span class="font-semibold">Immediate</span></div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4">
+            <div class="bg-white p-8 rounded-xl border border-corporate-200 shadow-sm sticky top-4">
+              <h4 class="text-2xl font-serif text-corporate-900 mb-4">Interested in this property?</h4>
+              <p class="text-corporate-600 mb-4 leading-relaxed text-sm">Our leasing team is ready to schedule a viewing or provide a detailed floor plan for Unit 1805.</p>
+
+              <!-- PROMO B -->
+              <div class="mb-6 px-4 py-3 bg-corporate-50 border border-corporate-200 border-l-4 border-l-corporate-900 rounded-r-lg">
+                <p class="text-sm text-corporate-700 leading-relaxed">
+                  <span class="font-semibold text-corporate-900">Rainy day promo available.</span>
+                  Ask our leasing team when you inquire — terms shared on request for qualifying large spaces.
+                </p>
+              </div>
+
+              <button type="button" class="w-full py-4 bg-corporate-900 text-white text-sm font-medium rounded-lg mb-3">Inquire via Email</button>
+              <button type="button" class="w-full py-3 border border-corporate-300 text-corporate-700 text-sm rounded-lg">Call Mercy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mx-6 mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
+          <strong>Note:</strong> Unit 1202 (140 sqm) would <em>not</em> show this box — threshold is 150 sqm+.
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSION C -->
+    <div id="panel-c" class="version-panel">
+      <div class="grid md:grid-cols-3 gap-6 mb-6">
+        <div class="md:col-span-2">
+          <span class="inline-block px-3 py-1 bg-corporate-200 text-corporate-800 text-[10px] font-bold uppercase tracking-widest rounded mb-2">Version C — Highest reach</span>
+          <h2 class="text-2xl font-serif">Homepage hero — quiet secondary line</h2>
+          <p class="text-corporate-600 mt-2 leading-relaxed">A single serif italic line below the main hero copy on the homepage. Broadest visibility; still no terms. Sylvia/Vince flagged higher broadcast risk — use only if listing banner feels too hidden.</p>
+        </div>
+        <div class="bg-white border border-corporate-200 rounded-lg p-5 text-sm space-y-2">
+          <p><strong class="text-corporate-900">Visibility:</strong> High</p>
+          <p><strong class="text-corporate-900">Price-war risk:</strong> Medium</p>
+          <p><strong class="text-corporate-900">Best for:</strong> BNI referrals landing on homepage</p>
+        </div>
+      </div>
+
+      <div class="mock-frame rounded-xl overflow-hidden border border-corporate-200 bg-corporate-50">
+        <header class="bg-[#181852]">
+          <div class="max-w-7xl mx-auto px-6 h-16 flex items-center">
+            <span class="font-serif text-xl text-[#E6EAF2]">Facilities, Incorporated</span>
+          </div>
+        </header>
+
+        <section class="px-6 py-16 md:py-24 border-b border-corporate-200">
+          <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-start">
+            <div class="space-y-6">
+              <h3 class="font-serif text-4xl md:text-5xl text-corporate-900 leading-tight">Office Space for Rent in Mandaluyong</h3>
+              <p class="text-xs uppercase tracking-[0.15em] text-corporate-500">Real Estate Development</p>
+              <div class="w-16 h-px bg-corporate-300"></div>
+              <p class="text-lg text-corporate-600 leading-relaxed">Founded in 1960, Facilities Inc. has evolved into a family-owned real estate developer, creating landmark properties across Metro Manila for over six decades.</p>
+
+              <!-- PROMO C -->
+              <p class="text-base font-serif italic text-corporate-700 border-l-2 border-corporate-300 pl-4 py-1">
+                Leasing large office space at Summit One Tower?
+                <a href="#contact" class="text-corporate-900 font-semibold not-italic underline underline-offset-2 hover:text-corporate-700">Please inquire about our rainy day promo.</a>
+              </p>
+
+              <button type="button" class="px-10 py-4 bg-corporate-900 text-white text-[11px] font-bold uppercase tracking-widest">Make an Inquiry</button>
+            </div>
+            <div class="hidden md:block aspect-square bg-corporate-200 rounded-sm"></div>
+          </div>
+        </section>
+
+        <div class="px-6 py-8 text-center text-sm text-corporate-400">↓ Projects section continues below</div>
+      </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="bg-white border border-corporate-200 rounded-xl p-8 mt-12">
+      <h2 class="text-xl font-serif mb-6">Quick comparison</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead>
+            <tr class="border-b border-corporate-200 text-[10px] uppercase tracking-widest text-corporate-400">
+              <th class="py-3 pr-4">Option</th>
+              <th class="py-3 pr-4">Where</th>
+              <th class="py-3 pr-4">Who sees it</th>
+              <th class="py-3 pr-4">Risk</th>
+              <th class="py-3">Recommendation</th>
+            </tr>
+          </thead>
+          <tbody class="text-corporate-700">
+            <tr class="border-b border-corporate-100">
+              <td class="py-4 pr-4 font-bold text-corporate-900">A</td>
+              <td class="py-4 pr-4">Summit One listing banner</td>
+              <td class="py-4 pr-4">Summit browsers</td>
+              <td class="py-4 pr-4 text-green-700">Low</td>
+              <td class="py-4"><strong>Primary pick</strong> — balances visibility + control</td>
+            </tr>
+            <tr class="border-b border-corporate-100">
+              <td class="py-4 pr-4 font-bold text-corporate-900">B</td>
+              <td class="py-4 pr-4">Unit sidebar (150 sqm+)</td>
+              <td class="py-4 pr-4">Big-unit detail viewers</td>
+              <td class="py-4 pr-4 text-green-800">Lowest</td>
+              <td class="py-4"><strong>Pair with A</strong> — reinforces at decision moment</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-4 font-bold text-corporate-900">C</td>
+              <td class="py-4 pr-4">Homepage hero line</td>
+              <td class="py-4 pr-4">All homepage visitors</td>
+              <td class="py-4 pr-4 text-amber-700">Medium</td>
+              <td class="py-4">Optional — if referrals land on homepage first</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-6 text-sm text-corporate-500"><strong>Suggested production build:</strong> A + B together. Skip C unless leadership wants homepage visibility.</p>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.version-panel');
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.tab;
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + id).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

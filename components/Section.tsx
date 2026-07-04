@@ -9,7 +9,10 @@ interface SectionProps {
 
 export const Section: React.FC<SectionProps> = ({ id, children, className = "", narrow = false }) => {
   return (
-    <section id={id} className={`py-24 md:py-32 ${className}`}>
+    <section
+      id={id}
+      className={`py-24 md:py-32 ${id ? 'scroll-mt-20' : ''} ${className}`}
+    >
       {/* 
          narrow: max-w-[800px] strictly for reading columns
          default: max-w-[1024px] for wider layouts if needed (though mostly unused in this design)

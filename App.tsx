@@ -1,135 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, useNavigate, useParams, Navigate, useLocation } from 'react-router-dom';
 import { Section } from './components/Section';
+import { BuildingListingSeoSections } from './components/BuildingListingSeoSections';
+import { OfficeSpaceMandaluyongPage } from './components/OfficeSpaceMandaluyongPage';
+import { OfficeSpaceShawBoulevardPage } from './components/OfficeSpaceShawBoulevardPage';
+import { OfficeSpaceNearOrtigasPage } from './components/OfficeSpaceNearOrtigasPage';
+import { OfficeRentalMandaluyongPage } from './components/OfficeRentalMandaluyongPage';
 import { Plus, Minus, Menu, X, Maximize2, Building2, ArrowLeft, ChevronDown, Check, Phone, Mail, MapPin, ChevronLeft, ChevronRight, FileText, BookOpen, HelpCircle, Send, ShieldCheck, Fingerprint, Gavel, Scale, AlertCircle } from 'lucide-react';
 import { WhyItem, OperationStep, FAQItem } from './types';
 import { supabase } from './supabaseClient';
 import { LoginPage } from './LoginPage';
 import { AdminDashboard } from './AdminDashboard';
 import { ResetPasswordPage } from './ResetPasswordPage';
-
-// Access the global PostHog instance safely
-const posthog = (window as any).posthog;
+import { SEOHead } from './SEOHead';
+import { buildUnitPageSEO, buildBlogPostSEO, getSEOMetadata } from './seo-metadata';
+import { slugifyUnitSegment, isUuidParam } from './unit-slug';
+import { capturePostHog } from './posthogCapture';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // --- Data Definitions ---
 
-const whyItems: WhyItem[] = [
-  {
-    title: "Established Continuity",
-    description: "Operating since 1960, with over six decades of continuous experience in the Philippine commercial real estate market."
-  },
-  {
-    title: "Fiscal Discipline",
-    description: "Conservative financial management focused on asset preservation and operational stability."
-  },
-  {
-    title: "Direct On-Site Operations",
-    description: "Our flagship operations at Summit One Tower and Facilities Centre demonstrate a hands-on management model engineered for deployment across any Philippine location."
-  },
-  {
-    title: "Tenant Interface",
-    description: "A legacy defined by high-quality tenant relationships, exceptional long-tenancy records, and consistently high customer satisfaction ratings."
-  },
-  {
-    title: "Utilities Coordination",
-    description: "Coordination of power, water, and telecommunications services for managed units."
-  },
-  {
-    title: "Regulatory & LGU Liaison",
-    description: "Expert handling of compliance and administrative requirements, bridging the gap between property owners and Local Government Units (LGUs) nationwide."
-  },
-];
-
-const operations: OperationStep[] = [
-  { 
-    step: "01", 
-    title: "Asset Acquisition & Review", 
-    description: "We evaluate assets through the lens of a developer. Whether through joint ventures or direct acquisition, we verify title integrity and zoning adherence to ensure long-term growth for small to medium-rise commercial centers." 
-  },
-  { step: "02", title: "Tenant Fit-Out Coordination", description: "We oversee the transition from bare shell to operational workspace. Our team coordinates directly with contractors to ensure building codes and safety standards are strictly met." },
-  { step: "03", title: "Utilities & Compliance", description: "We coordinate directly with utility providers and relevant local authorities to support the ongoing operation of managed units." },
-  { step: "04", title: "Compliance & Administration", description: "We support unit-level administrative processes through coordination with relevant parties, where applicable." },
-];
-
-const faqs: FAQItem[] = [
-  {
-    question: "What does Facilities do?",
-    answer: (
-      <>
-        Facilities, Inc. is a premier real estate developer and asset management firm. We execute comprehensive strategies focused on operational efficiency, asset preservation, and long-term value for properties across the Philippines.
-      </>
-    )
-  },
-  {
-    question: "Does Facilities manage entire buildings?",
-    answer: "Yes. Our management model is scalable and ready for building-level operations nationwide. We focus on maintaining high-performance standards for both specific portfolios and entire commercial assets."
-  },
-  {
-    question: "Is Facilities a real estate broker?",
-    answer: (
-      <>
-        Facilities, Inc. is a premier real estate developer and operating company. While we are not a brokerage, we maintain a successful lease business, owning and managing significant portions of our commercial portfolio to ensure the highest standards of tenant care.
-      </>
-    )
-  },
-  {
-    question: "Does Facilities market property to the public?",
-    answer: (
-      <>
-        Our marketing activities are strictly limited to the assets within our managed portfolio.
-        <br />
-        We focus on strategic tenant acquisition and retention to maintain optimal occupancy levels for the properties we operate.
-      </>
-    )
-  },
-  {
-    question: "Does Facilities sell property?",
-    answer: (
-      <>
-        We primarily focus on long-term development and asset preservation. Inquiries regarding residential land banks are handled by our dedicated development arms.
-      </>
-    )
-  },
-  {
-    question: "Does Facilities provide design or architectural services?",
-    answer: (
-      <>
-        We provide technical oversight and operational compliance. For architectural design and development advisory, we coordinate with specialized partners to align physical infrastructure with high operational standards. Contact Katya (<a href="mailto:katya.araneta@gmail.com" className="hover:text-corporate-900 underline decoration-corporate-300 underline-offset-2 transition-colors">katya.araneta@gmail.com</a>) for further details.
-      </>
-    )
-  },
-  {
-    question: "Does Facilities handle interior fit-outs?",
-    answer: (
-      <>
-        We act as the owner’s representative during the fit-out phase.
-        <br />
-        We enforce strict compliance with building codes and operational standards, supervising third-party contractors to protect the asset’s structural integrity.
-      </>
-    )
-  },
-  {
-    question: "What properties does Facilities currently operate?",
-    answer: (
-      <>
-        Our portfolio is anchored by our flagship developments: Summit One Tower (the tallest landmark on Shaw Blvd) and Facilities Centre (featuring the longest frontage on Shaw Blvd). These assets serve as the blueprint for our expansion nationwide.
-      </>
-    )
-  },
-  {
-    question: "Who should contact Facilities?",
-    answer: (
-      <>
-        Facilities is the primary interface for:
-        <ul className="list-disc pl-5 my-2 space-y-1">
-          <li>Tenants occupying managed units</li>
-          <li>Institutional partners and leasing agents</li>
-          <li>Regulatory bodies and utility providers</li>
-          <li>Asset owners exploring professional management solutions</li>
-        </ul>
-      </>
-    )
-  },
-];
+// --- HYBRID DATA: Default Marketing Assets ---
 
 // --- HYBRID DATA: Default Marketing Assets ---
 
@@ -153,7 +45,7 @@ const marketingData: Record<string, any> = {
   "24C": { images: ["https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop"], specs: [] },
   "24I": { images: ["https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200&auto=format&fit=crop"], specs: [] },
   "24K": { images: ["https://images.unsplash.com/photo-1600508774444-466ba7ad9436?q=80&w=1200&auto=format&fit=crop"], specs: [] },
-  "3602": { images: ["https://images.unsplash.com/photo-1504384308090-c54be3855485?q=80&w=1200&auto=format&fit=crop"], specs: [] },
+  "3602": { images: ["https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop"], specs: [] },
   "3604": { images: ["https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1200&auto=format&fit=crop"], specs: [] }
 };
 
@@ -164,7 +56,13 @@ const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1497215728101-856f4ea42
 interface PropertyUnit {
   id: string;
   unit_number: string;
+  /** Public URL segment under /units/:building/ */
+  url_slug: string;
   building_name: string;
+  building_key?: string;
+  floor_label?: string;
+  floor_sort?: number;
+  unit_sort?: number;
   price: string;
   area: string;
   status: string;
@@ -177,18 +75,20 @@ interface PropertyUnit {
   specs: { label: string; value: string }[];
 }
 
-type ViewState =
-  | { type: 'landing' }
-  | { type: 'listing'; property: string }
-  | { type: 'detail'; unit: PropertyUnit; source: string }
-  | { type: 'login' }
-  | { type: 'admin' }
-  | { type: 'reset-password' };
+/** Descriptive alt for unit listing and gallery photos (SEO + accessibility). */
+function buildUnitPhotoAlt(
+  unit: Pick<PropertyUnit, 'unit_number' | 'building_name' | 'area'>,
+  photoIndex: number,
+  total: number
+): string {
+  const part = total > 1 ? ` — photo ${photoIndex + 1} of ${total}` : '';
+  return `Office unit photo — Unit ${unit.unit_number}, ${unit.building_name}, ${unit.area} sqm, Shaw Boulevard, Mandaluyong${part}`;
+}
 
 // --- Lead Capture Modal Component ---
 
-const LeadInquiryModal: React.FC<{ 
-  unit: PropertyUnit; 
+const LeadInquiryModal: React.FC<{
+  unit: PropertyUnit;
   onClose: () => void;
   onOpenLegal: () => void;
 }> = ({ unit, onClose, onOpenLegal }) => {
@@ -233,20 +133,37 @@ const LeadInquiryModal: React.FC<{
         fetch("/", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: encode({ 
+          body: encode({
             "form-name": "leads",
             "full_name": formData.name,
             "email": formData.email,
             "phone": formData.phone,
             "unit_number": unitInfo,
-            "message": formData.message 
+            "message": formData.message
           })
         }).catch(err => console.error("Netlify Submission Error:", err));
 
-        (window as any).posthog?.capture('unit_specific_inquiry_submitted', {
+        // Track in first-party analytics
+        const { error: trackError } = await supabase.from('unit_engagement_events').insert([{
+          event_type: 'unit_inquiry',
+          unit_id: unit.id,
+          unit_number: unit.unit_number,
+          building_name: unit.building_name,
+          source: 'unit_detail_modal',
+          page_path: window.location.pathname + window.location.search
+        }]);
+        
+        if (trackError) {
+          console.error('❌ Failed to track unit inquiry:', trackError);
+        } else {
+          console.log('✅ Unit inquiry tracked:', unit.unit_number);
+        }
+
+        capturePostHog('unit_specific_inquiry_submitted', {
           unit_number: unit.unit_number,
           building: unit.building_name,
-          source: 'unit_detail_modal'
+          inquiry_type: 'unit_specific',
+          source: 'unit_detail_modal',
         });
         setIsSuccess(true);
       }
@@ -286,7 +203,7 @@ const LeadInquiryModal: React.FC<{
                 <h3 className="text-2xl font-serif text-corporate-900">Email Sent to Leasing</h3>
                 <p className="text-corporate-600">Thank you! Our leasing coordinator, Mercy Laurenciano, will review your inquiry and contact you shortly.</p>
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="px-8 py-3 bg-corporate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-corporate-800 transition-all"
               >
@@ -297,11 +214,11 @@ const LeadInquiryModal: React.FC<{
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Full Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors"
                   placeholder="Juan Dela Cruz"
                 />
@@ -309,22 +226,22 @@ const LeadInquiryModal: React.FC<{
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Email Address</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     required
                     value={formData.email}
-                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors"
                     placeholder="juan@example.com"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Phone Number</label>
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     required
                     value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors"
                     placeholder="+63 9XX XXX XXXX"
                   />
@@ -332,10 +249,10 @@ const LeadInquiryModal: React.FC<{
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-corporate-400 uppercase tracking-widest">Message</label>
-                <textarea 
+                <textarea
                   required
                   value={formData.message}
-                  onChange={e => setFormData({...formData, message: e.target.value})}
+                  onChange={e => setFormData({ ...formData, message: e.target.value })}
                   rows={4}
                   className="w-full px-4 py-3 bg-corporate-50 border border-corporate-100 rounded-lg outline-none focus:border-corporate-900 transition-colors resize-none text-sm"
                 />
@@ -369,8 +286,8 @@ const LeadInquiryModal: React.FC<{
                 )}
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isSubmitting || !isAgreed}
                 className={`w-full py-4 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${!isAgreed ? 'bg-corporate-300 cursor-not-allowed opacity-70' : 'bg-corporate-900 hover:bg-corporate-800'}`}
               >
@@ -413,16 +330,16 @@ const UserGuideModal: React.FC<{ onClose: () => void; initialTab?: 'product' | '
               <X size={24} />
             </button>
           </div>
-          
+
           {/* Tabs */}
           <div className="flex px-6 border-b border-corporate-50">
-            <button 
+            <button
               onClick={() => setActiveTab('product')}
               className={`pb-4 px-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 relative ${activeTab === 'product' ? 'text-corporate-900 border-corporate-900' : 'text-slate-400 border-transparent hover:text-corporate-600'}`}
             >
               Product Report
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('legal')}
               className={`pb-4 px-6 text-xs font-bold uppercase tracking-widest transition-all border-b-2 relative ${activeTab === 'legal' ? 'text-corporate-900 border-corporate-900' : 'text-slate-400 border-transparent hover:text-corporate-600'}`}
             >
@@ -430,7 +347,7 @@ const UserGuideModal: React.FC<{ onClose: () => void; initialTab?: 'product' | '
             </button>
           </div>
         </div>
-        
+
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-8 space-y-12">
           {activeTab === 'product' ? (
@@ -495,7 +412,7 @@ const UserGuideModal: React.FC<{ onClose: () => void; initialTab?: 'product' | '
                 <p className="text-xs text-corporate-400 font-bold uppercase tracking-widest">Last Updated: February 18, 2026</p>
                 <div className="prose prose-sm max-w-none text-corporate-600 space-y-4">
                   <p>Facilities, Incorporated (“the Company,” “we,” “us,” or “our”) is committed to protecting your personal data in compliance with the Philippine Data Privacy Act of 2012 (RA 10173).</p>
-                  
+
                   <div>
                     <h4 className="font-bold text-corporate-900 text-sm uppercase tracking-wide">I. Information We Collect</h4>
                     <p>When you use our website or inquiry forms, we collect:</p>
@@ -628,10 +545,17 @@ interface HeaderProps {
   onNavigateHome: () => void;
   onViewSummit: () => void;
   onViewFacilities: () => void;
+  onViewBlog: () => void;
   currentPage: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFacilities, currentPage }) => {
+const Header: React.FC<HeaderProps> = ({
+  onNavigateHome,
+  onViewSummit,
+  onViewFacilities,
+  onViewBlog,
+  currentPage,
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -639,7 +563,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
 
   const handleNavClick = (targetId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    if (currentPage !== 'landing') {
+    if (currentPage !== 'landing' && currentPage !== '/') {
       onNavigateHome();
       setTimeout(() => {
         const el = document.getElementById(targetId);
@@ -656,6 +580,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
     action();
     closeMenu();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBlogNavClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onViewBlog();
+    closeMenu();
   };
 
   const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -676,9 +606,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
           Facilities, Incorporated
         </a>
 
-        <nav className="hidden md:flex items-center space-x-8 text-sm text-[#E6EAF2] font-medium tracking-wide">
-          <a href="#why" onClick={handleNavClick("why")} className="hover:text-[#C9D2E3] transition-colors duration-300">Why Us</a>
-          <a href="#operate" onClick={handleNavClick("operate")} className="hover:text-[#C9D2E3] transition-colors duration-300">How We Operate</a>
+        <nav className="hidden md:flex items-center space-x-8 text-base text-[#E6EAF2] font-medium tracking-wide">
 
           <div className="relative group">
             <a
@@ -709,7 +637,16 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
             </div>
           </div>
 
-          <a href="#faq" onClick={handleNavClick("faq")} className="hover:text-[#C9D2E3] transition-colors duration-300">FAQ</a>
+          <a href="#vision" onClick={handleNavClick("vision")} className="hover:text-[#C9D2E3] transition-colors duration-300">Vision</a>
+          <a
+            href="/blog"
+            onClick={handleBlogNavClick}
+            className={`transition-colors duration-300 ${
+              currentPage.startsWith('/blog') ? 'text-[#C9D2E3]' : 'hover:text-[#C9D2E3]'
+            }`}
+          >
+            Blog
+          </a>
           <a href="#contact" onClick={handleNavClick("contact")} className="hover:text-[#C9D2E3] transition-colors duration-300">Contact</a>
         </nav>
 
@@ -724,17 +661,24 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
       {isMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 right-0 bg-[#181852] border-b border-[#E6EAF2]/10 shadow-xl max-h-[calc(100vh-80px)] overflow-y-auto">
           <nav className="flex flex-col py-8 px-6 space-y-6">
-            <a href="#why" onClick={handleNavClick("why")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">Why Us</a>
-            <a href="#operate" onClick={handleNavClick("operate")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">How We Operate</a>
             <div className="space-y-4">
-              <a href="#projects" onClick={handleNavClick("projects")} className="text-[#E6EAF2] text-lg font-medium tracking-wide block">Projects</a>
+              <a href="#projects" onClick={handleNavClick("projects")} className="text-[#E6EAF2] text-xl font-medium tracking-wide block">Projects</a>
               <div className="pl-6 flex flex-col space-y-3 border-l border-[#E6EAF2]/20">
                 <button onClick={handleListingClick(onViewSummit)} className="text-[#C9D2E3] text-base text-left">Summit One Units for Rent</button>
                 <button onClick={handleListingClick(onViewFacilities)} className="text-[#C9D2E3] text-base text-left">Facilities Centre Units for Rent</button>
               </div>
             </div>
-            <a href="#faq" onClick={handleNavClick("faq")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">FAQ</a>
-            <a href="#contact" onClick={handleNavClick("contact")} className="text-[#E6EAF2] text-lg font-medium tracking-wide">Contact</a>
+            <a href="#vision" onClick={handleNavClick("vision")} className="text-[#E6EAF2] text-xl font-medium tracking-wide">Vision</a>
+            <a
+              href="/blog"
+              onClick={handleBlogNavClick}
+              className={`text-xl font-medium tracking-wide ${
+                currentPage.startsWith('/blog') ? 'text-[#C9D2E3]' : 'text-[#E6EAF2]'
+              }`}
+            >
+              Blog
+            </a>
+            <a href="#contact" onClick={handleNavClick("contact")} className="text-[#E6EAF2] text-xl font-medium tracking-wide">Contact</a>
           </nav>
         </div>
       )}
@@ -744,10 +688,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome, onViewSummit, onViewFac
 
 const ListingPage: React.FC<{
   propertyName: string;
+  pageH1: string;
+  buildingKey: 'summit-one' | 'facilities-centre';
   units: PropertyUnit[];
   onBack: () => void;
   onUnitClick: (unit: PropertyUnit) => void;
-}> = ({ propertyName, units, onBack, onUnitClick }) => {
+}> = ({ propertyName, pageH1, buildingKey, units, onBack, onUnitClick }) => {
   const [sortOption, setSortOption] = useState('default');
 
   useEffect(() => {
@@ -763,6 +709,24 @@ const ListingPage: React.FC<{
   };
 
   const sortedUnits = getSortedUnits();
+  const isSummitOne = propertyName === 'Summit One Tower';
+
+  const summitUnits = isSummitOne ? sortedUnits : [];
+
+  const summitGroups = isSummitOne
+    ? Array.from(
+      summitUnits.reduce((acc, u) => {
+        const key = u.floor_label || 'Uncategorized';
+        if (!acc.has(key)) acc.set(key, []);
+        acc.get(key)!.push(u);
+        return acc;
+      }, new Map<string, PropertyUnit[]>())
+    ).map(([floorLabel, unitsInGroup]) => ({
+      key: floorLabel,
+      title: floorLabel,
+      units: unitsInGroup
+    }))
+    : [];
 
   return (
     <div className="min-h-screen bg-white pt-20 pb-24">
@@ -774,9 +738,9 @@ const ListingPage: React.FC<{
 
         <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-8 border-b border-corporate-100 pb-6">
           <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-serif text-corporate-900 tracking-tight">{propertyName}</h1>
+            <h1 className="text-3xl md:text-4xl font-serif text-corporate-900 tracking-tight">{pageH1}</h1>
             <p className="text-corporate-500">
-              We found <span className="font-semibold text-corporate-900">{units.length}</span> units in our database
+              We found <span className="font-semibold text-corporate-900">{units.length}</span> units in our database. Click on the image below for details.
             </p>
           </div>
           <div className="mt-4 md:mt-0 relative">
@@ -790,43 +754,100 @@ const ListingPage: React.FC<{
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {sortedUnits.map((unit) => (
-            <div key={unit.id} className="group cursor-pointer flex flex-col" onClick={() => onUnitClick(unit)}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-corporate-100 mb-4">
-                <img src={unit.images[0]} alt={unit.unit_number} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                {/* Dynamic Status Badge */}
-                <div className={`absolute top-4 right-4 ${unit.status.toLowerCase().includes('available') ? 'bg-corporate-800' : 'bg-corporate-900'} text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest shadow-lg`}>
-                  {unit.status}
+        {isSummitOne ? (
+          <div className="space-y-14">
+            {summitGroups.map((group) => (
+              <section key={group.key} className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-corporate-900">{group.title}</h2>
+                  <div className="h-px bg-corporate-100 flex-1 ml-6"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+                  {group.units.map((unit) => (
+                    <div key={unit.id} className="group cursor-pointer flex flex-col" onClick={() => onUnitClick(unit)}>
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-corporate-100 mb-4">
+                        <img
+                          src={unit.images[0]}
+                          alt={buildUnitPhotoAlt(unit, 0, unit.images.length)}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className={`absolute top-4 right-4 ${unit.status.toLowerCase().includes('available') ? 'bg-corporate-800' : 'bg-corporate-900'} text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest shadow-lg`}>
+                          {unit.status}
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-lg font-bold text-corporate-900 leading-tight">Unit {unit.unit_number}</h3>
+                          <span className="text-lg font-bold text-corporate-900 whitespace-nowrap ml-4">₱{Number(unit.price).toLocaleString()}</span>
+                        </div>
+                        <p className="text-sm text-corporate-500 font-medium">{unit.headline}</p>
+                        <div className="h-px bg-corporate-100 w-full my-2"></div>
+                        <div className="flex items-center gap-6 text-sm text-corporate-600">
+                          <div className="flex items-center gap-2">
+                            <Maximize2 size={16} className="text-corporate-400" />
+                            <span>{unit.area} sqm</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Building2 size={16} className="text-corporate-400" />
+                            <span>{unit.condition || 'Fitted'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+            {sortedUnits.map((unit) => (
+              <div key={unit.id} className="group cursor-pointer flex flex-col" onClick={() => onUnitClick(unit)}>
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-corporate-100 mb-4">
+                  <img
+                    src={unit.images[0]}
+                    alt={buildUnitPhotoAlt(unit, 0, unit.images.length)}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Dynamic Status Badge */}
+                  <div className={`absolute top-4 right-4 ${unit.status.toLowerCase().includes('available') ? 'bg-corporate-800' : 'bg-corporate-900'} text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest shadow-lg`}>
+                    {unit.status}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-bold text-corporate-900 leading-tight">Unit {unit.unit_number}</h3>
+                    <span className="text-lg font-bold text-corporate-900 whitespace-nowrap ml-4">₱{Number(unit.price).toLocaleString()}</span>
+                  </div>
+                  <p className="text-sm text-corporate-500 font-medium">{unit.headline}</p>
+                  <div className="h-px bg-corporate-100 w-full my-2"></div>
+                  <div className="flex items-center gap-6 text-sm text-corporate-600">
+                    <div className="flex items-center gap-2">
+                      <Maximize2 size={16} className="text-corporate-400" />
+                      <span>{unit.area} sqm</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Building2 size={16} className="text-corporate-400" />
+                      <span>{unit.condition || 'Fitted'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-bold text-corporate-900 leading-tight">Unit {unit.unit_number}</h3>
-                  <span className="text-lg font-bold text-corporate-900 whitespace-nowrap ml-4">₱{Number(unit.price).toLocaleString()}</span>
-                </div>
-                <p className="text-sm text-corporate-500 font-medium">{unit.headline}</p>
-                <div className="h-px bg-corporate-100 w-full my-2"></div>
-                <div className="flex items-center gap-6 text-sm text-corporate-600">
-                  <div className="flex items-center gap-2">
-                    <Maximize2 size={16} className="text-corporate-400" />
-                    <span>{unit.area} sqm</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building2 size={16} className="text-corporate-400" />
-                    <span>{unit.condition || 'Fitted'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
+        <BuildingListingSeoSections buildingKey={buildingKey} />
       </div>
     </div>
   );
 };
 
-const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, status }) => {
+const UnitGallery: React.FC<{
+  images: string[];
+  status: string;
+  unit: Pick<PropertyUnit, 'unit_number' | 'building_name' | 'area'>;
+}> = ({ images, status, unit }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -845,11 +866,13 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
+  const galleryAlt = buildUnitPhotoAlt(unit, currentIndex, images.length);
+
   return (
     <>
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-corporate-200 shadow-sm border border-corporate-200 group">
         <div className="w-full h-full cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
-          <img src={images[currentIndex]} alt="View" className="w-full h-full object-cover" />
+          <img src={images[currentIndex]} alt={galleryAlt} className="w-full h-full object-cover" />
         </div>
         <div className="absolute bottom-6 left-6 bg-corporate-900/90 backdrop-blur-md px-4 py-2 rounded-lg z-10">
           <span className="text-white text-sm font-medium tracking-wide uppercase">{status}</span>
@@ -868,40 +891,47 @@ const UnitGallery: React.FC<{ images: string[], status: string }> = ({ images, s
       {isLightboxOpen && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4">
           <button onClick={() => setIsLightboxOpen(false)} className="absolute top-6 right-6 p-2 text-white/70 hover:text-white"><X size={32} /></button>
-          <img src={images[currentIndex]} className="max-h-[85vh] max-w-full object-contain" />
+          <img src={images[currentIndex]} alt={galleryAlt} className="max-h-[85vh] max-w-full object-contain" />
         </div>
       )}
     </>
   );
 };
 
-const UnitDetailPage: React.FC<{ 
-  unit: PropertyUnit; 
-  onBack: () => void; 
+const UnitDetailPage: React.FC<{
+  unit: PropertyUnit;
+  onBack: () => void;
   propertyName: string;
+  seoH1: string;
   onNavigate: (direction: 'prev' | 'next') => void;
   hasPrev: boolean;
   hasNext: boolean;
-}> = ({ unit, onBack, propertyName, onNavigate, hasPrev, hasNext }) => {
+}> = ({ unit, onBack, propertyName, seoH1, onNavigate, hasPrev, hasNext }) => {
   const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
-  
+
   useEffect(() => window.scrollTo({ top: 0, behavior: 'smooth' }), [unit.id]);
-  
+
   const handleEmailInquiryTrigger = () => {
+    capturePostHog('unit_inquiry_started', {
+      unit_id: unit.id,
+      unit_number: unit.unit_number,
+      building: unit.building_name,
+      source: 'unit_detail_email_cta',
+    });
     setIsLeadFormOpen(true);
   };
 
   const handleCallInquiry = () => {
-    posthog?.capture('unit_inquiry_attempt', { 
-      type: 'call', 
-      unit_number: unit.unit_number, 
-      building: unit.building_name 
+    capturePostHog('unit_inquiry_attempt', {
+      type: 'call',
+      unit_number: unit.unit_number,
+      building: unit.building_name
     });
     window.location.href = "tel:+639335383815";
   };
 
   const formattedDues = unit.dues
-    ? `₱${Number(unit.dues).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+    ? `₱${Number(unit.dues).toLocaleString(undefined, { minimumFractionDigits: 2 })} / mo`
     : "Included";
 
   return (
@@ -912,19 +942,19 @@ const UnitDetailPage: React.FC<{
             <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to {propertyName}
           </button>
-          
+
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <button 
-                onClick={() => onNavigate('prev')} 
+              <button
+                onClick={() => onNavigate('prev')}
                 disabled={!hasPrev}
                 className={`p-2 rounded-full border border-corporate-200 transition-all ${!hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-corporate-100 hover:border-corporate-300 text-corporate-700'}`}
                 title="Previous Unit"
               >
                 <ChevronLeft size={18} />
               </button>
-              <button 
-                onClick={() => onNavigate('next')} 
+              <button
+                onClick={() => onNavigate('next')}
                 disabled={!hasNext}
                 className={`p-2 rounded-full border border-corporate-200 transition-all ${!hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-corporate-100 hover:border-corporate-300 text-corporate-700'}`}
                 title="Next Unit"
@@ -937,25 +967,30 @@ const UnitDetailPage: React.FC<{
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-8 space-y-8">
-            <UnitGallery images={unit.images} status={unit.status} />
+            <UnitGallery images={unit.images} status={unit.status} unit={unit} />
             <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-corporate-200 pb-8 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-3 text-corporate-500 text-sm font-medium uppercase tracking-widest">
                   <MapPin size={16} />
                   <span>{unit.building_name}</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-serif text-corporate-900 leading-tight">{unit.headline}</h1>
+                <h1 className="text-3xl md:text-4xl font-serif text-corporate-900 leading-tight">{seoH1}</h1>
+                <h2 className="text-xl md:text-2xl font-serif text-corporate-900 leading-tight mt-2">{unit.headline}</h2>
                 <p className="text-xl text-corporate-600 font-light">Unit {unit.unit_number}</p>
               </div>
-              <div className="text-left md:text-right">
-                <p className="text-3xl font-bold text-corporate-900">₱{Number(unit.price).toLocaleString()} / mo</p>
+              <div className="text-left md:text-right flex-shrink-0">
+                <p className="text-3xl font-bold text-corporate-900 whitespace-nowrap">₱{Number(unit.price).toLocaleString()} / mo</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">About this Unit</h3>
-                <p className="text-lg text-corporate-600 leading-relaxed">{unit.narrative}</p>
+                <div className="space-y-4">
+                  {unit.narrative.split('\n').filter(p => p.trim()).map((p, i) => (
+                    <p key={i} className="text-lg text-corporate-600 leading-relaxed">{p.trim()}</p>
+                  ))}
+                </div>
               </div>
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-corporate-900 uppercase tracking-widest">Live Facts</h3>
@@ -964,8 +999,7 @@ const UnitDetailPage: React.FC<{
                     { label: "Floor Area", value: `${unit.area} sqm` },
                     { label: "Assoc. Dues", value: formattedDues },
                     { label: "Availability", value: unit.available_date || "Immediate" },
-                    { label: "Condition", value: unit.condition || "Fitted" },
-                    ...unit.specs
+                    { label: "Condition", value: unit.condition || "Bare" }
                   ].map((spec, idx) => (
                     <div key={idx} className="flex justify-between py-3 border-b border-corporate-200 text-base">
                       <span className="text-corporate-500 font-medium">{spec.label}</span>
@@ -1004,75 +1038,270 @@ const UnitDetailPage: React.FC<{
   );
 };
 
+// --- Blog Components ---
+
+interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content_markdown: string;
+  cover_image_url: string | null;
+  cover_focus_x?: number;
+  cover_focus_y?: number;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const BlogIndexPage: React.FC = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching blog posts:', error);
+      } else {
+        setPosts(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white pt-20 pb-24">
+        <div className="max-w-5xl mx-auto px-6 pt-12">
+          <p className="text-corporate-500 text-center">Loading posts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white pt-20 pb-24">
+      <div className="max-w-5xl mx-auto px-6 pt-12">
+        <div className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-serif text-corporate-900 mb-4">Blog</h1>
+          <p className="text-lg text-corporate-600">Insights and updates on commercial real estate in Mandaluyong City.</p>
+        </div>
+
+        {posts.length === 0 ? (
+          <p className="text-corporate-500">No posts published yet.</p>
+        ) : (
+          <div className="space-y-12">
+            {posts.map((post) => (
+              <article
+                key={post.id}
+                onClick={() => navigate(`/blog/${post.slug}`)}
+                className="group cursor-pointer border-b border-corporate-100 pb-12 last:border-0"
+              >
+                {post.cover_image_url && (
+                  <div className="aspect-[2/1] w-full overflow-hidden rounded-xl bg-corporate-100 mb-6">
+                    <img
+                      src={post.cover_image_url}
+                      alt={`Cover image: ${post.title}`}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      style={{
+                        objectPosition: `${post.cover_focus_x ?? 50}% ${post.cover_focus_y ?? 50}%`,
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {post.published_at && (
+                    <time className="text-xs font-bold uppercase tracking-widest text-corporate-400">
+                      {new Date(post.published_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </time>
+                  )}
+                  <h2 className="text-2xl md:text-3xl font-serif text-corporate-900 group-hover:text-corporate-700 transition-colors">
+                    {post.title}
+                  </h2>
+                  {post.excerpt && (
+                    <p className="text-lg text-corporate-600 leading-relaxed">{post.excerpt}</p>
+                  )}
+                  <p className="text-sm font-medium text-corporate-500 uppercase tracking-wide">
+                    Read More →
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const BlogPostPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (!slug) return;
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single();
+
+      if (error || !data) {
+        console.error('Error fetching post:', error);
+        setPost(null);
+      } else {
+        setPost(data);
+      }
+      setLoading(false);
+    };
+
+    fetchPost();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white pt-20 pb-24">
+        <div className="max-w-3xl mx-auto px-6 pt-12">
+          <p className="text-corporate-500 text-center">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return <Navigate to="/blog" />;
+  }
+
+  const seoData = buildBlogPostSEO({
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt || undefined,
+    coverImageUrl: post.cover_image_url || undefined,
+  });
+
+  return (
+    <>
+      <SEOHead {...seoData} />
+      <div className="min-h-screen bg-white pt-20 pb-24">
+        <div className="max-w-3xl mx-auto px-6 pt-12">
+          <button
+            onClick={() => navigate('/blog')}
+            className="flex items-center text-corporate-500 hover:text-corporate-900 transition-colors mb-8 text-sm font-medium tracking-wide uppercase group"
+          >
+            <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to Blog
+          </button>
+
+          <article className="space-y-8">
+            {post.published_at && (
+              <time className="block text-xs font-bold uppercase tracking-widest text-corporate-400">
+                {new Date(post.published_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+            )}
+
+            <h1 className="text-4xl md:text-5xl font-serif text-corporate-900 leading-tight">
+              {post.title}
+            </h1>
+
+            {post.excerpt && (
+              <p className="text-xl text-corporate-600 leading-relaxed italic border-l-4 border-corporate-200 pl-6">
+                {post.excerpt}
+              </p>
+            )}
+
+            {post.cover_image_url && (
+              <div className="aspect-[2/1] w-full overflow-hidden rounded-xl bg-corporate-100">
+                <img
+                  src={post.cover_image_url}
+                  alt={`Cover image: ${post.title}`}
+                  className="w-full h-full object-cover"
+                  style={{
+                    objectPosition: `${post.cover_focus_x ?? 50}% ${post.cover_focus_y ?? 50}%`,
+                  }}
+                />
+              </div>
+            )}
+
+            <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-corporate-900 prose-p:text-corporate-700 prose-p:leading-relaxed prose-a:text-corporate-800 prose-a:underline prose-a:decoration-corporate-300 hover:prose-a:text-corporate-900 prose-strong:text-corporate-900 prose-code:text-corporate-800 prose-code:bg-corporate-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {post.content_markdown}
+              </ReactMarkdown>
+            </div>
+          </article>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // --- Landing View Components ---
 
-const Hero: React.FC = () => (
-  <section className="min-h-[90vh] flex flex-col justify-center px-6 bg-corporate-50 pt-20 border-b border-corporate-200">
+const Hero: React.FC = () => {
+  const { h1 } = getSEOMetadata('home');
+  return (
+  <section
+    id="hero"
+    className="min-h-[90vh] flex flex-col justify-center px-6 bg-corporate-50 pt-20 border-b border-corporate-200 scroll-mt-20"
+  >
     <div className="max-w-5xl mx-auto w-full pt-16 pb-20 md:pt-20 md:pb-28">
       <div className="space-y-12">
         <div className="space-y-6">
-          <h1 className="font-serif text-5xl md:text-7xl text-corporate-900 leading-[1.05] tracking-tight">Facilities, Incorporated</h1>
-          <p className="text-sm md:text-base text-corporate-500 font-medium tracking-[0.15em] uppercase">Commercial Property Operations and Asset Management</p>
+          <h1 className="font-serif text-5xl md:text-7xl text-corporate-900 leading-[1.05] tracking-tight">{h1}</h1>
+          <p className="text-sm md:text-base text-corporate-500 font-medium tracking-[0.15em] uppercase">Real Estate Development</p>
           <div className="w-24 h-px bg-corporate-300"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           <div className="space-y-8">
             <p className="text-xl md:text-2xl text-corporate-800 leading-relaxed font-serif">
-              Facilities, Inc. is a premier, family-owned asset management and operating company with a legacy of excellence dating back to 1960. With foundations rooted in our flagship Mandaluyong developments, we are a Philippine-centric firm with the proven expertise to manage and scale commercial operations nationwide.
+              Founded in 1960, Facilities Inc. has evolved from insurance and trading into a family-owned real estate developer, creating landmark properties across Metro Manila for over six decades.
+            </p>
+            <p className="text-lg text-corporate-600 leading-relaxed">
+              Our deep understanding of Philippine business landscapes has guided our evolution into one of the Philippines' respected property developers.
             </p>
             <p className="text-lg text-corporate-600 leading-relaxed">
               Currently overseeing key assets within Summit One Tower and Facilities Centre, our operational footprint continues to grow as we expand our management standards to strategic locations beyond Metro Manila.
             </p>
             <p className="text-lg font-serif italic text-corporate-400 mt-12">Quality has no substitute.</p>
             <div className="pt-8">
-              <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }} className="inline-block px-8 py-4 bg-transparent border border-corporate-300 text-corporate-900 text-sm font-medium hover:border-corporate-900 transition-colors tracking-wide">Make an Inquiry</a>
+              <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }} className="inline-block px-10 py-5 bg-corporate-900 border-2 border-corporate-900 text-white text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-transparent hover:text-corporate-900">Make an Inquiry</a>
             </div>
           </div>
           <div className="relative h-full min-h-[400px] w-full bg-corporate-100 hidden md:block">
-            <img src="/images/facilities-b&w.jpeg" alt="Summit One Tower Shaw Blvd" className="absolute inset-0 w-full h-full object-cover object-top" />
+            <img
+              src="/images/facilities-b&w.jpeg"
+              alt="Black-and-white view of Shaw Boulevard and the Summit One Tower area, Mandaluyong City"
+              className="absolute inset-0 w-full h-full object-cover object-top"
+            />
           </div>
         </div>
       </div>
     </div>
   </section>
-);
-
-const WhyUs: React.FC = () => (
-  <Section id="why" className="bg-white">
-    <div className="border-b border-corporate-200 mb-16 pb-4">
-      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Why Facilities, Inc.</h2>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-16">
-      {whyItems.map((item, idx) => (
-        <div key={idx} className="space-y-4">
-          <h3 className="text-base font-bold text-corporate-900 tracking-widest uppercase opacity-90">{item.title}</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed">{item.description}</p>
-        </div>
-      ))}
-    </div>
-  </Section>
-);
-
-const Operations: React.FC = () => (
-  <Section id="operate" className="bg-corporate-50 border-t border-corporate-200">
-    <div className="border-b border-corporate-200 mb-16 pb-4">
-      <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">How We Operate</h2>
-    </div>
-    <div className="space-y-16 md:space-y-24">
-      {operations.map((op, idx) => (
-        <div key={idx} className="flex flex-col md:flex-row md:items-stretch">
-          <div className="w-full md:w-5/12 pb-6 md:pb-0 md:pr-12">
-            <span className="block text-6xl md:text-7xl font-serif text-corporate-200 leading-none mb-6 -mt-2">{op.step}</span>
-            <h3 className="text-2xl md:text-3xl font-serif text-corporate-800 leading-tight">{op.title}</h3>
-          </div>
-          <div className="w-full md:w-7/12 md:border-l border-corporate-200 md:pl-12">
-            <p className="text-lg text-corporate-600 leading-relaxed">{op.description}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </Section>
-);
+  );
+};
 
 interface AssetsProps {
   onViewSummit: () => void;
@@ -1085,62 +1314,135 @@ const Assets: React.FC<AssetsProps> = ({ onViewSummit, onViewFacilities }) => (
       <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Projects</h2>
     </div>
     <div className="space-y-24 md:space-y-32">
-      <figure className="flex flex-col gap-8 group cursor-pointer" onClick={onViewSummit}>
-        <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
-          <img src="/images/summit-one-tower.png" alt="Summit One" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-          <div className="absolute inset-0 group-hover:bg-corporate-900/10 transition-colors flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all">View Available Units</span>
-          </div>
-        </div>
-        <figcaption className="space-y-2">
-          <h3 className="text-3xl font-serif text-corporate-900">Summit One Tower</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed">The tallest landmark on Shaw Boulevard, offering premier office spaces with breathtaking views of the Wack Wack Golf course. This 46-storey commercial icon is engineered for high-performance operations, featuring 100% backup power and full fiber-optic connectivity.</p>
-        </figcaption>
-      </figure>
-
-      <figure className="flex flex-col gap-8 group cursor-pointer" onClick={onViewFacilities}>
-        <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
-          <img src="/images/facilities-centre.png" alt="Facilities Centre" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-          <div className="absolute inset-0 group-hover:bg-corporate-900/10 transition-colors flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-corporate-900 px-6 py-3 text-sm font-medium tracking-widest uppercase transform translate-y-4 group-hover:translate-y-0 transition-all">View Available Units</span>
-          </div>
-        </div>
-        <figcaption className="space-y-2">
-          <h3 className="text-3xl font-serif text-corporate-900">Facilities Centre</h3>
-          <p className="text-lg text-corporate-600 leading-relaxed"> A premier commercial hub featuring the longest street frontage along the Shaw Boulevard corridor. This PEZA-accredited complex is home to anchor banking tenants and major corporate offices, providing exceptional accessibility and high-visibility ground-floor retail units.</p>
-        </figcaption>
-      </figure>
-
       <figure className="flex flex-col gap-8 group">
         <div className="w-full bg-corporate-100 overflow-hidden relative aspect-[16/9]">
-          <img src="https://images.unsplash.com/photo-1592595896551-12b371d546d5?q=80&w=1600&auto=format&fit=crop" alt="Palladium" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+          <img
+            src="/images/palladium.jpg"
+            alt="Palladium Subdivision residential development — landscaped lots and homes in Mandaluyong"
+            className="w-full h-full object-cover object-right-bottom grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105"
+          />
         </div>
         <figcaption className="space-y-2">
-          <h3 className="text-3xl font-serif text-corporate-900">Palladium Village</h3>
+          <h3 className="text-3xl font-serif text-corporate-900">Palladium Subdivision</h3>
           <p className="text-lg text-corporate-600 leading-relaxed">A prestigious 76-lot residential landmark known for its exclusivity and innovation. Historically significant as the first development in the Philippines to feature an underground utility wiring system, this community achieved a record-breaking total sell-out within just six months of its launch.</p>
         </figcaption>
       </figure>
+
+      <figure className="flex flex-col gap-8">
+        <button
+          type="button"
+          onClick={onViewFacilities}
+          aria-label="View Facilities Centre units for rent"
+          className="group w-full text-left bg-corporate-100 overflow-hidden relative aspect-[16/9] rounded-none focus:outline-none focus-visible:ring-4 focus-visible:ring-corporate-900/20"
+        >
+          <img
+            src="/images/facilities-centre.png"
+            alt="Facilities Centre — PEZA-accredited commercial and office building on Shaw Boulevard, Mandaluyong"
+            className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 flex items-end md:items-center justify-start md:justify-center p-5 md:p-0">
+            <span className="bg-white/95 text-corporate-900 px-5 py-3 text-xs md:text-sm font-bold tracking-widest uppercase shadow-lg border border-white/50 transition-all md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+              View available offices
+            </span>
+          </div>
+        </button>
+        <figcaption className="space-y-4">
+          <h3 className="text-3xl font-serif text-corporate-900">Facilities Centre</h3>
+          <p className="sr-only">
+            Office space for rent in San Juan, Metro Manila at Facilities Centre, along Shaw Boulevard, suitable for retail and office tenants.
+          </p>
+          <p className="text-lg text-corporate-600 leading-relaxed"> Facilities Centre is a premier commercial hub featuring the longest street frontage along the Shaw Boulevard corridor. This PEZA-accredited complex is home to anchor banking tenants and corporate offices, offering exceptional accessibility, ample parking, and high-visibility ground-floor retail units.</p>
+          <div>
+            <button
+              type="button"
+              onClick={onViewFacilities}
+              className="inline-flex w-full sm:w-auto items-center justify-center px-7 py-3.5 bg-corporate-900 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-corporate-800 transition-colors"
+            >
+              View details
+            </button>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure className="flex flex-col gap-8">
+        <button
+          type="button"
+          onClick={onViewSummit}
+          aria-label="View Summit One Tower units for rent"
+          className="group w-full text-left bg-corporate-100 overflow-hidden relative aspect-[16/9] rounded-none focus:outline-none focus-visible:ring-4 focus-visible:ring-corporate-900/20"
+        >
+          <img
+            src="/images/summit-one-tower.png"
+            alt="Summit One Tower exterior — 46-storey office building on Shaw Boulevard, Mandaluyong"
+            className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 flex items-end md:items-center justify-start md:justify-center p-5 md:p-0">
+            <span className="bg-white/95 text-corporate-900 px-5 py-3 text-xs md:text-sm font-bold tracking-widest uppercase shadow-lg border border-white/50 transition-all md:opacity-0 md:group-hover:opacity-100 md:translate-y-3 md:group-hover:translate-y-0">
+              View available offices
+            </span>
+          </div>
+        </button>
+        <figcaption className="space-y-4">
+          <h3 className="text-3xl font-serif text-corporate-900">Summit One Tower</h3>
+          <p className="sr-only">
+            Office space for rent in Mandaluyong near Ortigas and Makati at Summit One Tower, suitable for companies needing a central Metro Manila location.
+          </p>
+          <p className="text-lg text-corporate-600 leading-relaxed">The tallest landmark on Shaw Boulevard, this 46-storey commercial icon offers premier office spaces with breathtaking views of the Wack Wack Golf and Country Club and the Manila Bay sunset. PEZA-accredited for eligible tenants, the building features full fiber-optic connectivity and 100% backup power to support uninterrupted operations. Strategically located with excellent accessibility, it delivers both prestige and performance for modern businesses.</p>
+          <div>
+            <button
+              type="button"
+              onClick={onViewSummit}
+              className="inline-flex w-full sm:w-auto items-center justify-center px-7 py-3.5 bg-corporate-900 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-corporate-800 transition-colors"
+            >
+              View details
+            </button>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+    <div className="mt-16">
+      <p className="mt-3 text-sm text-corporate-600">
+        Looking for office space?{' '}
+        <a
+          href="/office-space-mandaluyong"
+          className="text-corporate-900 font-medium underline decoration-corporate-300 underline-offset-4 hover:decoration-corporate-900"
+        >
+          Office space for rent in Mandaluyong
+        </a>
+        .
+      </p>
     </div>
   </Section>
 );
 
-const FAQ: React.FC = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  return (
-    <Section id="faq" className="bg-corporate-50 border-t border-corporate-200" narrow>
-      <div className="border-b border-corporate-200 pb-4"><h2 className="text-3xl md:text-4xl font-serif text-corporate-900">FAQ</h2></div>
-      <div className="">{faqs.map((faq, idx) => (
-        <div key={idx} className="border-b border-corporate-200">
-          <button onClick={() => setOpenIndex(openIndex === idx ? null : idx)} className="w-full flex items-start justify-between py-6 group">
-            <span className="text-xl text-corporate-700 pr-8 leading-relaxed group-hover:text-corporate-900 transition-colors">{faq.question}</span>
-            <span className="text-corporate-400 mt-1">{openIndex === idx ? <Minus size={20} /> : <Plus size={20} />}</span>
-          </button>
-          {openIndex === idx && <div className="pb-6 pr-8 text-corporate-500 text-base leading-relaxed">{faq.answer}</div>}
+const Vision: React.FC = () => (
+  <Section id="vision" className="relative z-10 !bg-transparent border-t border-corporate-200">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+      <div className="lg:col-span-12">
+        <div className="border-b border-corporate-200 mb-10 pb-1">
+          <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Future Vision: The Next Decade</h2>
         </div>
-      ))}</div>
-    </Section>
-  );
-};
+        <p className="text-xl text-corporate-800 font-serif italic leading-[1.4]">Facilities Inc. is strategically positioned for growth through:</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 pt-16">
+          {[
+            "Joint venture opportunities in real estate development",
+            "Development of small and medium-rise commercial centers",
+            "Residential community development nationwide"
+          ].map((item, idx) => (
+            <div key={idx} className="relative p-12 bg-white border border-corporate-50 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.12)] transition-all duration-500 flex flex-col justify-center items-center min-h-[220px] group">
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-[#181852] text-white rounded-full flex items-center justify-center shadow-lg border-[6px] border-white transition-all duration-300">
+                <span className="text-3xl font-serif font-bold tracking-tighter">0{idx + 1}</span>
+              </div>
+              <p className="text-xl text-corporate-900 leading-[1.5] font-serif text-center">{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </Section>
+);
 
 const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
   const [isSending, setIsSending] = useState(false);
@@ -1175,17 +1477,25 @@ const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
         fetch("/", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: encode({ 
+          body: encode({
             "form-name": "leads",
             "full_name": formData.name,
             "email": formData.email,
             "phone": formData.phone,
             "unit_number": "General Inquiry",
-            "message": formData.message 
+            "message": formData.message
           })
         }).catch(err => console.error("Netlify Submission Error:", err));
 
-        (window as any).posthog?.capture('lead_form_submitted');
+        capturePostHog('lead_form_submitted', {
+          inquiry_type: 'general',
+          source: 'contact_section',
+          unit_number: 'General Inquiry',
+        });
+        capturePostHog('general_inquiry_submitted', {
+          inquiry_type: 'general',
+          source: 'contact_section',
+        });
         alert('Message Sent!');
         setFormData({ name: '', email: '', phone: '', message: '' });
         setIsAgreed(false);
@@ -1204,7 +1514,7 @@ const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
   };
 
   const handleDirectClick = (channel: 'email' | 'phone') => {
-    posthog?.capture('direct_contact_click', { channel });
+    capturePostHog('direct_contact_click', { channel });
   };
 
   const handleLinkClick = (e: React.MouseEvent) => {
@@ -1214,110 +1524,120 @@ const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
   };
 
   return (
-    <Section id="contact" className="bg-white border-t border-corporate-200">
-      <div className="border-b border-corporate-200 mb-16 pb-4"><h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Contact</h2></div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        <div className="lg:col-span-8 lg:col-start-5 space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <input 
-              type="text" 
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Full Name" 
-              required 
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" 
-            />
-            <input 
-              type="email" 
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Email" 
-              required 
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" 
-            />
+    <Section id="contact" className="!bg-transparent border-t border-corporate-200 relative z-10">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+        <div className="lg:col-span-12">
+          {/* Grouped Heading for perfect proximity */}
+          <div className="border-b border-corporate-900 mb-8 pb-1">
+            <h2 className="text-3xl md:text-4xl font-serif text-corporate-900">Contact</h2>
           </div>
-          <div className="grid grid-cols-1 gap-12">
-            <input 
-              type="tel" 
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              placeholder="Phone Number (Optional)" 
-              className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300" 
-            />
-          </div>
-          <textarea 
-            name="message"
-            value={formData.message}
-            onChange={handleInputChange}
-            placeholder="Your Inquiry" 
-            required 
-            rows={6} 
-            className="w-full py-3 bg-transparent border-b border-corporate-200 focus:border-corporate-900 outline-none placeholder-corporate-300 resize-none" 
-          />
 
-          {/* Legal Consent Checkbox */}
-          <div className="pt-2 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="flex items-center h-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 pt-8">
+            {/* Info Sidebar */}
+            <div className="lg:col-span-4 lg:col-start-1 space-y-12">
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-bold text-corporate-500 uppercase tracking-widest">Office</h3>
+                <p className="text-2xl text-corporate-900 font-serif leading-tight">23/F Summit One Tower<br />Mandaluyong City, Philippines</p>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-bold text-corporate-500 uppercase tracking-widest">Email</h3>
+                <a
+                  href="mailto:mercy.laurenciano@gmail.com"
+                  onClick={() => handleDirectClick('email')}
+                  className="text-2xl text-corporate-900 font-serif underline decoration-corporate-400 block hover:text-black transition-colors"
+                >
+                  mercy.laurenciano@gmail.com
+                </a>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-bold text-corporate-500 uppercase tracking-widest">Leasing Hotline</h3>
+                <a
+                  href="tel:+639335383815"
+                  onClick={() => handleDirectClick('phone')}
+                  className="text-2xl text-corporate-900 font-serif underline decoration-corporate-400 block hover:text-black transition-colors"
+                >
+                  +63 933 538 3815
+                </a>
+              </div>
+            </div>
+
+            {/* Form Inputs with Bento Box Styling */}
+            <div className="lg:col-span-8 lg:col-start-5 space-y-12 p-8 md:p-12 bg-white/90 backdrop-blur-sm border border-corporate-100 rounded-xl shadow-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <input
-                  id="legal-consent-contact"
-                  name="legal-consent-contact"
-                  type="checkbox"
-                  checked={isAgreed}
-                  onChange={(e) => {
-                    setIsAgreed(e.target.checked);
-                    if (e.target.checked) setShowError(false);
-                  }}
-                  tabIndex={0}
-                  className="h-4 w-4 rounded border-corporate-300 text-corporate-900 focus:ring-corporate-900 cursor-pointer"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Full Name"
+                  required
+                  className="w-full py-3 bg-transparent border-b border-corporate-400 focus:border-corporate-900 outline-none placeholder-corporate-500 text-corporate-900 font-medium"
+                />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Email"
+                  required
+                  className="w-full py-3 bg-transparent border-b border-corporate-400 focus:border-corporate-900 outline-none placeholder-corporate-500 text-corporate-900 font-medium"
                 />
               </div>
-              <label htmlFor="legal-consent-contact" className="text-xs text-corporate-600 leading-normal cursor-pointer select-none">
-                I agree to the <span onClick={handleLinkClick} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Privacy Policy</span> and <span onClick={handleLinkClick} className="text-corporate-700 font-medium underline decoration-corporate-200 cursor-pointer hover:text-corporate-900 transition-colors">Terms of Service</span>.
-              </label>
-            </div>
-            {showError && !isAgreed && (
-              <p className="text-red-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2">
-                <AlertCircle size={14} /> Please agree to the terms to continue.
-              </p>
-            )}
-          </div>
+              <div className="grid grid-cols-1 gap-12">
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Phone Number (Optional)"
+                  className="w-full py-3 bg-transparent border-b border-corporate-400 focus:border-corporate-900 outline-none placeholder-corporate-500 text-corporate-900 font-medium"
+                />
+              </div>
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleInputChange}
+                placeholder="Your Inquiry"
+                required
+                rows={6}
+                className="w-full py-3 bg-transparent border-b border-corporate-400 focus:border-corporate-900 outline-none placeholder-corporate-500 text-corporate-900 font-medium resize-none"
+              />
 
-          <button 
-            type="submit"
-            disabled={isSending || !isAgreed} 
-            className={`px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all border disabled:opacity-50 ${!isAgreed ? 'bg-corporate-50 border-corporate-200 text-corporate-300 cursor-not-allowed' : 'bg-transparent border-corporate-300 text-corporate-900 hover:border-corporate-900'}`}
-          >
-            {isSending ? 'Sending...' : 'Submit Inquiry'}
-          </button>
-        </div>
-        <div className="lg:col-span-4 lg:col-start-1 lg:row-start-1 space-y-8">
-          <div className="space-y-2">
-            <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Office</h3>
-            <p className="text-lg text-corporate-700 font-serif">23/F Summit One Tower<br />Mandaluyong City, Philippines</p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Email</h3>
-            <a 
-              href="mailto:mercy.laurenciano@gmail.com" 
-              onClick={() => handleDirectClick('email')}
-              className="text-lg text-corporate-700 font-serif underline decoration-corporate-200"
-            >
-              mercy.laurenciano@gmail.com
-            </a>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xs font-bold text-corporate-400 uppercase tracking-widest">Leasing Hotline</h3>
-            <a 
-              href="tel:+639335383815" 
-              onClick={() => handleDirectClick('phone')}
-              className="text-lg text-corporate-700 font-serif underline decoration-corporate-200"
-            >
-              +63 933 538 3815
-            </a>
+              <div className="space-y-6">
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="legal-consent-contact"
+                      name="legal-consent-contact"
+                      type="checkbox"
+                      checked={isAgreed}
+                      onChange={(e) => {
+                        setIsAgreed(e.target.checked);
+                        if (e.target.checked) setShowError(false);
+                      }}
+                      tabIndex={0}
+                      className="h-4 w-4 rounded border-corporate-400 text-corporate-900 focus:ring-corporate-900 cursor-pointer"
+                    />
+                  </div>
+                  <label htmlFor="legal-consent-contact" className="text-sm text-corporate-800 leading-normal cursor-pointer select-none font-medium">
+                    I agree to the <span onClick={handleLinkClick} className="text-corporate-900 font-bold underline decoration-corporate-300 cursor-pointer hover:text-black transition-colors">Privacy Policy</span> and <span onClick={handleLinkClick} className="text-corporate-900 font-bold underline decoration-corporate-300 cursor-pointer hover:text-black transition-colors">Terms of Service</span>.
+                  </label>
+                </div>
+                {showError && !isAgreed && (
+                  <p className="text-red-700 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2">
+                    <AlertCircle size={14} /> Please agree to the terms to continue.
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSending || !isAgreed}
+                className={`px-10 py-5 text-[11px] font-bold uppercase tracking-widest transition-all border-2 disabled:opacity-50 ${!isAgreed ? 'bg-corporate-50 border-corporate-200 text-corporate-300 cursor-not-allowed' : 'bg-corporate-900 border-corporate-900 text-white hover:bg-transparent hover:text-corporate-900'}`}
+              >
+                {isSending ? 'Sending...' : 'Submit Inquiry'}
+              </button>
+            </div>
           </div>
         </div>
       </form>
@@ -1327,14 +1647,14 @@ const Contact: React.FC<{ onOpenLegal: () => void }> = ({ onOpenLegal }) => {
 
 const Footer: React.FC<{ onAdminClick: () => void; onShowGuide: () => void }> = ({ onAdminClick, onShowGuide }) => (
   <footer className="bg-[#181852] text-[#C9D2E3] py-12">
-    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 opacity-80 text-xs tracking-widest uppercase">
+    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 opacity-80 text-sm tracking-widest uppercase">
       <div className="flex flex-col md:flex-row gap-6 items-center">
-        <button
-          onClick={onAdminClick}
+        <a
+          href="/login"
           className="hover:text-white transition-colors text-left"
         >
           &copy; {new Date().getFullYear()} Facilities, Incorporated.
-        </button>
+        </a>
         <button onClick={onShowGuide} className="flex items-center gap-2 hover:text-white transition-colors group">
           <HelpCircle size={14} className="group-hover:animate-pulse" />
           Renter's Guide & Product Report
@@ -1345,25 +1665,31 @@ const Footer: React.FC<{ onAdminClick: () => void; onShowGuide: () => void }> = 
   </footer>
 );
 
+
 export default function App() {
-  const [viewState, setViewState] = useState<ViewState>({ type: 'landing' });
+  const navigate = useNavigate();
+  const location = useLocation();
   const [liveUnits, setLiveUnits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [showGuide, setShowGuide] = useState(false);
-  const [guideInitialTab, setGuideInitialTab] = useState<'product' | 'legal'>( 'product');
+  const [guideInitialTab, setGuideInitialTab] = useState<'product' | 'legal'>('product');
 
   const fetchUnits = useCallback(async () => {
     const { data, error } = await supabase
       .from('units')
-      .select('*')
-      .order('unit_number', { ascending: true });
+      .select('*, buildings:building_id(building_key, building_name)')
+      .order('building_id', { ascending: true })
+      .order('floor_sort', { ascending: true })
+      .order('floor_label', { ascending: true })
+      .order('unit_sort', { ascending: true, nullsFirst: false })
+      .order('unit_number', { ascending: true })
+      .order('id', { ascending: true });
     if (error) console.error("Database Error:", error);
     else setLiveUnits(data || []);
     setLoading(false);
   }, []);
 
-  // Set up global triggers for opening the resource center
   useEffect(() => {
     (window as any).openGuideAt = (tab: 'product' | 'legal') => {
       setGuideInitialTab(tab);
@@ -1371,65 +1697,87 @@ export default function App() {
     };
   }, []);
 
-  // Finalized Authentication and Recovery Listener
   useEffect(() => {
     fetchUnits();
-    
-    // Dual-Layer Detection: Phase 1 - Mount check for URL recovery parameters
-    // This ensures refreshes during recovery sessions correctly persist the Reset Password view.
+
     if (window.location.hash.includes('type=recovery')) {
-      setViewState({ type: 'reset-password' });
+      navigate('/reset-password');
     }
-    
-    // Phase 2 - Real-time Supabase Auth State Change Listener
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Specifically trigger the Reset Password view for recovery flows
       if (event === 'PASSWORD_RECOVERY') {
-        setViewState({ type: 'reset-password' });
+        navigate('/reset-password');
       } else if (event === 'SIGNED_IN' && session) {
         setUser(session.user);
-        // If they just signed in and aren't in recovery, they might belong in admin view
-        // But we rely on LoginPage's callback for standard manual login
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
     });
 
-    // Cleanup: Unsubscribe to prevent memory leaks and redundant state updates
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchUnits]);
+  }, [fetchUnits, navigate]);
 
-  const handleUnitClick = (u: PropertyUnit, source: string) => {
-    posthog?.capture('unit_viewed', { unit_id: u.id, unit_number: u.unit_number, property: source });
-    setViewState({ type: 'detail', unit: u, source: source });
-  };
+  // Deep links like /#contact: (1) browser scrolls before React paints sections; (2) initial load shows a
+  // full-screen loader so #contact is not in the DOM until `loading` is false. Scroll after content mounts.
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+
+    const scrollToHash = () => {
+      const id = window.location.hash.replace(/^#/, '');
+      if (!id) return;
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.addEventListener('hashchange', scrollToHash);
+
+    if (loading) {
+      return () => window.removeEventListener('hashchange', scrollToHash);
+    }
+
+    const timers = [0, 50, 150, 400, 800].map((ms) => window.setTimeout(scrollToHash, ms));
+
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('hashchange', scrollToHash);
+    };
+  }, [location.pathname, location.hash, loading]);
 
   const toggleGuide = (show: boolean, tab: 'product' | 'legal' = 'product') => {
     if (show) {
-      posthog?.capture('user_guide_opened', { tab });
+      capturePostHog('user_guide_opened', { tab });
       setGuideInitialTab(tab);
     }
     setShowGuide(show);
   };
 
-  const getProcessedUnits = (building: string): PropertyUnit[] => {
+  const buildingKeyToName: Record<string, string> = {
+    'summit-one': 'Summit One Tower',
+    'facilities-centre': 'Facilities Centre'
+  };
+
+  const getProcessedUnits = (buildingKey: string): PropertyUnit[] => {
     return liveUnits
-      .filter(u => u.building_name === building)
+      .filter(u => (u.buildings?.building_key === buildingKey || u.building_name === buildingKeyToName[buildingKey]) && u.contract_length !== 0) // HIDE units with 0 contract length
       .map(u => {
         const localMeta = marketingData[u.unit_number] || {};
         const headline = u.headline || localMeta.headline || DEFAULT_HEADLINE;
         const narrative = u.narrative || localMeta.narrative || DEFAULT_NARRATIVE;
-        const images = (u.image_urls && u.image_urls.length > 0) 
-          ? u.image_urls 
+        const images = (u.image_urls && u.image_urls.length > 0)
+          ? u.image_urls
           : (localMeta.images || [DEFAULT_IMAGE]);
         const specs = localMeta.specs || [];
 
         return {
           id: u.id,
           unit_number: u.unit_number,
-          building_name: u.building_name,
+          url_slug: (u.url_slug as string) || slugifyUnitSegment(String(u.unit_number)),
+          building_name: u.buildings?.building_name || u.building_name,
+          building_key: u.buildings?.building_key,
+          floor_label: u.floor_label || undefined,
+          floor_sort: typeof u.floor_sort === 'number' ? u.floor_sort : (u.floor_sort ? Number(u.floor_sort) : undefined),
+          unit_sort: typeof u.unit_sort === 'number' ? u.unit_sort : (u.unit_sort ? Number(u.unit_sort) : undefined),
           price: u.monthly_rent,
           area: u.net_area,
           status: u.status,
@@ -1444,93 +1792,266 @@ export default function App() {
       });
   };
 
-  const handleUnitNavigation = (direction: 'prev' | 'next') => {
-    if (viewState.type !== 'detail') return;
+  if (loading) return <div className="h-screen flex items-center justify-center font-serif text-corporate-400 italic">Connecting to Facilities Database...</div>;
 
-    const unitsInBuilding = getProcessedUnits(viewState.source);
-    const currentIndex = unitsInBuilding.findIndex(u => u.id === viewState.unit.id);
-    const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-
-    if (newIndex >= 0 && newIndex < unitsInBuilding.length) {
-      const nextUnit = unitsInBuilding[newIndex];
-      posthog?.capture('unit_browsed_via_nav', { 
-        direction, 
-        unit_id: nextUnit.id, 
-        unit_number: nextUnit.unit_number 
-      });
-      setViewState({ ...viewState, unit: nextUnit });
-    }
+  const ListingPageWrapper = () => {
+    const { building } = useParams<{ building: string }>();
+    const buildingKey = building || 'summit-one';
+    const propertyName = buildingKeyToName[buildingKey] || 'Units';
+    const listingSeo =
+      buildingKey === 'facilities-centre'
+        ? getSEOMetadata('facilitiesCentre')
+        : getSEOMetadata('summitOne');
+    return (
+      <>
+        <SEOHead {...listingSeo} />
+        <ListingPage
+          propertyName={propertyName}
+          pageH1={listingSeo.h1}
+          buildingKey={buildingKey === 'facilities-centre' ? 'facilities-centre' : 'summit-one'}
+          units={getProcessedUnits(buildingKey)}
+          onBack={() => navigate('/')}
+          onUnitClick={async (u) => {
+            // Track in first-party analytics
+            const { data, error } = await supabase.from('unit_engagement_events').insert([{
+              event_type: 'unit_view',
+              unit_id: u.id,
+              unit_number: u.unit_number,
+              building_name: u.building_name,
+              source: 'listing_grid',
+              page_path: window.location.pathname + window.location.search
+            }]);
+            
+            if (error) {
+              console.error('❌ Failed to track unit view:', error);
+            } else {
+              console.log('✅ Unit view tracked:', u.unit_number);
+            }
+            
+            capturePostHog('unit_viewed', { unit_id: u.id, unit_number: u.unit_number, property: propertyName });
+            navigate(`/units/${buildingKey}/${u.url_slug}`);
+          }}
+        />
+      </>
+    );
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center font-serif text-corporate-400 italic">Connecting to Facilities Database...</div>;
+  const UnitDetailPageWrapper = () => {
+    const { building, unitRef } = useParams<{ building: string; unitRef: string }>();
+    const buildingKey = building || '';
+    const propertyName = buildingKeyToName[buildingKey] || 'Units';
+    const units = buildingKey ? getProcessedUnits(buildingKey) : [];
+    const unit =
+      buildingKey && unitRef
+        ? isUuidParam(unitRef)
+          ? units.find((u) => u.id === unitRef)
+          : units.find((u) => u.url_slug === unitRef.toLowerCase())
+        : undefined;
+
+    useEffect(() => {
+      if (!building || !unitRef || !unit) return;
+      if (isUuidParam(unitRef) && unit.url_slug) {
+        navigate(`/units/${building}/${unit.url_slug}`, { replace: true });
+      }
+    }, [building, unitRef, unit?.id, unit?.url_slug, navigate]);
+
+    if (!building || !unitRef) return <Navigate to="/" />;
+    if (!unit) return <Navigate to="/" />;
+
+    const unitSeo = buildUnitPageSEO({
+      unit_number: unit.unit_number,
+      area: String(unit.area),
+      building_name: unit.building_name,
+      condition: unit.condition || '',
+      status: unit.status || '',
+      buildingParam: building,
+      unitSlug: unit.url_slug,
+    });
+
+    const handleUnitNavigation = async (direction: 'prev' | 'next') => {
+      const currentIndex = units.findIndex((u) => u.id === unit.id);
+      const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+      if (newIndex >= 0 && newIndex < units.length) {
+        const nextUnit = units[newIndex];
+        
+        // Track in first-party analytics
+        const { error } = await supabase.from('unit_engagement_events').insert([{
+          event_type: 'unit_view',
+          unit_id: nextUnit.id,
+          unit_number: nextUnit.unit_number,
+          building_name: nextUnit.building_name,
+          source: 'listing_nav',
+          page_path: window.location.pathname
+        }]);
+        
+        if (error) {
+          console.error('❌ Failed to track unit navigation:', error);
+        } else {
+          console.log('✅ Unit nav tracked:', nextUnit.unit_number);
+        }
+        
+        capturePostHog('unit_browsed_via_nav', {
+          unit_id: nextUnit.id,
+          unit_number: nextUnit.unit_number,
+          building: nextUnit.building_name,
+          property: propertyName,
+          direction,
+        });
+        capturePostHog('unit_viewed', {
+          unit_id: nextUnit.id,
+          unit_number: nextUnit.unit_number,
+          property: propertyName,
+          via: 'listing_nav',
+        });
+        navigate(`/units/${building}/${nextUnit.url_slug}`);
+      }
+    };
+
+    const unitIndex = units.findIndex((u) => u.id === unit.id);
+
+    return (
+      <>
+        <SEOHead {...unitSeo} />
+        <UnitDetailPage
+          unit={unit}
+          onBack={() => navigate(`/units/${buildingKey}`)}
+          propertyName={propertyName}
+          seoH1={unitSeo.h1}
+          onNavigate={handleUnitNavigation}
+          hasPrev={unitIndex > 0}
+          hasNext={unitIndex < units.length - 1}
+        />
+      </>
+    );
+  };
 
   return (
     <div className="antialiased min-h-screen bg-corporate-50 font-sans">
-      <Header
-        onNavigateHome={() => setViewState({ type: 'landing' })}
-        onViewSummit={() => setViewState({ type: 'listing', property: 'Summit One Tower' })}
-        onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
-        currentPage={viewState.type}
-      />
-      
+      {location.pathname !== '/admin' && location.pathname !== '/login' && (
+        <Header
+          onNavigateHome={() => navigate('/')}
+          onViewSummit={() => navigate('/units/summit-one')}
+          onViewFacilities={() => navigate('/units/facilities-centre')}
+          onViewBlog={() => {
+            navigate('/blog');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          currentPage={location.pathname}
+        />
+      )}
+
       {showGuide && <UserGuideModal initialTab={guideInitialTab} onClose={() => setShowGuide(false)} />}
 
       <main>
-        {viewState.type === 'login' ? (
-          <LoginPage
-            onLoginSuccess={(loggedInUser) => {
-              posthog?.capture('admin_login_success');
-              setUser(loggedInUser);
-              setViewState({ type: 'admin' });
-            }}
-            onBack={() => setViewState({ type: 'landing' })}
+        <Routes>
+          <Route path="/" element={
+            <>
+              <SEOHead {...getSEOMetadata('home')} />
+              <Hero />
+              <Assets
+                onViewSummit={() => navigate('/units/summit-one')}
+                onViewFacilities={() => navigate('/units/facilities-centre')}
+              />
+              <div className="relative">
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                  <img
+                    src="/images/aerial-view.png"
+                    alt="Aerial view of Shaw Boulevard business corridor and Mandaluyong City skyline"
+                    className="w-full h-full object-cover object-top opacity-40"
+                  />
+                  <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px]"></div>
+                </div>
+                <Vision />
+                <Contact onOpenLegal={() => toggleGuide(true, 'legal')} />
+              </div>
+            </>
+          } />
+          <Route path="/login" element={
+            <>
+              <SEOHead {...getSEOMetadata('login')} robots="noindex,nofollow" />
+              <LoginPage
+                onLoginSuccess={(loggedInUser) => {
+                  capturePostHog('admin_login_success');
+                  setUser(loggedInUser);
+                  navigate('/admin');
+                }}
+                onBack={() => navigate('/')}
+              />
+            </>
+          } />
+          <Route path="/reset-password" element={
+            <>
+              <SEOHead {...getSEOMetadata('resetPassword')} robots="noindex,nofollow" />
+              <ResetPasswordPage
+                onSuccess={() => navigate('/login')}
+                onBack={() => navigate('/login')}
+              />
+            </>
+          } />
+          <Route path="/admin" element={
+            <>
+              <SEOHead {...getSEOMetadata('admin')} robots="noindex,nofollow" />
+              <AdminDashboard
+                onLogout={() => {
+                  capturePostHog('admin_logout');
+                  setUser(null);
+                  fetchUnits();
+                  navigate('/');
+                }}
+              />
+            </>
+          } />
+          <Route path="/units/:building" element={<ListingPageWrapper />} />
+          <Route path="/units/:building/:unitRef" element={<UnitDetailPageWrapper />} />
+          <Route path="/blog" element={
+            <>
+              <SEOHead {...getSEOMetadata('blogIndex')} />
+              <BlogIndexPage />
+            </>
+          } />
+          <Route
+            path="/office-space-mandaluyong"
+            element={
+              <>
+                <SEOHead {...getSEOMetadata('officeSpaceMandaluyong')} />
+                <OfficeSpaceMandaluyongPage onBackHome={() => navigate('/')} />
+              </>
+            }
           />
-        ) : viewState.type === 'reset-password' ? (
-          <ResetPasswordPage 
-            onSuccess={() => setViewState({ type: 'login' })}
-            onBack={() => setViewState({ type: 'login' })}
+          <Route
+            path="/office-space-shaw-boulevard"
+            element={
+              <>
+                <SEOHead {...getSEOMetadata('officeSpaceShawBoulevard')} />
+                <OfficeSpaceShawBoulevardPage onBackHome={() => navigate('/')} />
+              </>
+            }
           />
-        ) : viewState.type === 'admin' ? (
-          <AdminDashboard
-            onLogout={() => {
-              posthog?.capture('admin_logout');
-              setUser(null);
-              fetchUnits();
-              setViewState({ type: 'landing' });
-            }}
+          <Route
+            path="/office-space-near-ortigas"
+            element={
+              <>
+                <SEOHead {...getSEOMetadata('officeSpaceNearOrtigas')} />
+                <OfficeSpaceNearOrtigasPage onBackHome={() => navigate('/')} />
+              </>
+            }
           />
-        ) : viewState.type === 'listing' ? (
-          <ListingPage
-            propertyName={viewState.property}
-            units={getProcessedUnits(viewState.property)}
-            onBack={() => setViewState({ type: 'landing' })}
-            onUnitClick={(u) => handleUnitClick(u, viewState.property)}
+          <Route
+            path="/office-rental-mandaluyong"
+            element={
+              <>
+                <SEOHead {...getSEOMetadata('officeRentalMandaluyong')} />
+                <OfficeRentalMandaluyongPage onBackHome={() => navigate('/')} />
+              </>
+            }
           />
-        ) : viewState.type === 'detail' ? (
-          <UnitDetailPage
-            unit={viewState.unit}
-            onBack={() => setViewState({ type: 'listing', property: viewState.source })}
-            propertyName={viewState.source}
-            onNavigate={handleUnitNavigation}
-            hasPrev={getProcessedUnits(viewState.source).findIndex(u => u.id === viewState.unit.id) > 0}
-            hasNext={getProcessedUnits(viewState.source).findIndex(u => u.id === viewState.unit.id) < getProcessedUnits(viewState.source).length - 1}
-          />
-        ) : (
-          <>
-            <Hero />
-            <WhyUs />
-            <Operations />
-            <Assets
-              onViewSummit={() => setViewState({ type: 'listing', property: 'Summit One Tower' })}
-              onViewFacilities={() => setViewState({ type: 'listing', property: 'Facilities Centre' })}
-            />
-            <FAQ />
-            <Contact onOpenLegal={() => toggleGuide(true, 'legal')} />
-          </>
-        )}
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </main>
-      <Footer 
-        onAdminClick={() => setViewState({ type: 'login' })} 
+
+      <Footer
+        onAdminClick={() => navigate('/login')}
         onShowGuide={() => toggleGuide(true, 'product')}
       />
     </div>

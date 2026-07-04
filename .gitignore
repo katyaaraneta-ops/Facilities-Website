@@ -7,12 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & build
 node_modules
 dist
 dist-ssr
-*.local
+.vite
 
-# Editor directories and files
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor & OS
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,3 +28,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.cursor/
+
+# Local Netlify
+.netlify

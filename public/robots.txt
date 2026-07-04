@@ -1,0 +1,14 @@
+# robots.txt for https://facilitiesinc.netlify.app/
+# Generated: 2026-04-11
+
+# Allow all search engine crawlers
+User-agent: *
+Allow: /
+
+# Block any admin or private paths (update as needed)
+Disallow: /admin/
+Disallow: /private/
+Disallow: /_next/static/
+
+# Sitemap location — submit this URL in Google Search Console
+Sitemap: https://facilitiesinc.netlify.app/sitemap.xml

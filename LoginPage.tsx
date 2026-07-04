@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient';
+import { capturePostHog } from './posthogCapture';
 import { Lock, Mail, ArrowRight, Building2, Loader2 } from 'lucide-react';
-
-// Access global PostHog safely
-const posthog = (window as any).posthog;
 
 interface LoginPageProps {
   onLoginSuccess: (user: any) => void;
@@ -53,7 +51,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onBack }) 
       setLoading(false);
     } else {
       // Trigger PostHog event upon successful reset request
-      posthog?.capture('password_reset_requested', { email });
+      capturePostHog('password_reset_requested', { email });
       setIsEmailSent(true);
       setLoading(false);
     }
